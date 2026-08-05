@@ -1,0 +1,32 @@
+# Phase 1a + 1b + 1c
+fastapi==0.128.0
+uvicorn[standard]==0.40.0
+pytest==9.0.2
+httpx==0.28.1
+sqlalchemy==2.0.45
+psycopg[binary]==3.2.13
+alembic==1.16.5
+pydantic-settings==2.12.0
+argon2-cffi==25.1.0
+PyJWT==2.10.1
+email-validator==2.2.0
+cryptography==46.0.0
+python-multipart==0.0.20
+ijson==3.5.1
+rapidfuzz==3.14.3
+google-auth==2.40.3
+Pillow==11.3.0
+pytesseract==0.3.13
+numpy==2.2.6
+opencv-python-headless==4.12.0.88
+
+# Optional Spec O3/O5 (install via requirements-spec-research.txt):
+# rdkit, shap, scikit-learn
+
+# U1 — semantic FAISS RAG for the DQ3 research path (enable via ENABLE_SEMANTIC_RAG=true).
+# Pinned to the old prescription project's Python-3.13 known-good set; torch/transformers/
+# tokenizers/safetensors resolve transitively through sentence-transformers.
+faiss-cpu==1.9.0.post1
+sentence-transformers==3.3.1
+huggingface_hub==0.27.1
+

@@ -1,0 +1,31 @@
+# Keep the build context small + safe for the HF Space.
+**/.venv
+**/venv
+**/node_modules
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+
+# Runtime data + raw sources are downloaded at startup from the HF dataset repo,
+# never baked into the image (huge + license-restricted).
+data/
+storage/
+
+# Secrets / local env — never ship these into the image.
+.env
+backend/.env
+frontend/.env
+**/google_credentials.json
+*.key
+*.pem
+.hf_token
+**/*secret*
+**/deploy_secrets*
+
+# Docs, tests, scratch — not needed at runtime.
+docs/
+**/tests/
+*.md
+!README.md

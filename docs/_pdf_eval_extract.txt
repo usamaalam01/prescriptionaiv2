@@ -1,0 +1,1019 @@
+
+===== PAGE 1 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+Specification and Design Report  
+ 
+Design and Evaluation of an AI-Powered Pharma Assistant 
+Module CSCK700 — Computer Science Capstone Project 
+Programme MSc Information Systems Management 
+Student Name Muhammad Zohaib 
+Student Number 200052400 
+Student Email m.zohaib@liverpool.ac.uk 
+Dissertation Advisor (DA) Dr. Nazmul Hussain 
+Dissertation Lead (DL) Dr. Kathleen M. Kelm 
+Report Version 1.0 
+Submission Deadline 18th May 2026 (Week 16) 
+Final Dissertation Deadline 2nd November 2026 
+Ethics Approval Number 18274 (Signed: Dr Nazmul Hussain, 29/04/2026) 
+ 
+  
+
+===== PAGE 2 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+A.  The Specification  
+A1.  Research Context  
+Medication errors are one of the persisting patient safety issues in healthcare throughout the world. In the 
+United States alone, around 7,000 people die annually due to illegible handwritten prescriptions and/or 
+drug-name confusion, with 11.4 percent of errors directly related to unreadable prescriptions (Chalasani 
+et al., 2023).  
+During my research, I observed that pharmacists often find themselves in situations where the prescribed 
+drug is not available and have to replace it with a drug that is therapeutically equivalent, which is 
+compounded by the fact that there more than 253,000 drug formulations in India and an estimated 1.5 
+million globally (Chumble et al., 2025). This substitution is done without any formalised decision support 
+system and can lead to dosage confusion and patient non-adherence. 
+Existing digital healthcare platforms including Drugs.com, Medscape, and WebMD provide drug 
+information but struggles to interpret handwritten prescription images or perform salt-aware generic 
+substitution. Furthermore, the majority of AI systems that offer recommendations operate as black boxes, 
+which is considered the biggest challenge to adoption by healthcare practitioners (Abo El-Enen et al., 
+2025; Tun et al., 2025).   
+This highlighted the need for an intelligent system that can read prescription images, retrieve reliable 
+medicine information, and explain recommendations using modern AI techniques such as Retrieval-
+Augmented Generation (RAG) and Explainable Artificial Intelligence (XAI). 
+The research is undertaken in the remote desk-based research environment in Karachi, Pakistan, by 
+using digital tools and structured interaction through online platforms.  
+To ensure GDPR standards for ethical compliance and data privacy, research carried out using synthetic 
+handwritten prescriptions are used to simulate realistic clinical environment, without processing any 
+patient records or personally identifiable information (PII). 
+A2.  Problem Statement 
+Existing digital health care platforms do not have a comprehensible, integrated digital solution that can 
+enable: (a) the extraction of drug names and dosage from handwritten prescription images, (b) the 
+recommendation of therapeutically equivalent generic drugs based on chemically rigorous methods, (c) 
+the grounding of all recommendations by AI algorithms in trustworthy regulatory sources, and (d) the 
+presentation of the decision with explainable and sufficient explainability to support and build trust with 
+pharmacists for Human-in-the-Loop clinical governance. 
+A3. Research Aim 
+This research aims to design, develop, and evaluate an IT artefact, AI-powered pharmaceutical assistant 
+prototype that can extract drug name and dosage from handwritten prescriptions image, recommend 
+therapeutically equivalent medicines, and generate evidence-based explanations to support pharmacist 
+decision-making. 
+ 
+ 
+ 
+ 
+
+===== PAGE 3 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+A4.  Research Objectives 
+O Focus Area Research Question 
+O1 OCR Pipeline Develop a transformer-based OCR pipeline using TrOCR with fallback Google Cloud 
+Vision and Tesseract 
+O2 HITL Interface Design a human-in-the-loop validation interface for pharmacist review and correction 
+of extracted data 
+O3 Recommendation 
+Engine 
+Implement a salt-aware therapeutic recommendation engine using RDKit Maximum 
+Common Substructure (MCS) 
+O4 RAG Framework Integrate RAG with FAISS vector retrieval and OpenFDA regulatory information for 
+factual accuracy and explainability 
+O5 XAI Integration Integrate SHAP and LIME for transparency and interpretability in the recommendation 
+flow 
+O6 Evaluation Assess technical performance (WER, CER, BERTScore) and usability through 
+pharmacist qualitative feedback (Likert survey) 
+A5.  Dissertation Questions 
+To address the existing challenges, this research is guided by four technical questions that evolved during 
+the design and development of the prototype. 
+DQ Focus Area Research Question 
+DQ1 OCR Accuracy How accurately does TrOCR extract drug names and dosages? (Word/Character 
+Error Rate) 
+DQ2 Recommendation 
+Effectiveness 
+How effectively does RDKit MCS identify therapeutically equivalent generic 
+medicines? (Precision@K & Recall@K) 
+DQ3 RAG Reliability How does the FAISS-based RAG framework affect semantic agreement and factual 
+reliability of drug explanations? (BERTScore & OpenFDA cross-validation) 
+DQ4 XAI Trust Impact What impact do SHAP/LIME explanations and source attribution have on pharmacist 
+trust, transparency, and perceived accuracy? 
+A6.  Ethical Considerations 
+The University of Liverpool Online Research Ethics Committee has given full ethical approval for this 
+research (Application 18274 signed 29 April 2026; Dr Nazmul Hussain). The ethical principles are based 
+on the concepts of Fairness, Accountability, Transparency and Explainability (FATE). 
+Key provisions are summarised below. 
+Participants: Since the prototype is designed to support the clinical decision-making process of 
+pharmacists, a sample of five licensed pharmacists were selected from the researcher's professional 
+network in Pakistan. There are no vulnerable groups involved, no children and no real patient records are 
+involved. The participants are adult pharmacists with full capacity to give informed consent. They play a 
+valuable role by serving as a “human-in-the-loop” safeguard by reviewing AI recommendations and 
+anonymously reporting back via digital surveys. 
+ 
+ 
+
+===== PAGE 4 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+Data and Privacy: Only synthetic handwritten prescription data and publicly available datasets 
+(OpenFDA, DrugBank) are used in the project. No personally identifiable information (PII) is collected at 
+any stage. All questionnaire responses are strictly anonymous, collected via Microsoft Forms, stored on 
+the University M Drive (encrypted) and accessed only by the student researcher and lead researcher Dr 
+Nazmul Hussain. Data is processed fully according to UK GDPR (data minimisation, purpose limitation, 
+storage limitation). 
+Consent Process: The Participant Information Sheet is sent to the participants via University email. A 
+digital Consent Form is obtained beforehand of any research activity. Participants have the right to 
+withdraw at any time prior to questionnaire submission without consequence. 
+Clinical Safety: The prototype is explicitly designated a decision-support tool, not an autonomous clinical 
+system. A Human-in-the-Loop (HITL) verification layer added for licensed pharmacist to review and 
+confirm of AI-extracted outputs before any recommendations finalised.  
+A7.  Anticipated Outcomes  
+This research is anticipated to contribute a novel multi-modal framework to the field of pharmaceutical 
+and healthcare informatics by integrating four technologies not previously combined within a single 
+clinically oriented prototype: transformer-based handwritten OCR, graph-based chemical reasoning using 
+RDKit Maximum Common Substructure (MCS), Retrieval-Augmented Generation (RAG)-grounded 
+language generation, and hybrid inline explainability through SHAP, LIME, and source attribution. The 
+proposed framework aims to reduce AI hallucinations while addressing the interpretability gap that are 
+highlighted in literature review (Sadeghi et al., 2024; Tun et al., 2025). 
+The anticipated outcomes include the development of a functional MVP prototype deployed on Hugging 
+Face Spaces. This projects aims to establish baseline data on OCR accuracy, recommendation quality, 
+and RAG performance, while also gathering feedback from licensed pharmacists about the system.  
+A8. IT Artefact  
+ 
+Module Description 
+OCR Multi-Engine TrOCR (primary) + Google Cloud Vision + Tesseract (fallbacks). 
+HITL Verification Streamlit-based pharmacist review layer; extracted drug names and dosages can be 
+inspected, corrected, and confirmed 
+Recommendation 
+Engine 
+NetworkX DiGraph + RDKit MCS (90% atom coverage); weighted score = Strength×0.4 + 
+Metadata×0.4 + FormRoute×0.2; threshold ≥70; top-3 results 
+RAG Framework FAISS IndexFlatL2 (~1.37M OpenFDA SPL chunks), all-MiniLM-L6-v2 embeddings, Top-5 
+retrieval, Groq API (llama-3.3-70b-versatile, temp 0.0) 
+XAI Dashboard SHAP (sklearn.LinearRegression, 44-sample background) + LIME (LimeTabularExplainer) 
++ source attribution cards embedded inline in Step 4 
+Evaluation of an IT artefact against DQ1–DQ4 is discussed in Section B. 
+ 
+
+
+===== PAGE 5 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+A9. Evaluation Approach 
+The prototype is evaluated using a sequential explanatory mixed methods research design approach to 
+correlate technical precision with professional utility (Creswell and Clark, 2017).  
+Strand Method Details 
+Quantitative — 
+OCR 
+WER & CER Measure TrOCR primary engine + fallback performance on handwritten 
+text 
+Quantitative — 
+Recommendation 
+Precision@K & 
+Recall@K 
+Effectiveness of RDKit MCS identifying therapeutically equivalent 
+alternatives in top-ranked results 
+Quantitative — 
+RAG 
+BERTScore Semantic alignment between generated drug explanations and official 
+OpenFDA regulatory records 
+Qualitative Pharmacist 
+survey (n=5) 
+4 Likert-scale dimensions: trust, clarity of explanations, system 
+usefulness, perceived accuracy; tested via simulated prototype 
+environment 
+Evaluation of an IT artefact against all four dissertation questions using a Mixed Methods Research 
+(MMR) is described in Section B. 
+A10.  Major Modifications from Proposal:  
+During the transition from proposal to implementation, the system was refined through iterative Design 
+Science Research (DSR) build–evaluate cycles to improve its usefulness and technical feasibility. 
+Area Original Plan Change & Rationale 
+OCR Engine Tesseract as primary Replaced with TrOCR (primary); Tesseract + Google Vision 
+as fallbacks — better accuracy on clinical handwriting 
+Architecture FastAPI + PostgreSQL Removed; replaced with serialised pickle (.pkl) files — 
+reduced complexity for single-user prototype 
+Data Storage 1.37M text chunks as graph 
+nodes 
+Moved to dedicated FAISS vector index — original 
+approach was unmanageably slow 
+Matching 
+Algorithm 
+VF2 graph isomorphism Replaced with RDKit MCS — more robust for identifying 
+base molecules across salt/ester variants 
+XAI Placement Separate navigation page Moved inline into Step 4 — pharmacists see reasoning 
+immediately alongside each recommendation 
+Deployment Streamlit Cloud Migrated to Hugging Face Spaces — Streamlit Cloud's 500 
+MB RAM limit was insufficient for TrOCR (1.5 GB) and 
+Knowledge Graph 
+A11.  Literature Review 
+The literature review is organised in a thematically way, across all four research questions. Each 
+annotation identifies the source contribution, its scholarly gap, and its direct relevance to this project. 
+Ali, U., Ranmbail, S., Nadeem, M., Ishfaq, H., Ramzan, M.U. and Ali, W. (2024) Leveraging deep 
+learning with multi-head attention for accurate extraction of medicine from handwritten prescriptions. 
+arXiv:2412.18199. 
+Dissertation Question DQ1 — OCR Accuracy 
+Methodology Hybrid deep learning architecture combining Mask R-CNN for prescription image 
+segmentation and TrOCR for medicine name extraction from handwritten prescriptions. 
+
+===== PAGE 6 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+Key Finding Achieved Character Error Rate (CER) of 1.4% on handwritten prescription images using 
+the multi-head attention hybrid approach 
+Gap Analysis Relies on hybrid string-matching techniques (Levenshtein distance and fuzzy string 
+matching) for drug lookup; vulnerable to visual ambiguities such as “Losartan” vs 
+“Lozartan”, making direct autonomous clinical deployment unsafe without human oversight. 
+Project Contribution CER benchmarks serve as external reference for this project DQ1 evaluation; motivated 
+adoption of TrOCR as primary OCR engine. Ali et al., (2024) review Inspired inclusion of a 
+Human-in-the-Loop (HITL) verification layer to combine TrOCR’s algorithmic precision with 
+pharmacist clinical accountability. 
+ 
+Chalasani, S.H., Syed, J., Ramesh, M., Patil, V. and Pramod Kumar, T.M. (2023) 'Artificial intelligence 
+in the field of pharmacy practice: a literature review', Exploratory Research in Clinical and Social 
+Pharmacy, 12, p. 100346. 
+Dissertation Question DQ1 — OCR (Clinical Motivation) 
+Methodology Chalasani et al. (2023) conducted a review examining the impact of prescription 
+misinterpretation, handwritten medication errors, and AI-driven pharmacointelligence 
+approaches within pharmacy and healthcare systems. 
+Key Finding The study highlighted that nearly 7,000 deaths annually are associated with illegible 
+handwriting and drug-name confusion, with more than 11% of pharmacy-related errors 
+linked directly to unreadable prescriptions. 
+Gap Analysis Review identifies problems and opportunities but does not design or implement a technical 
+solution; no evaluation of OCR or recommendation systems 
+Project Contribution This study provided the primary clinical motivation for the project by reinforcing the patient-
+safety risks associated with unreadable prescriptions and medication ambiguity. It directly 
+supported the adoption of a transformer-based OCR pipeline for handwritten prescription 
+extraction. CER and WER benchmarks directly motivated by the 11.4% error statistic 
+ 
+Phan Van, P., Nguyen Minh, D., An Dinh Ngoc and Phan Thanh, H. (2024) Rx Strategist: prescription 
+verification using LLM agents system. arXiv preprint arXiv:2409.03440. 
+Dissertation Question DQ1 & DQ2 — OCR / Recommendation 
+Methodology Multi-agent pipeline with three specialised agents: ICD Finder, ICD Matcher, and Dosage 
+Retriever; grounded in an active-ingredient-centred knowledge graph built from curated 
+drug monographs 
+Key Finding Achieved 75.93% accuracy, matching the performance level of a five-year experienced 
+clinical pharmacist; standalone LLMs (e.g. Llama 3.1) fell notably short 
+Limitation / Gap The system operates entirely on machine-readable input and cannot interpret handwritten 
+prescription images. Additionally, it lacks therapeutic substitution capability for unavailable 
+drugs. 
+Project Contribution The active-ingredient reasoning approach influenced this project’s NetworkX DiGraph 
+design, where molecular ingredients are modelled as nodes instead of brand formulations. 
+The identified gaps also motivated the inclusion of a TrOCR-based handwritten prescription 
+extraction module and an RDKit-driven recommendation engine for salt-aware therapeutic 
+substitution. 
+ 
+Gong, F., Wang, M., Wang, H., Wang, S. and Liu, M. (2020) SMR: medical knowledge graph embedding 
+for safe medicine recommendation. arXiv:1710.05980. 
+Dissertation Question DQ2 — Recommendation Engine 
+Methodology Gong et al. (2020) developed SMR using a heterogeneous knowledge graph integrating 
+MIMIC-III patient records, ICD-9 disease ontology, and DrugBank into a shared low-
+dimensional embedding space for medicine recommendation through link prediction. 
+
+===== PAGE 8 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+ 
+ 
+Kadi, H., Abdellatif, A., Kemajou Njamen, D.I. and Pereme, F. (2025) 'Automatic extraction of SmPC 
+document for IDMP data model construction using foundation LLM and RAG', Frontiers in Medicine, 
+12, p. 1598979. 
+Dissertation Question DQ3 — RAG Framework 
+Methodology LLM and RAG pipeline applied to unstructured regulatory documents (SmPC files); 
+evaluated against IDMP standard for structured pharmaceutical data extraction 
+Key Finding Retrieving chemically detailed pharmaceutical information, such as salt/base variants with 
+correct dosage relationships is significantly more challenging than extracting surface-level 
+product identifiers. The study also demonstrated that BERTScore is an effective semantic 
+evaluation metric and that general-purpose embedding models can outperform domain-
+specific alternatives in retrieval tasks. 
+Gap Analysis The study focuses primarily on regulatory data standardisation and information extraction 
+rather than real-time clinical decision support. It does not provide a mechanism for 
+therapeutic drug substitution or chemically aware recommendation generation within 
+pharmacy workflows. 
+Project Contribution This review directly contextualises the design rationale behind adopting RDKit Maximum 
+Common Substructure matching in this project, where distinguishing between chemically 
+related salt and ester forms demands a level of molecular precision that keyword or rule-
+based retrieval cannot achieve. Their findings also support two key design choices in this 
+project. First, their use of BERTScore as a reliable semantic evaluation metric justifies its 
+use for assessing the RAG explanation module. Second, their observation that general-
+purpose embedding models outperform many domain-specific alternatives supports the 
+use of all-MiniLM-L6-v2 with FAISS for retrieval. Unlike Kadi et al. (2025), this project 
+extends retrieval capabilities into active clinical decision support by integrating RAG-
+grounded explanations with a salt-aware recommendation engine for real-time therapeutic 
+drug substitution. 
+ 
+ 
+ 
+
+
+===== PAGE 10 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+Gap Analysis Although the review identifies organisational and human factors affecting AI adoption, it 
+does not operationalise these principles within a real-time pharmaceutical recommendation 
+or therapeutic substitution workflow. 
+Project Contribution The review directly influenced three core design decisions within the project.  
+The Human-in-the-Loop (HITL) layer ensures AI recommendations are reviewed by 
+pharmacists rather than accepted autonomously.  
+The Explainable AI (XAI) dashboard using SHAP and LIME improves transparency, while 
+grounding recommendations in verified OpenFDA label data supports source credibility and 
+auditability. 
+ 
+Nagendran, M., Festor, P., Komorowski, M., Gordon, A.C. and Faisal, A.A. (2023) 'Quantifying the 
+impact of AI recommendations with explanations on prescription decision making', NPJ Digital 
+Medicine, 6(1), p. 206. 
+Dissertation Question DQ4 — XAI / Trust 
+Methodology Nagendran et al. (2023) conducted an experimental study involving 86 intensive care 
+physicians to evaluate how AI recommendations and explanation interfaces influence 
+clinical decision-making. Participants were exposed to four conditions: no AI support, 
+peer recommendations, AI recommendations alone, and AI recommendations 
+accompanied by feature-importance explanations. 
+Key Finding The study found that clinicians shifted their prescribing decisions toward AI 
+recommendations regardless of whether explanations were provided. Simple feature-
+importance explanations did not significantly improve trust or influence beyond the 
+recommendation itself. Additionally, perceived usefulness of explanations showed little 
+correlation with their actual influence on clinician decision-making. 
+Gap Analysis The study highlights the limitations of simple explanation interfaces but does not 
+introduce a multi-modal explainability framework combining SHAP, LIME, and source 
+attribution for pharmaceutical substitution. 
+Project Contribution Their findings influenced the project explainability design strategy. Instead of relying 
+solely on feature-importance displays, the system integrates multi-modal explainability 
+including SHAP visualisations, LIME perturbation analysis, and OpenFDA source 
+attribution cards to assist pharmacists with meaningful reasoning and evidence.  
+A12.  Research Methodology and Conduct of the Project 
+This project adopts the Design Science Research Methodology framework, a six-step iterative approach 
+widely used for developing and evaluating IT artefact (Peffers et al., 2007). 
+DSRM  Activity Project Instantiation Weeks 
+Step 1 Problem Identification Literature review, stakeholder context, proposal 3–8 
+Step 2 Objectives for Solution Four dissertation questions; functional and non-functional 
+requirements 
+8–11 
+Step 3 Design and Development OCR, HITL, Knowledge Graph, RAG, XAI modules 12–28 
+Step 4 Demonstration Pharmacist-operated evaluation sessions using synthetic 
+prescriptions 
+29–35 
+Step 5 Evaluation MMR: quantitative metrics (WER, Precision@K, BERTScore) 
++ qualitative Likert feedback 
+29–35 
+Step 6 Communication Dissertation, poster presentation, potential publication 36–40 
+
+===== PAGE 11 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+ 
+Fig 1 – DSRM Project Progress Report 
+A Mixed Methods Research (MMR) approach is adopted for evaluation of prototype (Creswell and Clark, 
+2017). 
+Software stack  
+Python, HuggingFace Transformers (TrOCR), RDKit, NetworkX, FAISS, Groq API, SHAP (analytical), 
+LIME, Scikit-learn, Streamlit, deployed on Hugging Face Spaces.  
+It is expected that no new skill needs to be learned beyond the skill acquired in the proposal and dataset 
+preparation stages. 
+Data source 
+Data source Description Purpose in artefact 
+Synthetic Prescription 
+Dataset 
+25–30 curated synthetic handwritten 
+prescription images simulating real-world 
+clinical variations 
+Used for OCR testing and 
+prescription interpretation 
+OpenFDA Dataset OpenFDA bulk label ZIP files containing 
+approximately 1.37 million text chunks 
+Used for drug information retrieval 
+and RAG-based processing 
+DrugBank Dataset DrugBank XML/JSON files Used to construct the 
+pharmaceutical knowledge graph 
+Pharmacist 
+Questionnaire 
+Responses 
+Anonymous Likert-scale responses 
+collected from five licensed pharmacists via 
+Microsoft Forms 
+Used for artefact evaluation and 
+usability assessment 
+* All data is stored on the University of Liverpool encrypted M Drive (password-protected, access 
+restricted to researcher and supervisor). 
+ 
+ 
+
+
+===== PAGE 12 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+B.  The Design 
+B1.  System Architecture and Component Design 
+IT Artifact 
+The IT artefact is a modular, five-component web-based system deployed as a Streamlit application on 
+Hugging Face Spaces. Each component directly addresses one or more dissertation questions. 
+Module Technology Stack DQ Output 
+OCR Multi-Engine Module TrOCR (primary), Google Vision, 
+Tesseract (fallback) 
+DQ1 Extracted drug names, strengths, 
+dosages 
+HITL Verification Interface Streamlit st.form, st.selectbox 
+(reactive) 
+DQ1 Pharmacist-verified drug query 
+Recommendation Engine NetworkX DiGraph, RDKit MCS, 
+FAISS 
+DQ2 Top-3 generic alternatives with 
+similarity scores 
+RAG Framework FAISS IndexFlatL2, all-MiniLM-
+L6-v2, Groq API 
+DQ3 Evidence-grounded drug 
+explanation  
+XAI Dashboard SHAP (analytical), LIME, 
+Matplotlib 
+DQ4 Feature importance charts + 
+OpenFDA source cards 
+ 
+The diagram below describes the logical flow. 
+ 
+Fig 2 – AI-Powered Pharma Assistant Logical Flow 
+Use Cases 
+The prototype supports three primary use cases:  
+Feature / Workflow User Action System Function 
+Image-Based Analysis Pharmacist uploads a handwritten 
+prescription image and confirms or 
+rejects the OCR extraction (Human-
+in-the-Loop validation) 
+System performs OCR on the prescription, 
+allows pharmacist verification/correction of 
+extracted text, and recommends up to three 
+verified generic alternatives with similarity 
+scoring and Explainable AI (XAI) justifications 
+
+
+===== PAGE 13 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+Feature / Workflow User Action System Function 
+Direct Drug Search Pharmacist manually selects a drug 
+from the DrugBank ingredient 
+dropdown and confirms or rejects the 
+selected drug (Human-in-the-Loop 
+validation) 
+System validates the pharmacist-confirmed 
+drug selection, searches the database, and 
+generates recommendation results with 
+traceable provenance information 
+Evaluation Dashboard Pharmacist accesses the dashboard, 
+enters WER/CER ground truth data, 
+evaluates recommendation quality 
+System calculates evaluation metrics 
+including Precision@K, Recall@K, and 
+BERTScore 
+ 
+Fig 3 – AI-Powered Pharma Assistant UML Diagram (Use Cases) 
+Third-Party Components 
+All five modules are original implementations. The third-party components are integrated under 
+open or academic licensed use conditions. These resources do not constitute commissioned 
+work under the dissertation guidelines. 
+B2.  Data Structures, Algorithms, and Pseudocode 
+Knowledge Graph Schema 
+The salt-aware knowledge graph is a NetworkX directed graph (DiGraph) with the following node and 
+edge types: 
+Element Type Description 
+Ingredient Node Active pharmaceutical ingredient (API); maps to DrugBank ingredient list 
+Salt Form Node Specific chemical salt or ester variant of an API 
+NDC Product Node Individual commercial product identified by National Drug Code 
+Strength Node Dosage strength (e.g., 500 mg) 
+Route Node Administration route (e.g., oral, topical) 
+Dosage Form Node Physical form (e.g., tablet, capsule, solution) 
+HAS_SALT Edge Ingredient → Salt Form 
+IS_ACTIVE_IN Edge Salt Form → NDC Product 
+HAS_STRENGTH Edge NDC Product → Strength 
+HAS_ROUTE Edge NDC Product → Route 
+HAS_DOSAGE_FORM Edge NDC Product → Dosage Form 
+
+
+===== PAGE 14 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+Similarity Scoring Algorithm 
+For each candidate generic product, the similarity score is computed as: 
+Score = (Strength_score × 0.4) + (Metadata_score × 0.4) + 
+(FormRoute_score × 0.2) 
+ 
+RAG Pipeline 
+OpenFDA bulk label ZIP files are parsed and chunked at 512 tokens with 50-token overlap across seven 
+FDA sections (indications, dosage, warnings, adverse reactions, drug interactions, contraindications, 
+clinical pharmacology). Chunks are embedded with all-MiniLM-L6-v2 and stored in FAISS IndexFlatL2. 
+At query time, the top-5 nearest chunks by L2 distance are retrieved, deduplicated by distance threshold, 
+assembled into a structured prompt, and submitted to Groq (temperature 0.0) with the instruction to 
+produce 2–3 summary sentences followed by 4–6 evidence bullets, citing only information present in the 
+retrieved text. 
+XAI Pseudocode 
+SHAP_i = coef_i × (x_i − E[x_i]) 
+where coef_i is from sklearn.LinearRegression fitted on 44-sample Cartesian 
+background, 
+x_i is the actual feature value, and E[x_i] is its expectation over the 
+background. 
+B3.  MMR Evaluation Design 
+The evaluation adopts a Sequential Explanatory Mixed Methods Research design (Creswell and Clark, 
+2017) structured in two phases: Phase 1 collects quantitative technical metrics, and Phase 2 uses 
+qualitative pharmacist feedback to explain and contextualise Phase 1 findings. Both phases are linked 
+through the dissertation questions. 
+Quantitative Strand (Phase 1) — Technical Benchmarking 
+DQ Module Metric Definition Target 
+Threshold 
+DQ1 OCR WER Word-level edit distance / reference word count WER < 15% 
+DQ1 OCR CER Character-level edit distance / reference 
+character count 
+CER < 10% 
+DQ2 Recommendation Precision@3 Proportion of top-3 recommendations that are 
+clinically valid generics 
+P@3 ≥ 0.70 
+DQ2 Recommendation Recall@3 Proportion of all valid generics captured in top-
+3 results 
+R@3 ≥ 0.60 
+DQ3 RAG BERTScore 
+F1 
+Semantic similarity between generated 
+explanation and reference OpenFDA label 
+BERTScore ≥ 
+0.80 
+Statistical analysis: Given the sample size (n = 5 participants, 25–30 prescription test cases), descriptive 
+statistics (mean, standard deviation, range) are used for quantitative metrics. No inferential statistics are 
+appropriate at this scale; results are interpreted as indicative performance benchmarks for MVP prototype. 
+
+
+===== PAGE 15 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+Qualitative Strand (Phase 2) — User Trust and Usability 
+Five licensed pharmacists from the researcher’s professional network took part in the prototype 
+evaluation. Each participant completed the following process: 
+• Receive PIS by University email and provide digital informed consent. 
+• Interact with the web-based prototype: upload or select a synthetic prescription, review OCR 
+extraction, inspect generic recommendations, and examine XAI explanations. 
+• Complete the anonymous digital questionnaire (Microsoft Forms, Version 1.2) rating five Likert-
+scale constructs (1 = Very Poor, 5 = Very Good): 
+Q# Construct Statement 
+Q1 Usability and Interface The system interface is easy to navigate and use. 
+Q2 OCR Performance The system accurately extracts medication names and dosages 
+from handwritten prescription images. 
+Q3 Clinical Relevance The recommended generic alternatives are clinically appropriate 
+and relevant to the extracted prescriptions. 
+Q4 Explainability and 
+Transparency 
+How clear and trustworthy are the system explanations and reasons 
+provided? 
+Q5 Decision Support 
+Perception 
+The system provides meaningful support for clinical decision-
+making in a pharmaceutical context. 
+Quantitative Analysis: Likert data is summarised as mean scores per construct with standard deviation. 
+Qualitative free-text responses are analysed using inductive thematic analysis to identify emergent 
+themes relating to usability, trust, and areas for prototype improvement. 
+B4.  Interface Design and Wireframes 
+The prototype interface is structured as a two-page Streamlit application: 
+Page 1 — Prescription Analyzer: A four-step sequential workflow.  
+Step 1: Select the OCR engine using radio buttons. 
+.  
+Step2: Upload the handwritten prescription image  
+ 
+ 
+
+
+===== PAGE 18 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+Page 2 — Evaluation Dashboard: 
+In Tab 1, WER/CER scores are displayed along with the ground truth inputs.  
+ 
+In Tab 2, Precision@K and Recall@K scores are displayed alongside BERTScore.  
+   
+
+
+===== PAGE 19 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+C.  Statement of Deliverables 
+The table below shows all project deliverables. 
+Deliverable Status Maps to DQ 
+Functional web-based prototype (HF 
+Spaces) with all five modules 
+In progress (Wks 12–
+28) 
+DQ1, DQ2, DQ3, DQ4 
+Curated dataset of 25–30 synthetic 
+handwritten prescription images 
+Partially done (2 
+images) 
+DQ1 
+OpenFDA RAG knowledge base (FAISS 
+index, ~1.37M chunks) 
+Complete DQ3 
+NetworkX salt-aware knowledge graph 
+(OpenFDA + DrugBank) 
+Complete DQ2 
+XAI Dashboard (SHAP analytical + LIME 
++ source attribution cards) 
+Complete DQ4 
+Evaluation Dashboard (WER/CER, 
+Precision@K, Recall@K, BERTScore) 
+Complete DQ1, DQ2, DQ3 
+Questionnaire instrument (5 Likert items + 
+free text, v1.2) 
+Complete (ethics 
+approved) 
+DQ4 
+Quantitative evaluation results report 
+(technical metrics) 
+Planned (Wks 29–35) DQ1–DQ4 
+Qualitative thematic analysis of 
+pharmacist feedback 
+Planned (Wks 29–35) DQ4 
+Final dissertation (literature review, 
+design, implementation, evaluation) 
+Planned (due 2 Nov 
+2026) 
+DQ1–DQ4 
+Video demonstration of prototype (10 
+min) 
+Planned (Wk 40) DQ1–DQ4 
+Ethics documents (Application 18274, 
+PIS, Consent, Risk Assessment, 
+Questionnaire) 
+Complete Governance 
+Drug-drug interaction engine (future 
+scope, requires RxNorm/SIDER) 
+Not planned for MVP DQ2 extension 
+Automated RAG index rebuilding pipeline Not planned for MVP DQ3 extension 
+Expanded prescription dataset (>30 
+images, diverse handwriting styles) 
+Partially done DQ1 
+ 
+ 
+  
+
+===== PAGE 20 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+D.  Project Plan 
+The Gantt chart below includes all project activities from the DA Matching Form (Week 2) to the end of 
+the project (Week 40). All submission dates are from the assessment schedule given by the University. 
+Activity Start End Deadline / 
+Weight Status Notes 
+DA Matching Form Wk 1 Wk 2 Mon 9 Feb 2026 ✅ 
+Complete 
+— 
+Literature Review & 
+Requirement Analysis 
+Wk 3 Wk 7 Supports 
+proposal ✅ 
+Complete 
+— 
+Proposal Submission Wk 7 Wk 8 10% — Mon 23 
+Mar 2026 ✅ 
+Complete 
+v1.8 approved by DA/DL 
+Ethics Approval Form 
+Submission 
+Wk 9 Wk 
+11 
+Mon 13 Apr 
+2026 ✅ 
+Complete 
+Application 18274 signed 
+29 Apr 
+Dataset Collection and 
+Preprocessing 
+Wk 8 Wk 
+29 
+Ongoing ⚠ Partial 2/25–30 prescription 
+images done — critical gap 
+OCR Module Development 
+(TrOCR + fallback chain) 
+Wk 
+12 
+Wk 
+16 
+Internal 
+milestone ✅ 
+Complete 
+Deployed on HF Spaces 
+Specification and Design 
+Report 
+Wk 
+14 
+Wk 
+16 
+10% — Mon 18 
+May 2026 🔄 In 
+progress 
+This document 
+RAG Knowledge Retrieval 
+Module (FAISS + Groq) 
+Wk 
+17 
+Wk 
+20 
+Internal 
+milestone ✅ 
+Complete 
+1.37M chunks indexed 
+Generic Recommendation 
+Module  
+Wk 
+21 
+Wk 
+24 
+Internal 
+milestone ✅ 
+Complete 
+Score formula validated 
+XAI and Prototype 
+Integration  
+Wk 
+25 
+Wk 
+28 
+Internal 
+milestone ✅ 
+Complete 
+Inline XAI in Step 4 
+Poster Presentation Wk 
+26 
+Wk 
+28 
+10% — Mon 10 
+Aug 2026 📋 
+Planned 
+— 
+Complete Synthetic 
+Dataset (25–30 
+prescriptions) 
+Wk 
+28 
+Wk 
+29 
+Internal 
+milestone 📋 
+Planned 
+Must complete before 
+evaluation phase 
+Pharmacist Evaluation 
+Sessions (n=5) 
+Wk 
+29 
+Wk 
+32 
+Internal 
+milestone 📋 
+Planned 
+HITL verification + 
+questionnaire 
+Quantitative Analysis 
+(WER, P@K, BERTScore) 
+Wk 
+33 
+Wk 
+34 
+Internal 
+milestone 📋 
+Planned 
+Evaluation Dashboard 
+Qualitative Analysis  Wk 
+34 
+Wk 
+35 
+Internal 
+milestone 📋 
+Planned 
+Thematic analysis of 
+feedback 
+Drafts Review Wk 
+35 
+Wk 
+36 
+Mon 5 Oct 2026 📋 
+Planned 
+Supervisor feedback cycle 
+IT Artefact Submission Wk 
+39 
+Wk 
+40 
+10% — Mon 2 
+Nov 2026 📋 
+Planned 
+Final prototype package 
+Video Demonstration Wk 
+39 
+Wk 
+40 
+10% — Mon 2 
+Nov 2026 📋 
+Planned 
+10-min walkthrough 
+Dissertation Submission Wk 
+37 
+Wk 
+40 
+50% — Mon 2 
+Nov 2026 📋 
+Planned 
+Final dissertation 
+Status key: ✅ Complete  |  ⚠ Partially complete (action required)  |  🔄 In progress  |  📋 Planned 
+
+===== PAGE 21 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+ 
+ 
+Fig 4 - Project Progress Dashboard 
+Critical Path and Risk Flags 
+The most important gap remaining is completion of the synthetic prescription dataset (currently 5 - 25/30 
+images). This data set is needed for WER/CER benchmarking (DQ1) and for the pharmacist evaluation 
+sessions (DQ4).  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+===== PAGE 22 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+References 
+Abo El-Enen, M., Saad, S. and Nazmy, T. (2025) ‘A survey on retrieval-augmentation generation (RAG) 
+models for healthcare applications’, Neural Computing and Applications, 37(33), pp. 28191–28267. 
+Available at: https://doi.org/10.1007/s00521 025-11666-9 
+Ali, U., Ranmbail, S., Nadeem, M., Ishfaq, H., Ramzan, M.U. and Ali, W. (2024) Leveraging deep learning 
+with multi-head attention for accurate extraction of medicine from handwritten prescriptions. arXiv preprint 
+arXiv:2412.18199 [cs.CV]. Available at: https://doi.org/10.48550/arXiv.2412.18199 
+Alu, F.F. and Oluwadare, S. (2026) ‘An auditable and source-verified framework for clinical AI decision 
+support: integrating retrieval-augmented generation with data provenance’, Frontiers in Artificial 
+Intelligence, 9, p. 1737532. Available at: https://doi.org/10.3389/frai.2026.1737532 
+Chalasani, S.H., Syed, J., Ramesh, M., Patil, V. and Pramod Kumar, T.M. (2023) ‘Artificial intelligence in 
+the field of pharmacy practice: a literature review’, Exploratory Research in Clinical and Social Pharmacy, 
+12, p. 100346. Available at: https://doi.org/10.1016/j.rcsop.2023.100346 
+Chumble, S., Fatima, I.N. and Dilip, G. (2025) ‘Medicine recommendation system’, International Journal 
+of Advanced Research in Computer and Communication Engineering, 14(11). Available at: 
+https://doi.org/10.17148/IJARCCE.2025.141114 
+Creswell, J.W. and Clark, V.L.P. (2017) Designing and Conducting Mixed Methods Research. 3rd edn. 
+Thousand Oaks: SAGE. 
+Gong, F., Wang, M., Wang, H., Wang, S. and Liu, M. (2020) SMR: medical knowledge graph embedding 
+for safe medicine recommendation. arXiv preprint arXiv:1710.05980 [cs.IR]. Available at: 
+https://doi.org/10.48550/arXiv.1710.05980. 
+Kadi, H., Abdellatif, A., Kemajou Njamen, D.I. and Pereme, F. (2025) ‘Automatic extraction of SmPC 
+document for IDMP data model construction using foundation LLM and RAG: a preliminary experiment 
+for pharmaceutical regulatory affairs’, Frontiers in Medicine, 12, p. 1598979. Available at: 
+https://doi.org/10.3389/fmed.2025.1598979 
+Merkys, A., Vaitkus, A., Grybauskas, A. et al. (2023) ‘Graph isomorphism-based algorithm for cross-
+checking chemical and crystallographic descriptions’, Journal of Cheminformatics, 15, p. 25. Available at: 
+https://doi.org/10.1186/s13321-023-00692-1 
+Nagendran, M., Festor, P., Komorowski, M., Gordon, A.C. and Faisal, A.A. (2023) ‘Quantifying the impact 
+of AI recommendations with explanations on prescription decision making’, NPJ Digital Medicine, 6(1), p. 
+206. Available at: https://doi.org/10.1038/s41746-023-00955-z 
+Peffers, K., Tuunanen, T., Rothenberger, M.A. and Chatterjee, S. (2007) ‘A design science research 
+methodology for information systems research’, Journal of Management Information Systems, 24(3), pp. 
+45–77. 
+Pham, D.K. and Vo, B.Q. (2024) Towards reliable medical question answering: techniques and challenges 
+in mitigating hallucinations in language models. arXiv preprint arXiv:2408.13808 [cs.CL]. Available at: 
+https://doi.org/10.48550/arXiv.2408.13808 
+Phan Van, P., Nguyen Minh, D., An Dinh Ngoc and Phan Thanh, H. (2024) Rx Strategist: prescription 
+verification using LLM agents system. arXiv preprint arXiv:2409.03440 [cs.CL]. Available at: 
+https://doi.org/10.48550/arXiv.2409.03440 
+
+===== PAGE 23 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+Sadeghi, Z., Alizadehsani, R., CIFCI, M.A., Kausar, S., Rehman, R., Mahanta, P., Bora, P.K., Almasri, A., 
+Alkhawaldeh, R.S., Hussain, S., Alatas, B., Shoeibi, A., Moosaei, H., Hladík, M., Nahavandi, S. and 
+Pardalos, P.M. (2024) ‘A review of explainable artificial intelligence in healthcare’, Computers and 
+Electrical Engineering, 118, p. 109370. Available at: https://doi.org/10.1016/j.compeleceng.2024.109370 
+Tun, H.M., Rahman, H.A., Naing, L. and Malik, O.A. (2025) ‘Trust in artificial intelligence-based clinical 
+decision support systems among health care workers: systematic review’, Journal of Medical Internet 
+Research, 27, p. e69678. Available at: https://doi.org/10.2196/69678 
+Zomorodi, M., Ghodsollahee, I., Martin, J.H., Talley, N.J., Salari, V., Plawiak, P., Rahimi, K. and Acharya, 
+U.R. (2023) RECOMED: a comprehensive pharmaceutical recommendation system. arXiv preprint 
+arXiv:2301.00280 [cs.IR]. Available at: https://doi.org/10.48550/arXiv.2301.00280 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+===== PAGE 24 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+Appendices 
+Appendix A — Ethics Documents Overview 
+   
+Appendix B — Questionnaire Instrument (Version 1.2) 
+The following is the complete pharmacist evaluation questionnaire administered via Microsoft 
+Forms. Responses are strictly anonymous; no PII is collected. 
+ 
+Prototype Evaluation (Likert Scale, 1 = Very Poor | 2 = Poor | 3 = Neutral | 4 = Good | 5 = Very 
+Good): 
+ 
+Q# Construct Statement 
+Q1 Usability and Interface The system interface is easy to navigate and use. 
+Q2 OCR Performance The system accurately extracts medication names and dosages 
+from handwritten prescription images. 
+Q3 Clinical Relevance The recommended generic alternatives are clinically appropriate 
+and relevant to the extracted prescriptions. 
+Q4 Explainability and 
+Transparency 
+How clear and trustworthy are the system explanations and 
+reasons provided? 
+Q5 Decision Support 
+Perception 
+The system provides meaningful support for clinical decision-
+making in a pharmaceutical context. 
+ 
+Free-text field: Please share any additional comments, concerns, or suggestions regarding the 
+prototype. (Optional) 
+ 
+ 
+ 
+ 
+
+
+===== PAGE 25 =====
+         MSc Information Systems Management Specification and Design Report 
+ 
+CSCK700 Computer Science Capstone Project January 2026 B Page 
+Appendix C — Participant Information Sheet Summary 
+Title of Study: Computer Science — Design and Evaluation of an AI-Powered Pharma Assistant.  
+Version 1.0; 13 April 2026.  
+   
+Appendix D — Risk Assessment Summary 
+ 
+Identified Hazard Initial Risk 
+(L×C) Key Mitigation Residual Risk 
+(L×C) 
+Lone/Remote Working isolation 4 Weekly MS Teams supervision 
+with Dr Nazmul Hussain 
+2 
+Ergonomic / Screen Exposure 
+(DSE) 
+6 University DSE safety guidance; 
+frequent breaks; ergonomic setup 
+4 
+Data Privacy and Anonymity 
+breach 
+4 Privacy by Design; no PII; 
+anonymous Microsoft Forms; M 
+Drive storage 
+3 
+AI Prototype / Clinical 
+Simulation error 
+4 Synthetic data only; HITL 
+verification layer; XAI dashboard 
+2 
+Data Integrity and Security loss 4 Encrypted University M Drive; 
+version control; restricted access 
+2 
+All residual risks are rated Low (L×C ≤ 4). No high or medium residual risks remain. 
+Appendix E — Interface Wireframes and Screenshots 
+ 
+

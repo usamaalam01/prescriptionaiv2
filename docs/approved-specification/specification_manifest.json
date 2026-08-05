@@ -1,0 +1,25 @@
+{
+  "document_title": "Design and Evaluation of an AI-Powered Pharma Assistant",
+  "report_type": "Specification and Design Report",
+  "version": "1.0",
+  "status": "approved",
+  "module": "CSCK700 Computer Science Capstone Project",
+  "programme": "MSc Information Systems Management",
+  "university": "University of Liverpool",
+  "author": "Muhammad Zohaib",
+  "student_number": "200052400",
+  "ethics_application": "18274",
+  "file": "Spec Design Report.pdf",
+  "source_path_note": "Authoritative copy held by student outside the application runtime (e.g. Downloads). Not served by PharmaAssist.",
+  "sha256": "fde3eac1d146f7171b64bb949a3c20425af2e33b1998cb4a76b3e0c491c1d91f",
+  "page_count": 25,
+  "clinical_knowledge_source": false,
+  "traceability_matrix": "docs/specification_traceability_matrix.md",
+  "application_architecture_note": "Approved Spec described Streamlit/HF Spaces; implemented artefact is FastAPI + React + PostgreSQL + SQLite catalog (documented conflict — do not re-platform).",
+  "evaluation_design_from_spec": {
+    "synthetic_prescriptions_planned": "25-30",
+    "pharmacist_participants_planned": 5,
+    "claims_143_prescriptions": false,
+    "claims_10_pharmacists": false
+  }
+}

@@ -1,0 +1,1155 @@
+{
+  "mode": "DRY_RUN",
+  "generated_at": "2026-08-03T13:39:44.441300+00:00",
+  "database": "D:\\Projects\\PharmaAssist\\data\\medicine_catalog.sqlite3",
+  "engine": "SQLite 3.50.4",
+  "tables_scanned": [
+    "products",
+    "medicines",
+    "label_dose_options"
+  ],
+  "products_scanned": 929832,
+  "products_total": 929832,
+  "products_with_route": 730643,
+  "products_without_route": 199189,
+  "pct_with_route": 78.58,
+  "distinct_raw_route_strings": 432,
+  "distinct_full_route_concepts_casefold": 374,
+  "distinct_atomic_route_components": 90,
+  "single_route_product_rows": 706287,
+  "multi_route_product_rows": 24356,
+  "empty_route_component_events": 0,
+  "malformed_delimiter_events": 0,
+  "duplicate_component_within_product": 0,
+  "products_with_gt3_atomic_routes": 1336,
+  "case_variant_full_string_groups": 58,
+  "case_variant_atomic_groups": 66,
+  "route_dosage_form_conflict_events": 5420,
+  "medicines_total": 41020,
+  "medicines_with_routes_json": 17772,
+  "distinct_atomic_in_medicines_json": 374,
+  "label_dose_distinct_routes": 11,
+  "top_raw_routes": [
+    [
+      "Oral",
+      226791
+    ],
+    [
+      "Topical",
+      161716
+    ],
+    [
+      "ORAL",
+      142397
+    ],
+    [
+      "TOPICAL",
+      65813
+    ],
+    [
+      "Intravenous",
+      19437
+    ],
+    [
+      "INTRAVENOUS",
+      14713
+    ],
+    [
+      "Intradermal; Subcutaneous",
+      8487
+    ],
+    [
+      "Ophthalmic",
+      5869
+    ],
+    [
+      "Subcutaneous",
+      5784
+    ],
+    [
+      "SUBCUTANEOUS",
+      5279
+    ],
+    [
+      "INTRAMUSCULAR",
+      4711
+    ],
+    [
+      "Intramuscular",
+      4415
+    ],
+    [
+      "Respiratory (inhalation)",
+      4324
+    ],
+    [
+      "Dental",
+      3959
+    ],
+    [
+      "OPHTHALMIC",
+      3489
+    ],
+    [
+      "Intramuscular; Intravenous",
+      3224
+    ],
+    [
+      "RESPIRATORY (INHALATION)",
+      2921
+    ],
+    [
+      "SUBLINGUAL",
+      2883
+    ],
+    [
+      "DENTAL",
+      2731
+    ],
+    [
+      "Intradermal; Percutaneous; Subcutaneous",
+      2105
+    ],
+    [
+      "PERCUTANEOUS",
+      2054
+    ],
+    [
+      "Nasal",
+      1830
+    ],
+    [
+      "Cutaneous",
+      1692
+    ],
+    [
+      "Rectal",
+      1562
+    ],
+    [
+      "INTRADERMAL",
+      1556
+    ],
+    [
+      "NASAL",
+      1452
+    ],
+    [
+      "Transdermal",
+      1211
+    ],
+    [
+      "TRANSDERMAL",
+      1139
+    ],
+    [
+      "CUTANEOUS",
+      1025
+    ],
+    [
+      "Hemodialysis",
+      987
+    ],
+    [
+      "Parenteral",
+      967
+    ],
+    [
+      "Extracorporeal",
+      959
+    ],
+    [
+      "Intravenous; Subcutaneous",
+      865
+    ],
+    [
+      "RECTAL",
+      864
+    ],
+    [
+      "Oral; Topical",
+      816
+    ],
+    [
+      "INFILTRATION",
+      787
+    ],
+    [
+      "Sublingual",
+      774
+    ],
+    [
+      "Intramuscular; Intravenous; Subcutaneous",
+      742
+    ],
+    [
+      "Auricular (otic)",
+      710
+    ],
+    [
+      "Vaginal",
+      707
+    ]
+  ],
+  "top_atomic_routes": [
+    [
+      "oral",
+      371763
+    ],
+    [
+      "topical",
+      232533
+    ],
+    [
+      "intravenous",
+      40018
+    ],
+    [
+      "subcutaneous",
+      25469
+    ],
+    [
+      "intramuscular",
+      14684
+    ],
+    [
+      "intradermal",
+      12757
+    ],
+    [
+      "ophthalmic",
+      11488
+    ],
+    [
+      "respiratory (inhalation)",
+      8161
+    ],
+    [
+      "dental",
+      7075
+    ],
+    [
+      "percutaneous",
+      5135
+    ],
+    [
+      "sublingual",
+      3790
+    ],
+    [
+      "nasal",
+      3314
+    ],
+    [
+      "cutaneous",
+      3041
+    ],
+    [
+      "rectal",
+      2662
+    ],
+    [
+      "transdermal",
+      2499
+    ],
+    [
+      "infiltration",
+      2202
+    ],
+    [
+      "vaginal",
+      1466
+    ],
+    [
+      "epidural",
+      1415
+    ],
+    [
+      "perineural",
+      1365
+    ],
+    [
+      "auricular (otic)",
+      1237
+    ],
+    [
+      "parenteral",
+      1181
+    ],
+    [
+      "extracorporeal",
+      1168
+    ],
+    [
+      "hemodialysis",
+      1007
+    ],
+    [
+      "intra-articular",
+      939
+    ],
+    [
+      "intraperitoneal",
+      798
+    ],
+    [
+      "buccal",
+      788
+    ],
+    [
+      "intralesional",
+      647
+    ],
+    [
+      "intracaudal",
+      622
+    ],
+    [
+      "soft tissue",
+      515
+    ],
+    [
+      "intrathecal",
+      503
+    ],
+    [
+      "irrigation",
+      483
+    ],
+    [
+      "intravascular",
+      259
+    ],
+    [
+      "submucosal",
+      256
+    ],
+    [
+      "not applicable",
+      242
+    ],
+    [
+      "intra-arterial",
+      216
+    ],
+    [
+      "intravitreal",
+      180
+    ],
+    [
+      "periodontal",
+      144
+    ],
+    [
+      "intravesical",
+      139
+    ],
+    [
+      "intraocular",
+      135
+    ],
+    [
+      "intrasynovial",
+      114
+    ]
+  ],
+  "top_case_variant_groups": [
+    [
+      "oral",
+      [
+        "ORAL",
+        "Oral"
+      ]
+    ],
+    [
+      "topical",
+      [
+        "TOPICAL",
+        "Topical"
+      ]
+    ],
+    [
+      "intravenous",
+      [
+        "INTRAVENOUS",
+        "Intravenous"
+      ]
+    ],
+    [
+      "subcutaneous",
+      [
+        "SUBCUTANEOUS",
+        "Subcutaneous"
+      ]
+    ],
+    [
+      "ophthalmic",
+      [
+        "OPHTHALMIC",
+        "Ophthalmic"
+      ]
+    ],
+    [
+      "intramuscular",
+      [
+        "INTRAMUSCULAR",
+        "Intramuscular"
+      ]
+    ],
+    [
+      "respiratory (inhalation)",
+      [
+        "RESPIRATORY (INHALATION)",
+        "Respiratory (inhalation)"
+      ]
+    ],
+    [
+      "dental",
+      [
+        "DENTAL",
+        "Dental"
+      ]
+    ],
+    [
+      "sublingual",
+      [
+        "SUBLINGUAL",
+        "Sublingual"
+      ]
+    ],
+    [
+      "nasal",
+      [
+        "NASAL",
+        "Nasal"
+      ]
+    ],
+    [
+      "cutaneous",
+      [
+        "CUTANEOUS",
+        "Cutaneous"
+      ]
+    ],
+    [
+      "rectal",
+      [
+        "RECTAL",
+        "Rectal"
+      ]
+    ],
+    [
+      "percutaneous",
+      [
+        "PERCUTANEOUS",
+        "Percutaneous"
+      ]
+    ],
+    [
+      "transdermal",
+      [
+        "TRANSDERMAL",
+        "Transdermal"
+      ]
+    ],
+    [
+      "intradermal",
+      [
+        "INTRADERMAL",
+        "Intradermal"
+      ]
+    ],
+    [
+      "vaginal",
+      [
+        "VAGINAL",
+        "Vaginal"
+      ]
+    ],
+    [
+      "infiltration",
+      [
+        "INFILTRATION",
+        "Infiltration"
+      ]
+    ],
+    [
+      "auricular (otic)",
+      [
+        "AURICULAR (OTIC)",
+        "Auricular (otic)"
+      ]
+    ],
+    [
+      "extracorporeal",
+      [
+        "EXTRACORPOREAL",
+        "Extracorporeal"
+      ]
+    ],
+    [
+      "parenteral",
+      [
+        "PARENTERAL",
+        "Parenteral"
+      ]
+    ],
+    [
+      "hemodialysis",
+      [
+        "HEMODIALYSIS",
+        "Hemodialysis"
+      ]
+    ],
+    [
+      "intraperitoneal",
+      [
+        "INTRAPERITONEAL",
+        "Intraperitoneal"
+      ]
+    ],
+    [
+      "perineural",
+      [
+        "PERINEURAL",
+        "Perineural"
+      ]
+    ],
+    [
+      "epidural",
+      [
+        "EPIDURAL",
+        "Epidural"
+      ]
+    ],
+    [
+      "buccal",
+      [
+        "BUCCAL",
+        "Buccal"
+      ]
+    ],
+    [
+      "irrigation",
+      [
+        "IRRIGATION",
+        "Irrigation"
+      ]
+    ],
+    [
+      "intra-articular",
+      [
+        "INTRA-ARTICULAR",
+        "Intra-articular"
+      ]
+    ],
+    [
+      "intrathecal",
+      [
+        "INTRATHECAL",
+        "Intrathecal"
+      ]
+    ],
+    [
+      "intralesional",
+      [
+        "INTRALESIONAL",
+        "Intralesional"
+      ]
+    ],
+    [
+      "submucosal",
+      [
+        "SUBMUCOSAL",
+        "Submucosal"
+      ]
+    ]
+  ],
+  "multi_route_samples": [
+    {
+      "product_id": 179156,
+      "medicine_id": 5216,
+      "route_raw": "Subcutaneous; Topical",
+      "components": [
+        "Subcutaneous",
+        "Topical"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179157,
+      "medicine_id": 5216,
+      "route_raw": "Subcutaneous; Topical",
+      "components": [
+        "Subcutaneous",
+        "Topical"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179158,
+      "medicine_id": 5216,
+      "route_raw": "Intramuscular; Topical",
+      "components": [
+        "Intramuscular",
+        "Topical"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179163,
+      "medicine_id": 5216,
+      "route_raw": "Subcutaneous; Topical",
+      "components": [
+        "Subcutaneous",
+        "Topical"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179168,
+      "medicine_id": 5216,
+      "route_raw": "Intramuscular; Topical",
+      "components": [
+        "Intramuscular",
+        "Topical"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179169,
+      "medicine_id": 5216,
+      "route_raw": "Subcutaneous; Topical",
+      "components": [
+        "Subcutaneous",
+        "Topical"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179170,
+      "medicine_id": 5216,
+      "route_raw": "Subcutaneous; Topical",
+      "components": [
+        "Subcutaneous",
+        "Topical"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179171,
+      "medicine_id": 5216,
+      "route_raw": "Subcutaneous; Topical",
+      "components": [
+        "Subcutaneous",
+        "Topical"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179178,
+      "medicine_id": 5216,
+      "route_raw": "Intramuscular; Topical",
+      "components": [
+        "Intramuscular",
+        "Topical"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179179,
+      "medicine_id": 5216,
+      "route_raw": "Subcutaneous; Topical",
+      "components": [
+        "Subcutaneous",
+        "Topical"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179184,
+      "medicine_id": 5216,
+      "route_raw": "Subcutaneous; Topical",
+      "components": [
+        "Subcutaneous",
+        "Topical"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179189,
+      "medicine_id": 5216,
+      "route_raw": "Subcutaneous; Topical",
+      "components": [
+        "Subcutaneous",
+        "Topical"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179190,
+      "medicine_id": 5216,
+      "route_raw": "Intramuscular; Oral; Topical",
+      "components": [
+        "Intramuscular",
+        "Oral",
+        "Topical"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179191,
+      "medicine_id": 5216,
+      "route_raw": "Intramuscular; Oral; Topical",
+      "components": [
+        "Intramuscular",
+        "Oral",
+        "Topical"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179203,
+      "medicine_id": 5216,
+      "route_raw": "Subcutaneous; Topical",
+      "components": [
+        "Subcutaneous",
+        "Topical"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179221,
+      "medicine_id": 5216,
+      "route_raw": "Subcutaneous; Topical",
+      "components": [
+        "Subcutaneous",
+        "Topical"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179223,
+      "medicine_id": 5216,
+      "route_raw": "Subcutaneous; Topical",
+      "components": [
+        "Subcutaneous",
+        "Topical"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179246,
+      "medicine_id": 5216,
+      "route_raw": "Subcutaneous; Topical",
+      "components": [
+        "Subcutaneous",
+        "Topical"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179248,
+      "medicine_id": 5216,
+      "route_raw": "Subcutaneous; Topical",
+      "components": [
+        "Subcutaneous",
+        "Topical"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179249,
+      "medicine_id": 5216,
+      "route_raw": "Subcutaneous; Topical",
+      "components": [
+        "Subcutaneous",
+        "Topical"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179258,
+      "medicine_id": 517,
+      "route_raw": "Oral; Subcutaneous",
+      "components": [
+        "Oral",
+        "Subcutaneous"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179259,
+      "medicine_id": 517,
+      "route_raw": "Oral; Subcutaneous",
+      "components": [
+        "Oral",
+        "Subcutaneous"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179289,
+      "medicine_id": 18498,
+      "route_raw": "Intramuscular; Subcutaneous",
+      "components": [
+        "Intramuscular",
+        "Subcutaneous"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179290,
+      "medicine_id": 18498,
+      "route_raw": "Intramuscular; Subcutaneous",
+      "components": [
+        "Intramuscular",
+        "Subcutaneous"
+      ],
+      "source": "DrugBank"
+    },
+    {
+      "product_id": 179291,
+      "medicine_id": 3413,
+      "route_raw": "Intravenous; Subcutaneous",
+      "components": [
+        "Intravenous",
+        "Subcutaneous"
+      ],
+      "source": "DrugBank"
+    }
+  ],
+  "conflict_samples": [
+    {
+      "product_id": 296,
+      "route_component": "ORAL",
+      "dosage_form": "CAPSULE, GELATIN COATED",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 1378,
+      "route_component": "ORAL",
+      "dosage_form": "CAPSULE, GELATIN COATED",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 1379,
+      "route_component": "ORAL",
+      "dosage_form": "CAPSULE, GELATIN COATED",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 1472,
+      "route_component": "TOPICAL",
+      "dosage_form": "TABLET, SOLUBLE",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 1473,
+      "route_component": "TOPICAL",
+      "dosage_form": "TABLET, SOLUBLE",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 1474,
+      "route_component": "TOPICAL",
+      "dosage_form": "TABLET, SOLUBLE",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 1475,
+      "route_component": "TOPICAL",
+      "dosage_form": "TABLET, SOLUBLE",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 1476,
+      "route_component": "TOPICAL",
+      "dosage_form": "TABLET, SOLUBLE",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 1477,
+      "route_component": "TOPICAL",
+      "dosage_form": "TABLET, SOLUBLE",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 1479,
+      "route_component": "ORAL",
+      "dosage_form": "CHEWABLE GEL",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 1605,
+      "route_component": "ORAL",
+      "dosage_form": "GEL",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 1924,
+      "route_component": "ORAL",
+      "dosage_form": "INJECTION, POWDER, FOR SOLUTION",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 1940,
+      "route_component": "TOPICAL",
+      "dosage_form": "TABLET",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 1956,
+      "route_component": "ORAL",
+      "dosage_form": "CHEWABLE GEL",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 1957,
+      "route_component": "ORAL",
+      "dosage_form": "CHEWABLE GEL",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 2347,
+      "route_component": "ORAL",
+      "dosage_form": "CAPSULE, GELATIN COATED",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 2348,
+      "route_component": "ORAL",
+      "dosage_form": "CAPSULE, GELATIN COATED",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 2349,
+      "route_component": "ORAL",
+      "dosage_form": "CAPSULE, GELATIN COATED",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 2350,
+      "route_component": "ORAL",
+      "dosage_form": "CAPSULE, GELATIN COATED",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 2351,
+      "route_component": "ORAL",
+      "dosage_form": "CAPSULE, GELATIN COATED",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 2352,
+      "route_component": "ORAL",
+      "dosage_form": "CAPSULE, GELATIN COATED",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 2353,
+      "route_component": "ORAL",
+      "dosage_form": "CAPSULE, GELATIN COATED",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 2354,
+      "route_component": "ORAL",
+      "dosage_form": "CAPSULE, GELATIN COATED",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 2355,
+      "route_component": "ORAL",
+      "dosage_form": "CAPSULE, GELATIN COATED",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 2356,
+      "route_component": "ORAL",
+      "dosage_form": "CAPSULE, GELATIN COATED",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 2357,
+      "route_component": "ORAL",
+      "dosage_form": "CAPSULE, GELATIN COATED",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 2358,
+      "route_component": "ORAL",
+      "dosage_form": "CAPSULE, GELATIN COATED",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 2359,
+      "route_component": "ORAL",
+      "dosage_form": "CAPSULE, GELATIN COATED",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 2360,
+      "route_component": "ORAL",
+      "dosage_form": "CAPSULE, GELATIN COATED",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 2361,
+      "route_component": "ORAL",
+      "dosage_form": "CAPSULE, GELATIN COATED",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 2362,
+      "route_component": "ORAL",
+      "dosage_form": "CAPSULE, GELATIN COATED",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 5125,
+      "route_component": "ORAL",
+      "dosage_form": "OINTMENT",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 5128,
+      "route_component": "ORAL",
+      "dosage_form": "GEL",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 5483,
+      "route_component": "ORAL",
+      "dosage_form": "GEL",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 5484,
+      "route_component": "ORAL",
+      "dosage_form": "GEL",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 5485,
+      "route_component": "ORAL",
+      "dosage_form": "GEL",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 5486,
+      "route_component": "ORAL",
+      "dosage_form": "GEL",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 5487,
+      "route_component": "ORAL",
+      "dosage_form": "GEL",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 5488,
+      "route_component": "ORAL",
+      "dosage_form": "GEL",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    },
+    {
+      "product_id": 5489,
+      "route_component": "ORAL",
+      "dosage_form": "GEL",
+      "issue_code": "ROUTE_DOSAGE_FORM_CONFLICT",
+      "source": "FDA_NDC"
+    }
+  ],
+  "label_dose_route_top": [
+    {
+      "route": "Oral",
+      "count": 12497
+    },
+    {
+      "route": "Injection",
+      "count": 9701
+    },
+    {
+      "route": "Topical",
+      "count": 3508
+    },
+    {
+      "route": "Other",
+      "count": 2254
+    },
+    {
+      "route": "Ophthalmic",
+      "count": 328
+    },
+    {
+      "route": "Inhalation",
+      "count": 294
+    },
+    {
+      "route": "Rectal",
+      "count": 217
+    },
+    {
+      "route": "Not applicable",
+      "count": 87
+    },
+    {
+      "route": "Nasal",
+      "count": 70
+    },
+    {
+      "route": "Otic",
+      "count": 17
+    },
+    {
+      "route": "Transdermal",
+      "count": 15
+    }
+  ],
+  "safety": {
+    "authoritative_tables_modified": false,
+    "writes_performed": false,
+    "note": "DRY_RUN only \u2014 no STAGE/APPLY"
+  }
+}

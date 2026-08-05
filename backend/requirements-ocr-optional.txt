@@ -1,0 +1,22 @@
+# Real OCR / vision stack (optional — large or platform-specific)
+
+# Google Vision uses REST (httpx + google-auth) — already in requirements.txt.
+# Service account JSON or API key via .env:
+#   GOOGLE_APPLICATION_CREDENTIALS=C:/path/to/sa.json
+#   GOOGLE_VISION_API_KEY=...
+
+# Preprocess accel (deskew) — recommended on all platforms:
+#   pip install numpy opencv-python-headless
+
+# Paddle detect / TrOCR — often unavailable on Windows Python 3.14; enable in .env
+# and install on a supported Python 3.10–3.12 venv when possible:
+#   ENABLE_PADDLE_DETECT=true
+#   ENABLE_TROCR_RETRY=true
+#   OCR_PREPROCESS_DESKEW=true
+#   OCR_PREPROCESS_INK_ISOLATE=true
+#   OCR_PREPROCESS_BINARIZE=true
+# paddlepaddle / paddleocr — see requirements-ml-optional.txt
+# transformers torch torchvision — TrOCR Large Handwritten
+
+numpy>=1.26
+opencv-python-headless>=4.8

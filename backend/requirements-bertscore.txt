@@ -1,0 +1,7 @@
+# Optional BertScore (Summary Analytics semantic similarity).
+# Pulls PyTorch + transformers — keep out of lean requirements.txt.
+#
+# Docker installs this via Dockerfile when BERTSCORE=1 (default for compose).
+# Local: pip install -r requirements-bertscore.txt && ENABLE_BERTSCORE=true
+
+bert-score==0.3.13

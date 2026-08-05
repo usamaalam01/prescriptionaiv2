@@ -1,0 +1,19 @@
+{
+  "mode": "STAGE",
+  "run_id": "177701e1-5d72-4298-b66f-7659ff0769a8",
+  "generated_at": "2026-08-03T13:44:57.153504+00:00",
+  "staging_db": "D:\\Projects\\PharmaAssist\\data\\route_cleaning_staging.sqlite3",
+  "products_scanned": 929832,
+  "products_with_route": 730643,
+  "products_without_route": 199189,
+  "route_master_rows": 90,
+  "route_alias_rows": 156,
+  "product_route_rows": 962687,
+  "audit_rows": 488079,
+  "review_required_events": 204609,
+  "authoritative_catalog_modified": false,
+  "reconciliation": {
+    "products_scanned_equals_total": true,
+    "products_total": 929832
+  }
+}

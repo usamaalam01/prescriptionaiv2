@@ -1,0 +1,14 @@
+# Optional heavy OCR/VLM dependencies (NOT installed by default)
+
+# Real PaddleOCR / TrOCR / Qwen2.5-VL stacks are large and often need Python 3.10–3.12.
+# The app runs without these using labelled MOCK adapters.
+#
+# When ready (recommended: separate Python 3.12 venv):
+#   pip install paddlepaddle paddleocr
+#   pip install torch torchvision transformers pillow
+#   # Qwen2.5-VL: follow upstream model card; wire into MedicalParserAdapter._try_real
+#
+# Optional Summary Analytics free-text similarity (ENABLE_BERTSCORE=true):
+#   pip install bert-score
+#
+# Keep requirements.txt lean for the academic Windows baseline.

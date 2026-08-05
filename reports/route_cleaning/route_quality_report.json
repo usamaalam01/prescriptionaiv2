@@ -1,0 +1,33 @@
+{
+  "mode": "DRY_RUN",
+  "generated_at": "2026-08-03T13:39:44.441300+00:00",
+  "tables_scanned": [
+    "products",
+    "medicines",
+    "label_dose_options"
+  ],
+  "products_scanned": 929832,
+  "products_total": 929832,
+  "products_with_route": 730643,
+  "products_without_route": 199189,
+  "distinct_raw_route_values": 432,
+  "distinct_atomic_route_components": 90,
+  "case_variant_full_string_groups": 58,
+  "case_variant_atomic_groups": 66,
+  "single_route_products": 706287,
+  "multi_route_products": 24356,
+  "missing_routes": 199189,
+  "empty_route_components": 0,
+  "malformed_delimiters": 0,
+  "duplicate_components": 0,
+  "route_dosage_form_conflicts": 5420,
+  "proposed_automatic_normalizations": "casefold aliases only (see route_alias_candidates.csv)",
+  "review_required": "multi-route split + form conflicts (see route_review_required.csv)",
+  "rejected_mapping_candidates": 0,
+  "authoritative_data_modified": false,
+  "reconciliation": {
+    "every_product_row_scanned": true,
+    "products_scanned": 929832,
+    "products_total": 929832
+  }
+}

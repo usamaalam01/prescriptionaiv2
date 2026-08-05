@@ -1,0 +1,71 @@
+name: pharmaassist
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pharmaassist-postgres
+    environment:
+      POSTGRES_DB: pharmaassist
+      POSTGRES_USER: pharmaassist
+      POSTGRES_PASSWORD: pharmaassist_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pharmaassist -d pharmaassist"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pharmaassist-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      # Writable so SQLite can create -wal/-shm if a process opens without immutable=1
+      - ./data:/data
+      - ./storage:/app/storage
+    environment:
+      APP_ENV: development
+      APP_DEBUG: "true"
+      DATABASE_URL: postgresql+psycopg://pharmaassist:pharmaassist_dev_password@postgres:5432/pharmaassist
+      CORS_ORIGINS: http://localhost:8080,http://127.0.0.1:8080,http://localhost:5173,http://127.0.0.1:5173
+      DATA_DIR: /data
+      MEDICINE_CATALOG_DB: /data/medicine_catalog.sqlite3
+      OCR_ALLOW_MOCK_FALLBACK: "true"
+      OCR_PROFILE: production
+      OCR_PRIMARY: google_vision
+      OCR_FALLBACK_ORDER: tesseract
+      OCR_SPEC_PRIMARY: trocr
+      OCR_SPEC_FALLBACK_ORDER: google_vision,tesseract
+      ENABLE_PADDLE_DETECT: "false"
+      ENABLE_TROCR_RETRY: "true"
+      ENABLE_BERTSCORE: "true"
+      HF_HOME: /data/.cache/huggingface
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-only-change-me-jwt-secret-key-32chars}
+      FIELD_ENCRYPTION_KEY: ${FIELD_ENCRYPTION_KEY:-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}
+      GOOGLE_VISION_API_KEY: ${GOOGLE_VISION_API_KEY:-}
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pharmaassist-web
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+
+volumes:
+  postgres_data:

@@ -1,0 +1,32 @@
+# PharmaAssist — local academic prototype
+# University of Liverpool CSCK700 Capstone
+# Git/GitHub intentionally deferred until the app is working.
+
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+*.log
+postgres_data/
+
+# Large data + runtime artefacts — never commit (13 GB; downloaded at runtime
+# from the private HF dataset repo). Catalog SQLite, FAISS index, raw sources.
+data/
+storage/
+
+# Secrets — never commit.
+.hf_token
+**/google_credentials.json
+*.key
+*.pem
+*secret*
+deploy_secrets*
+
+# Old-project reference material — not part of this app.
+_reference-old-project/
