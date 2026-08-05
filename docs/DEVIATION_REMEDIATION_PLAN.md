@@ -10,10 +10,11 @@ approve.
 | Done | Unit | Result |
 |---|---|---|
 | ✅ | **U1 — semantic FAISS RAG (DQ3 path)** | Cleared **D5-rag-08**; partial **D5-rag-06 / D5-rag-02**. 2 validation passes (the 2nd, adversarial, found + fixed 3 defects incl. a real metric-comparability bug). Activate with `ENABLE_SEMANTIC_RAG=true`. |
+| ✅ | **U2 — real BERTScore in DQ3** | Cleared **D7-02** (fabricated metric, crit) + **D7-V1**; **finishes D5-rag-06** with U1. Real P/R/F1 (keyword 0.80, faiss 0.79), deterministic; honest availability. Activate with `ENABLE_BERTSCORE=true`. |
 
-**Recommended next:** **U2 — real BERTScore in DQ3** (builds directly on U1, finishes clearing D5-rag-06,
-and removes a *fabricated-metric* integrity problem — the highest-value class of fix). See the Decision
-Register for units that need a call before they can start.
+**Recommended next:** **U3 — resolve the fabricated DQ1 harness** — the *other* critical fabricated-metric
+integrity item. It's a **Decision** (drop DQ1 vs wire it to Google Vision), so it needs your call first —
+see the Decision Register. That clears both remaining fabricated-metric criticals.
 
 *(Deployment note: HF-Spaces deploy is **paused** — HF now gates Docker Spaces behind PRO; the Neon DB +
 runtime artefacts are staged and the app is deploy-ready for any container host. Unrelated to the units below.)*
@@ -79,14 +80,21 @@ fabricated-metric problems, which are the only non-negotiable fixes.*
   50-overlap chunker, catalogue-keyed) against the new catalogue's `label_sections` (41,020 medicines) —
   this is what closes D5-rag-01/02/04. The shipped index is the old ~10k-chunk **dev** index.
 
-### U2 — Compute real BERTScore in DQ3
-- **Clears:** D7-02 (crit), D7-V1. **Route:** Fix. **Deps:** U1.
-- **Approach:** in `run_dq3_rag_evaluation`, call the real `bertscore_optional.score_pairs(generated,
-  reference_SPL)` per condition; populate `bertscore_precision/recall/f1` instead of hard-coded `None`;
-  gate on `ENABLE_BERTSCORE`.
-- **Validate/Test:** DQ3 run on a sample pair yields non-None, in-range (0–1) BERTScore; deterministic
-  re-run matches.
-- **Effort:** L.
+### U2 — Compute real BERTScore in DQ3 ✅ DONE
+- **Cleared:** D7-02 (crit — fabricated metric), D7-V1; **finishes clearing D5-rag-06** (with U1).
+  **Route:** Fix. **Deps:** U1 ✅.
+- **As-built (delivered):** new `_compute_bertscore_for_condition(explanation, evidence, metrics)` in
+  `service.py` calls the existing `analytics/bertscore_optional.score_pairs` — **hypothesis** = the
+  generated explanation, **reference** = the concatenated retrieved FDA-SPL evidence. Replaces the
+  hard-coded `bertscore_precision/recall/f1 = None`. Availability is honest per condition:
+  `AVAILABLE` (scored), `NOT_CALCULATED` (no evidence → the `none` arm), `DEPENDENCY_UNAVAILABLE`
+  (flag off / package missing / scorer failed). Also fixed a latent bug: the `bertscore_f1`
+  `metric_envelope` passed no `value=`, so a computed F1 would never surface in the API response.
+  `bert-score==0.3.13` installed (DistilBERT scorer, CPU, no baseline rescale).
+- **Validated (all pass):** with `ENABLE_BERTSCORE=true` — `keyword` F1 = 0.8036, `faiss` F1 = 0.7878
+  (real, in [0,1]), `none` = `NOT_CALCULATED`; deterministic re-run matches (0.7878 == 0.7878). Flag
+  off → all `None`/unavailable, no compute, no crash. `test_research_evaluation.py` 16/16 green.
+- **Activate:** `ENABLE_BERTSCORE=true` (+ `ENABLE_SEMANTIC_RAG=true` for real corpus). **Effort:** L.
 
 ### U3 — Resolve the fabricated DQ1 harness *(Decision)*
 - **Clears:** D7-01 / D1-03 (crit — integrity). **Route:** Decision.
@@ -267,7 +275,7 @@ Full list in the audit doc's tables.
 | Unit | Clears | Route | Effort | Status |
 |---|---|---|---|---|
 | U1 RAG (semantic FAISS) | D5-rag-08 ✅; D5-rag-06/02 *partial* (BERTScore→U2; prod→U1b); D5-rag-01/04 deferred→U1b | Fix | L–XL | ✅ **done — validated (DQ3 path)** |
-| U2 Real BERTScore | D7-02, D7-V1 | Fix | L | ☐ |
+| U2 Real BERTScore | D7-02, D7-V1 (+ finishes D5-rag-06) | Fix | L | ✅ **done — validated** |
 | U3 DQ1 fabrication | D7-01/D1-03 | Decision | S/M | ☐ |
 | **U-TE Orange Book TE layer** | D3-02 (reframe), R28, DQ2 gold std (D7-03/04) | Fix + Doc | L–XL | ☐ *(leads Phase B)* |
 | U4 SMILES ingest | D3-04, D4-04 | Fix | L | ☐ *(now supporting)* |

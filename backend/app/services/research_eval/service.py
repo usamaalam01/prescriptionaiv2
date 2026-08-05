@@ -358,6 +358,44 @@ def _build_faiss_condition(query: str, corpus: list[dict[str, Any]]) -> list:
     return FAISSSPLRetriever(corpus).retrieve(query)
 
 
+def _compute_bertscore_for_condition(
+    explanation: str, evidence: list, metrics: dict[str, Any]
+) -> MetricAvailability:
+    """Populate metrics[bertscore_*] in place; return the availability verdict.
+
+    Hypothesis = the generated explanation; reference = the concatenation of the
+    retrieved evidence texts. Returns:
+      - DEPENDENCY_UNAVAILABLE when the flag is off or bert-score can't score,
+      - NOT_CALCULATED when there is no evidence/reference to score against,
+      - AVAILABLE when real precision/recall/f1 were computed.
+    """
+    if not evidence:
+        # No retrieved evidence → no reference text (the 'none' condition).
+        return MetricAvailability.NOT_CALCULATED
+
+    reference = " ".join((e.text or "") for e in evidence).strip()
+    if not reference or not (explanation or "").strip():
+        return MetricAvailability.NOT_CALCULATED
+
+    try:
+        from app.services.analytics.bertscore_optional import score_pairs
+
+        scored = score_pairs([explanation], [reference])
+    except Exception as exc:  # noqa: BLE001 - defensive; never fail a DQ3 run on scoring
+        logger.warning("BERTScore scoring raised (%s); leaving unavailable.", exc)
+        scored = None
+
+    if not scored:
+        # Flag off, package missing, or scorer failed — honest unavailable.
+        return MetricAvailability.DEPENDENCY_UNAVAILABLE
+
+    s = scored[0]
+    metrics["bertscore_precision"] = s["precision"]
+    metrics["bertscore_recall"] = s["recall"]
+    metrics["bertscore_f1"] = s["f1"]
+    return MetricAvailability.AVAILABLE
+
+
 def run_dq3_rag_evaluation(
     db: Session,
     *,
@@ -382,16 +420,11 @@ def run_dq3_rag_evaluation(
             "bertscore_recall": None,
             "bertscore_f1": None,
         }
-        bert_avail = MetricAvailability.DEPENDENCY_UNAVAILABLE
-        try:
-            import importlib.util
-
-            if importlib.util.find_spec("bert_score") is not None:
-                # Heavy dependency present but not auto-run in CI; leave unavailable
-                # until an explicit BERTScore evaluation path is invoked.
-                bert_avail = MetricAvailability.NOT_CALCULATED
-        except Exception:
-            bert_avail = MetricAvailability.DEPENDENCY_UNAVAILABLE
+        # U2 — real BERTScore: semantic agreement between the generated explanation
+        # (hypothesis) and the retrieved FDA-SPL evidence it cites (reference).
+        # Gated on ENABLE_BERTSCORE + bert-score installed; graceful None otherwise.
+        # The 'none' condition has no evidence, so no reference exists → unavailable.
+        bert_avail = _compute_bertscore_for_condition(explanation, evidence, metrics)
 
         run = RagEvaluationRun(
             id=str(uuid.uuid4()),
@@ -428,8 +461,9 @@ def run_dq3_rag_evaluation(
                     ),
                     "bertscore_f1": metric_envelope(
                         name="bertscore_f1",
+                        value=metrics["bertscore_f1"],
                         availability=bert_avail,
-                        note="Install bert-score to enable; not factual accuracy by itself.",
+                        note="Semantic agreement of the explanation with cited FDA evidence; not factual accuracy by itself.",
                     ),
                 },
             }

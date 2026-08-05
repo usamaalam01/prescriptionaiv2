@@ -215,6 +215,13 @@ The delivered artefact is a **well-engineered FastAPI + React + PostgreSQL syste
 
 #### `D7-02` — Evaluation harness (DQ1–DQ4)  ·  _critical_
 
+> **U2 status — CLEARED.** `run_dq3_rag_evaluation` now computes real BERTScore per condition via
+> `_compute_bertscore_for_condition` (hypothesis = generated explanation, reference = the retrieved
+> FDA-SPL evidence it cites), gated on `ENABLE_BERTSCORE`. The hard-coded `None` is gone; availability
+> is honest (`AVAILABLE` / `NOT_CALCULATED` for the no-evidence arm / `DEPENDENCY_UNAVAILABLE`).
+> Validated: keyword F1 = 0.80, faiss F1 = 0.79, deterministic. (The B3 ≥ 0.80 *acceptance threshold*
+> is encoded separately in **U12**.)
+
 - **Spec ref (O6, A9 (Quantitative-RAG), B3 (DQ3), B4 Tab 2):** A9/DQ3: 'BERTScore - Semantic alignment between generated drug explanations and official OpenFDA regulatory records'; B3 target 'BERTScore F1 ... generated explanation and reference OpenFDA label ... >= 0.80'.
 - **As-built:** The DQ3 harness never computes BERTScore. run_dq3_rag_evaluation hard-codes bertscore_precision/recall/f1 = None; even when it detects bert_score is importable it deliberately sets availability to NOT_CALCULATED with a comment that it is 'not auto-run ... until an explicit BERTScore evaluation path is invoked' — but no such path exists. DQ3 instead reports citation_coverage and unsupported_claim_rate. A real BERTScorer does exist, but only in the separate pharmacist Summary Analytics path (analytics/bertscore_optional.py + compute.py), where it compares OCR-extracted instruction text vs pharmacist-confirmed instruction text ('Full prescription OCR vs pharmacist-accepted instructions') — an OCR-agreement measure, NOT the spec's generated-explanation-vs-OpenFDA-label comparison.
 - **Research/DQ impact:** O6/DQ3: BERTScore F1 >= 0.80 semantic alignment of generated explanations to OpenFDA labels is unsupportable; DQ3 in the dashboard shows a permanently-unavailable BERTScore slot plus substitute metrics the spec did not approve.
