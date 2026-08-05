@@ -10,7 +10,7 @@ approve.
 | Done | Unit | Result |
 |---|---|---|
 | ✅ | **U1 — semantic FAISS RAG (DQ3 path)** | Cleared **D5-rag-08**; partial **D5-rag-06 / D5-rag-02**. 2 validation passes (the 2nd, adversarial, found + fixed 3 defects incl. a real metric-comparability bug). Activate with `ENABLE_SEMANTIC_RAG=true`. |
-| ◑ | **U2 — real BERTScore in DQ3 (PARTIAL)** | Removes the fabricated-`None` (mechanism real, deterministic, honest availability). **But NOT fully cleared:** the explanation echoes its evidence, so the score is partly *circular* (F1 ≈ 0.92 contained vs ≈ 0.77 independent) — spec's *generated-vs-reference-label* needs Groq (off); threshold → U12. **D7-02 / D7-V1 stay open.** 2nd (adversarial) validation surfaced this. Activate with `ENABLE_BERTSCORE=true`. |
+| ◑ | **U2 — real BERTScore in DQ3 (mechanism only; D7-02 still OPEN)** | Removed the **fabricated-`None`** (real, deterministic, gated metric; P/R/F1 surface + persist) — an integrity fix. **But the spec metric is in-substance unmet:** the explanation embeds its evidence → score is *circular* (F1 ≈ 0.92 contained vs ≈ 0.77 independent); reference truncated at ~512 tokens (0.91→0.47 if match buried); spec's *generated-vs-independent-label* needs Groq (off) + ≥0.80 threshold (U12). **Both substantive halves deferred → D7-02 / D7-V1 remain OPEN.** Two independent validations. Activate with `ENABLE_BERTSCORE=true`. |
 
 **Recommended next:** **U3 — resolve the fabricated DQ1 harness** — the *other* critical fabricated-metric
 integrity item. It's a **Decision** (drop DQ1 vs wire it to Google Vision), so it needs your call first —
@@ -85,12 +85,18 @@ fabricated-metric problems, which are the only non-negotiable fixes.*
 - **Effect:** removes the *fabricated-`None`* (real metric now computes) and **finishes D5-rag-06**
   (with U1). **Does NOT fully clear D7-02 / D7-V1** — see the circularity limitation below.
   **Route:** Fix. **Deps:** U1 ✅.
-- **⚠ Limitation found in U2's adversarial validation (circular reference):**
-  `build_explanation_from_evidence` embeds the retrieved evidence verbatim, so BERTScore(explanation,
-  evidence) is overlap-inflated — F1 ≈ 0.92 when the hypothesis contains the reference vs ≈ 0.77 for an
-  independent paraphrase. The spec (B3/A9) wants *generated explanation vs an independent reference
-  OpenFDA label*. Closing that needs the **Groq LLM narrative** (`ENABLE_SPEC_GROQ`, off) and/or an
-  independent reference — **folded into the deferred RAG/Groq unit**, not U2. The ≥ 0.80 threshold is U12.
+- **⚠ Limitations found across TWO independent adversarial validations of U2:**
+  1. *Circular reference:* `build_explanation_from_evidence` embeds the retrieved evidence verbatim, so
+     BERTScore(explanation, evidence) is overlap-inflated — F1 ≈ 0.92 (hypothesis contains reference) vs
+     ≈ 0.77 (independent paraphrase). Spec (B3/A9) wants *generated explanation vs an independent
+     reference OpenFDA label* — **both** the hypothesis (needs a Groq LLM narrative, `ENABLE_SPEC_GROQ`
+     off) and the reference (independent label) are non-spec. Folded into the deferred **RAG/Groq unit**.
+  2. *512-token truncation:* the DistilBERT scorer truncates at ~512 tokens (measured F1 0.91→0.47 when
+     the match is buried past the limit). U2 now caps the reference to a defined ~1800-char window so the
+     truncation is explicit, not silent.
+  3. *Threshold:* the B3 ≥ 0.80 acceptance gate is **U12**.
+  **Net:** U2 removes the *fabrication* only; the DQ3 BERTScore as specified is still produced by no code
+  path → **D7-02 / D7-V1 remain open** (not "finished").
 - **As-built (delivered):** new `_compute_bertscore_for_condition(explanation, evidence, metrics)` in
   `service.py` calls the existing `analytics/bertscore_optional.score_pairs` — **hypothesis** = the
   generated explanation, **reference** = the concatenated retrieved FDA-SPL evidence. Replaces the

@@ -369,15 +369,20 @@ def _compute_bertscore_for_condition(
       - NOT_CALCULATED when there is no evidence/reference to score against,
       - AVAILABLE when real precision/recall/f1 were computed.
 
-    KNOWN LIMITATION (partial-conformance to spec B3/A9): the current explanation
-    (`build_explanation_from_evidence`) embeds the retrieved evidence text verbatim,
-    so scoring it against that same evidence is partly *circular* — the F1 is
-    overlap-inflated (measured ~0.92 vs ~0.77 for an independent paraphrase) and is
-    NOT yet the spec's "generated explanation vs reference OpenFDA label" measure.
-    Full conformance needs an independently-generated narrative (Groq LLM,
-    ENABLE_SPEC_GROQ) and/or an independent reference label — tracked with the RAG
-    unit, not U2. U2 delivers the real *mechanism*; the reference semantics are the
-    remaining gap.
+    KNOWN LIMITATIONS (partial-conformance to spec B3/A9):
+    1. *Circular reference:* the current explanation (`build_explanation_from_evidence`)
+       embeds the retrieved evidence text verbatim, so scoring it against that same
+       evidence is overlap-inflated (F1 ~0.92 vs ~0.77 for an independent paraphrase)
+       and is NOT yet the spec's "generated explanation vs reference OpenFDA label"
+       measure. Full conformance needs an independently-generated narrative (Groq LLM,
+       ENABLE_SPEC_GROQ) and/or an independent reference label — tracked with the RAG
+       unit, not U2.
+    2. *512-token truncation:* the DistilBERT scorer truncates each input at ~512
+       tokens. A multi-chunk reference would be silently truncated (tail content
+       ignored — measured F1 0.91→0.47 when the match is buried past the limit). We
+       therefore cap the reference to the first ~1800 chars (a defined, ~512-token
+       window) so the truncation is explicit and reproducible rather than silent.
+    U2 delivers the real *mechanism*; the reference semantics are the remaining gap.
     """
     if not evidence:
         # No retrieved evidence → no reference text (the 'none' condition).
@@ -385,7 +390,13 @@ def _compute_bertscore_for_condition(
 
     reference = " ".join((e.text or "") for e in evidence).strip()
     if not reference or not (explanation or "").strip():
+        # NB: an all-empty-text evidence list also lands here and is reported the
+        # same as the no-evidence 'none' arm (NOT_CALCULATED) — a known conflation.
         return MetricAvailability.NOT_CALCULATED
+
+    # Make the DistilBERT 512-token truncation explicit/bounded instead of silent.
+    _REF_CHAR_CAP = 1800
+    reference = reference[:_REF_CHAR_CAP]
 
     try:
         from app.services.analytics.bertscore_optional import score_pairs
@@ -448,8 +459,20 @@ def run_dq3_rag_evaluation(
                     **metrics,
                     "bertscore_availability": bert_avail.value,
                     "note": "BERTScore measures semantic agreement, not factual accuracy alone.",
+                    # Persist the honest caveats in the stored evidence row (not just
+                    # the transient API response) — this is an auditable research harness.
+                    "bertscore_caveats": (
+                        "Partial conformance: (1) explanation embeds its cited evidence "
+                        "verbatim, so the score is overlap-inflated (circular), not the "
+                        "spec's generated-vs-independent-label measure; (2) reference is "
+                        "capped at ~512 tokens (DistilBERT limit). Full conformance needs "
+                        "an independent LLM narrative (Groq) + the >=0.80 threshold (U12)."
+                    ),
                 }
             ),
+            # NB: row-level availability reflects that SOME DQ3 metrics (citation_coverage,
+            # unsupported_claim_rate) are always AVAILABLE — even on the 'none' arm. The
+            # BERTScore-specific verdict is bertscore_availability above, which may differ.
             availability=MetricAvailability.AVAILABLE.value,
         )
         db.add(run)
