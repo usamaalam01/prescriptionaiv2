@@ -215,12 +215,21 @@ The delivered artefact is a **well-engineered FastAPI + React + PostgreSQL syste
 
 #### `D7-02` — Evaluation harness (DQ1–DQ4)  ·  _critical_
 
-> **U2 status — CLEARED.** `run_dq3_rag_evaluation` now computes real BERTScore per condition via
-> `_compute_bertscore_for_condition` (hypothesis = generated explanation, reference = the retrieved
-> FDA-SPL evidence it cites), gated on `ENABLE_BERTSCORE`. The hard-coded `None` is gone; availability
-> is honest (`AVAILABLE` / `NOT_CALCULATED` for the no-evidence arm / `DEPENDENCY_UNAVAILABLE`).
-> Validated: keyword F1 = 0.80, faiss F1 = 0.79, deterministic. (The B3 ≥ 0.80 *acceptance threshold*
-> is encoded separately in **U12**.)
+> **U2 status — PARTIAL (mechanism done; reference semantics + threshold open).**
+> `run_dq3_rag_evaluation` now computes a **real** BERTScore per condition via
+> `_compute_bertscore_for_condition`, gated on `ENABLE_BERTSCORE` — the hard-coded `None` is gone and
+> availability is honest (`AVAILABLE` / `NOT_CALCULATED` for the no-evidence arm / `DEPENDENCY_UNAVAILABLE`).
+> **But two spec-conformance gaps remain, so this is NOT fully cleared:**
+> 1. **Circular reference (found in the U2 adversarial validation).** The explanation
+>    (`build_explanation_from_evidence`) embeds the retrieved evidence verbatim, so scoring
+>    explanation-vs-that-evidence is overlap-inflated (measured F1 ≈ 0.92 when the hypothesis contains
+>    the reference vs ≈ 0.77 for an independent paraphrase). The spec wants *generated explanation vs an
+>    independent reference OpenFDA label* — that needs the **Groq LLM narrative** (`ENABLE_SPEC_GROQ`,
+>    currently off) and/or an independent reference label. Tracked with the RAG/Groq unit, not U2.
+> 2. **The B3 ≥ 0.80 acceptance threshold** is encoded separately in **U12**.
+>
+> So U2 delivers the metric *mechanism* (removes the fabricated-`None`); the label-reference semantics
+> and threshold remain open. D7-V1 (the verifier twin of this finding) likewise stays open.
 
 - **Spec ref (O6, A9 (Quantitative-RAG), B3 (DQ3), B4 Tab 2):** A9/DQ3: 'BERTScore - Semantic alignment between generated drug explanations and official OpenFDA regulatory records'; B3 target 'BERTScore F1 ... generated explanation and reference OpenFDA label ... >= 0.80'.
 - **As-built:** The DQ3 harness never computes BERTScore. run_dq3_rag_evaluation hard-codes bertscore_precision/recall/f1 = None; even when it detects bert_score is importable it deliberately sets availability to NOT_CALCULATED with a comment that it is 'not auto-run ... until an explicit BERTScore evaluation path is invoked' — but no such path exists. DQ3 instead reports citation_coverage and unsupported_claim_rate. A real BERTScorer does exist, but only in the separate pharmacist Summary Analytics path (analytics/bertscore_optional.py + compute.py), where it compares OCR-extracted instruction text vs pharmacist-confirmed instruction text ('Full prescription OCR vs pharmacist-accepted instructions') — an OCR-agreement measure, NOT the spec's generated-explanation-vs-OpenFDA-label comparison.

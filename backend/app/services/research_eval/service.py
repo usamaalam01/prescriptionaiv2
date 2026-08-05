@@ -368,6 +368,16 @@ def _compute_bertscore_for_condition(
       - DEPENDENCY_UNAVAILABLE when the flag is off or bert-score can't score,
       - NOT_CALCULATED when there is no evidence/reference to score against,
       - AVAILABLE when real precision/recall/f1 were computed.
+
+    KNOWN LIMITATION (partial-conformance to spec B3/A9): the current explanation
+    (`build_explanation_from_evidence`) embeds the retrieved evidence text verbatim,
+    so scoring it against that same evidence is partly *circular* — the F1 is
+    overlap-inflated (measured ~0.92 vs ~0.77 for an independent paraphrase) and is
+    NOT yet the spec's "generated explanation vs reference OpenFDA label" measure.
+    Full conformance needs an independently-generated narrative (Groq LLM,
+    ENABLE_SPEC_GROQ) and/or an independent reference label — tracked with the RAG
+    unit, not U2. U2 delivers the real *mechanism*; the reference semantics are the
+    remaining gap.
     """
     if not evidence:
         # No retrieved evidence → no reference text (the 'none' condition).
@@ -459,11 +469,26 @@ def run_dq3_rag_evaluation(
                         value=metrics["unsupported_claim_rate"],
                         availability=MetricAvailability.AVAILABLE,
                     ),
+                    "bertscore_precision": metric_envelope(
+                        name="bertscore_precision",
+                        value=metrics["bertscore_precision"],
+                        availability=bert_avail,
+                    ),
+                    "bertscore_recall": metric_envelope(
+                        name="bertscore_recall",
+                        value=metrics["bertscore_recall"],
+                        availability=bert_avail,
+                    ),
                     "bertscore_f1": metric_envelope(
                         name="bertscore_f1",
                         value=metrics["bertscore_f1"],
                         availability=bert_avail,
-                        note="Semantic agreement of the explanation with cited FDA evidence; not factual accuracy by itself.",
+                        note=(
+                            "Semantic agreement of the explanation with its cited FDA evidence. "
+                            "NOTE: until an independent LLM narrative is enabled (Groq), the explanation "
+                            "echoes the retrieved evidence verbatim, so this score is partly circular "
+                            "(overlap-inflated) and is NOT yet the spec's generated-vs-reference-label measure."
+                        ),
                     ),
                 },
             }

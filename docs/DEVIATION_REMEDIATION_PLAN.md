@@ -10,11 +10,12 @@ approve.
 | Done | Unit | Result |
 |---|---|---|
 | ✅ | **U1 — semantic FAISS RAG (DQ3 path)** | Cleared **D5-rag-08**; partial **D5-rag-06 / D5-rag-02**. 2 validation passes (the 2nd, adversarial, found + fixed 3 defects incl. a real metric-comparability bug). Activate with `ENABLE_SEMANTIC_RAG=true`. |
-| ✅ | **U2 — real BERTScore in DQ3** | Cleared **D7-02** (fabricated metric, crit) + **D7-V1**; **finishes D5-rag-06** with U1. Real P/R/F1 (keyword 0.80, faiss 0.79), deterministic; honest availability. Activate with `ENABLE_BERTSCORE=true`. |
+| ◑ | **U2 — real BERTScore in DQ3 (PARTIAL)** | Removes the fabricated-`None` (mechanism real, deterministic, honest availability). **But NOT fully cleared:** the explanation echoes its evidence, so the score is partly *circular* (F1 ≈ 0.92 contained vs ≈ 0.77 independent) — spec's *generated-vs-reference-label* needs Groq (off); threshold → U12. **D7-02 / D7-V1 stay open.** 2nd (adversarial) validation surfaced this. Activate with `ENABLE_BERTSCORE=true`. |
 
 **Recommended next:** **U3 — resolve the fabricated DQ1 harness** — the *other* critical fabricated-metric
 integrity item. It's a **Decision** (drop DQ1 vs wire it to Google Vision), so it needs your call first —
-see the Decision Register. That clears both remaining fabricated-metric criticals.
+see the Decision Register. *(Note: fully closing D7-02 is now folded into the deferred RAG/Groq unit —
+an independent LLM narrative removes the circularity.)*
 
 *(Deployment note: HF-Spaces deploy is **paused** — HF now gates Docker Spaces behind PRO; the Neon DB +
 runtime artefacts are staged and the app is deploy-ready for any container host. Unrelated to the units below.)*
@@ -80,9 +81,16 @@ fabricated-metric problems, which are the only non-negotiable fixes.*
   50-overlap chunker, catalogue-keyed) against the new catalogue's `label_sections` (41,020 medicines) —
   this is what closes D5-rag-01/02/04. The shipped index is the old ~10k-chunk **dev** index.
 
-### U2 — Compute real BERTScore in DQ3 ✅ DONE
-- **Cleared:** D7-02 (crit — fabricated metric), D7-V1; **finishes clearing D5-rag-06** (with U1).
+### U2 — Compute real BERTScore in DQ3 ◑ PARTIAL (mechanism done; reference semantics open)
+- **Effect:** removes the *fabricated-`None`* (real metric now computes) and **finishes D5-rag-06**
+  (with U1). **Does NOT fully clear D7-02 / D7-V1** — see the circularity limitation below.
   **Route:** Fix. **Deps:** U1 ✅.
+- **⚠ Limitation found in U2's adversarial validation (circular reference):**
+  `build_explanation_from_evidence` embeds the retrieved evidence verbatim, so BERTScore(explanation,
+  evidence) is overlap-inflated — F1 ≈ 0.92 when the hypothesis contains the reference vs ≈ 0.77 for an
+  independent paraphrase. The spec (B3/A9) wants *generated explanation vs an independent reference
+  OpenFDA label*. Closing that needs the **Groq LLM narrative** (`ENABLE_SPEC_GROQ`, off) and/or an
+  independent reference — **folded into the deferred RAG/Groq unit**, not U2. The ≥ 0.80 threshold is U12.
 - **As-built (delivered):** new `_compute_bertscore_for_condition(explanation, evidence, metrics)` in
   `service.py` calls the existing `analytics/bertscore_optional.score_pairs` — **hypothesis** = the
   generated explanation, **reference** = the concatenated retrieved FDA-SPL evidence. Replaces the
@@ -275,7 +283,7 @@ Full list in the audit doc's tables.
 | Unit | Clears | Route | Effort | Status |
 |---|---|---|---|---|
 | U1 RAG (semantic FAISS) | D5-rag-08 ✅; D5-rag-06/02 *partial* (BERTScore→U2; prod→U1b); D5-rag-01/04 deferred→U1b | Fix | L–XL | ✅ **done — validated (DQ3 path)** |
-| U2 Real BERTScore | D7-02, D7-V1 (+ finishes D5-rag-06) | Fix | L | ✅ **done — validated** |
+| U2 Real BERTScore | removes fabricated-None; finishes D5-rag-06. D7-02/D7-V1 **partial** (circular ref → RAG/Groq unit) | Fix | L | ◑ **partial — validated** |
 | U3 DQ1 fabrication | D7-01/D1-03 | Decision | S/M | ☐ |
 | **U-TE Orange Book TE layer** | D3-02 (reframe), R28, DQ2 gold std (D7-03/04) | Fix + Doc | L–XL | ☐ *(leads Phase B)* |
 | U4 SMILES ingest | D3-04, D4-04 | Fix | L | ☐ *(now supporting)* |
