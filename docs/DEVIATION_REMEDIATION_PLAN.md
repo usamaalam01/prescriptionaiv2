@@ -220,8 +220,9 @@ fabricated-metric problems, which are the only non-negotiable fixes.*
 
 ## Phase D — Explainability
 
-### U10 — Real SHAP + LIME + Explainability Dashboard ✅ DONE
-- **Cleared:** D6-xai (crit), D6 SHAP-never-fires, D6 LIME-absent, D6 feature-mismatch, D8 LIME-dep.
+### U10 — Real SHAP + LIME + Explainability Dashboard ◑ SUBSTANTIALLY ADDRESSED
+- **Addresses:** D6-xai (crit), D6 SHAP-never-fires, D6 LIME-absent, D6 feature-mismatch, D8 LIME-dep —
+  the critical "no SHAP/LIME, no charts" gap is resolved; literal-B4 polish remains (see below).
   **Route:** Fix (hybrid — exact additive breakdown as ground truth + real spec-named libraries).
 - **Correction to earlier plan:** the "**Deps: U5 (molecular feature)**" assumption was **wrong** — the
   live Evidence Match Score is a 9-feature additive model with **no MCS feature**, so U10 was *not*
@@ -241,10 +242,14 @@ fabricated-metric problems, which are the only non-negotiable fixes.*
 - **Validated (2 passes; 2nd was adversarial):** SHAP reconciles to exact attribution (~1e-14, exact
   explainer); LIME keys are bare feature names (not condition strings); flag-off → analytical fallback,
   app healthy; frontend builds; backend suites **37 passed / 2 pre-existing failures (unrelated)**.
-- **⚠ Defect found in 2nd validation & FIXED:** product-candidate SHAP/LIME bars summed to the *base*
-  score, not the displayed `base + mcs_bonus` (mismatch up to +15). Fixed by injecting an explicit
-  `mcs_structural_bonus` feature (value 1.0, weight = bonus pts) so bars sum to the displayed score
-  (re-verified 62==62, still reconciled).
+- **⚠ Defect found in 2nd validation & FIXED (then hardened in 3rd validation):** product-candidate
+  SHAP/LIME bars summed to the *base* score, not the displayed `base + mcs_bonus` (mismatch up to +15).
+  Fixed by injecting an explicit `mcs_structural_bonus` feature. A **3rd independent validation** then
+  caught that the displayed score is `min(100, base+bonus)` while the bonus feature was uncapped — so at
+  `base+bonus > 100` the bars would sum past the capped headline (e.g. 115 vs 100). Latent today (Path A
+  caps realistic base ≤ 50) but fixed robustly: the bonus weight is **clamped to `100 - base`**, so bars
+  now sum to the capped displayed score in all cases (re-verified: base 100/bonus 15 → 100; base 50/bonus
+  12 → 62; all reconciled).
 - **Remaining B4-literal polish (tracked, not claimed done):** (1) one Explainability accordion + two
   SVG sections rather than the spec's 3 tabs "SHAP | LIME | FDA Sources" with exact chart titles (FDA
   Sources is a separate provenance accordion); (2) `ENABLE_SPEC_SHAP/LIME` default OFF, so the *library*

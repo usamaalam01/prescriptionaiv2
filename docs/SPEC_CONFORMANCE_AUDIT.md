@@ -193,10 +193,12 @@ The delivered artefact is a **well-engineered FastAPI + React + PostgreSQL syste
 > MCS feature). XAI never raises into a request (guarded).
 >
 > **Honest gaps that keep this short of literal B4 conformance:**
-> 1. **Defect found & FIXED in validation:** for same-moiety product candidates the SHAP/LIME bars
->    summed to the *base* score, not the displayed `base + mcs_bonus` — a provable explanation↔headline
->    mismatch of up to +15. Fixed by adding an explicit `mcs_structural_bonus` feature so the bars now
->    sum to the displayed score (re-verified: 62 == 62, reconciled).
+> 1. **Defect found & FIXED (two validation rounds):** for same-moiety product candidates the SHAP/LIME
+>    bars summed to the *base* score, not the displayed `base + mcs_bonus` — a provable explanation↔headline
+>    mismatch of up to +15. Fixed with an explicit `mcs_structural_bonus` feature; a further round caught
+>    that the displayed score is `min(100, …)` while the bonus was uncapped (bars could reach 115 vs a
+>    capped 100), so the bonus weight is now **clamped to `100 − base`**. Re-verified across the cap
+>    boundary (base 100 + bonus 15 → bars sum 100; base 50 + bonus 12 → 62; all reconciled).
 > 2. **Layout differs from spec:** spec named a **three-tab** dashboard ("SHAP | LIME | FDA Sources")
 >    with chart titles "SHAP Feature Contributions" / "LIME Local Explanation"; as-built is one
 >    Explainability accordion with two SVG sections, and FDA Sources remains a separate provenance
