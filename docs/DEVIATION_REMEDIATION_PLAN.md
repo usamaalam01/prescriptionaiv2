@@ -289,7 +289,7 @@ Full list in the audit doc's tables.
 | Unit | Clears | Route | Effort | Status |
 |---|---|---|---|---|
 | U1 RAG (semantic FAISS) | D5-rag-08 ✅; D5-rag-06/02 *partial* (BERTScore→U2; prod→U1b); D5-rag-01/04 deferred→U1b | Fix | L–XL | ✅ **done — validated (DQ3 path)** |
-| U2 Real BERTScore | removes fabricated-None; finishes D5-rag-06. D7-02/D7-V1 **partial** (circular ref → RAG/Groq unit) | Fix | L | ◑ **partial — validated** |
+| U2 Real BERTScore | removes fabricated-`None` (mechanism). D7-02/D7-V1 **still OPEN** — circular ref + threshold both → RAG/Groq unit + U12 | Fix | L | ◑ **mechanism only — 2× validated** |
 | U3 DQ1 fabrication | D7-01/D1-03 | Decision | S/M | ☐ |
 | **U-TE Orange Book TE layer** | D3-02 (reframe), R28, DQ2 gold std (D7-03/04) | Fix + Doc | L–XL | ☐ *(leads Phase B)* |
 | U4 SMILES ingest | D3-04, D4-04 | Fix | L | ☐ *(now supporting)* |
@@ -307,5 +307,21 @@ Full list in the audit doc's tables.
 | U16 Ethics/PII | D8 A6 | Re-document | S | ☐ |
 | Phase G | 37 moderate + 6 minor | mixed | — | ☐ |
 
-**Recommended start:** **U1 (bring semantic RAG)** — it's what you asked for, and U1→U2 clears the
-DQ3 integrity items in two moves.
+## Remaining critical deviations (snapshot)
+
+| Crit | Unit | Blocking status |
+|---|---|---|
+| D7-02 / D7-V1 (BERTScore) | U2 + RAG/Groq | Fabrication removed ✅; spec metric OPEN (needs independent LLM narrative + U12 threshold) |
+| D7-01 / D1-03 (fabricated DQ1) | **U3** | **Ready — needs a Decision (drop DQ1 vs run over Google Vision)** |
+| D3-02 (MCS = TE) | U-TE / U5 | Reframed by Orange Book; needs U-TE crosswalk decision |
+| D3-01 (score formula) | U8 | Decision (reconcile vs re-document) |
+| D4-01 (knowledge graph) | U9 | Decision (build vs re-document) |
+| D6-xai (SHAP/LIME) | U10 | Fix, XL; deps U5 |
+| D5-rag-01 (production RAG) | U1b | Deferred (production wiring + spec chunked rebuild) |
+
+**Recommended next unit → U3 (fabricated DQ1 harness).** Rationale: it's the *only remaining
+critical that is fully ready to start* (no dependency, no rebuild, no external data) and it removes the
+last **fabricated-metric integrity** problem — the highest-value class, and the same class U2 just
+addressed. It needs one small **decision** from you (drop DQ1 vs wire to Google Vision) — see the
+Decision Register. Everything else critical is either a bigger Decision (U8/U9), depends on the
+Orange-Book crosswalk call (U-TE), or is XL/deferred (U10/U1b).
