@@ -368,14 +368,15 @@ Full list in the audit doc's tables.
 | D6-xai (SHAP/LIME) | U10 | ◑ **Substantially addressed** — real libs + charts + reconciliation done; only literal-B4 polish (3 tabs, default-on) left |
 | D7-02 / D7-V1 (BERTScore) | U2 + RAG/Groq | Fabrication removed ✅; spec metric OPEN (needs independent LLM narrative + U12 threshold) |
 | D7-01 / D1-03 (fabricated DQ1) | **U3** | **Ready — needs a Decision (drop DQ1 vs run over Google Vision)** |
-| D3-02 (MCS = TE) | U-TE / U5 | Reframed by Orange Book; needs U-TE crosswalk decision |
-| D3-01 (score formula) | U8 | Decision (reconcile vs re-document) |
-| D4-01 (knowledge graph) | U9 | Decision (build vs re-document) |
+| D3-02 (MCS) | U5 ✅ / U-TE | **MCS now real** (chemical support signal, O3/U5). *Regulatory* TE backbone still → **U-TE (Orange Book)** |
+| D3-01 (score formula) | U8 | Decision (reconcile vs re-document) — open |
+| D4-01 (knowledge graph) | U9 | ◑ **re-documented** (relational catalogue substitute; supervisor sign-off pending) |
 | D5-rag-01 (production RAG) | U1b | Deferred (production wiring + spec chunked rebuild) |
 
-**Progress on criticals:** 7 critical originally in scope → **U10 substantially clears D6-xai**; U1+U2
-removed the DQ3 fabrication (D7-02 mechanism); **1 critical (D7-01/DQ1) is fully ready to start now**;
-the rest (D3-02, D3-01, D4-01) are gated on Decisions/crosswalk, and D5-rag-01 is the deferred RAG rebuild.
+**Progress on criticals (7 originally in scope):** **D6-xai** substantially cleared (U10); **D3-02** MCS
+now real (U5, chemical support) + **D4-01** re-documented (U9); **D7-02** DQ3 fabrication removed (U1+U2,
+mechanism). Still open: **D7-01/DQ1** (U3 — ready, needs a decision), **D3-01** score formula (U8 —
+decision), regulatory-TE half of D3-02 (U-TE), and **D5-rag-01** production RAG (U1b, deferred).
 
 **Recommended next unit → U3 (fabricated DQ1 harness).** Rationale: it's the *only remaining
 critical that is fully ready to start* (no dependency, no rebuild, no external data) and it removes the
