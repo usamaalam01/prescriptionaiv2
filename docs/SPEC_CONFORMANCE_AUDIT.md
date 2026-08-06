@@ -111,8 +111,11 @@ The delivered artefact is a **well-engineered FastAPI + React + PostgreSQL syste
 > `scripts/build_smiles_table.py`), and `mcs_score_points` feeds a **bounded 0–15 bonus** into the
 > Evidence Match Score (already wired in `evaluate.py`; surfaced as the `mcs_structural_bonus` XAI bar).
 > Verified sensible: amoxicillin vs ampicillin 0.96 (≥0.9), ibuprofen vs naproxen 0.65, metformin vs
-> atorvastatin 0.05. DQ2's `rules_plus_mcs` now ranks on real coverage (not the `same_active_moiety`
-> flag). **Design note:** MCS is a *supporting bonus*, not an equivalence gate — Orange Book `TE_Code`
+> atorvastatin 0.05. **DQ2 correction (from O3's independent validation):** re-ordering pharmacist-valid
+> candidates by MCS coverage does **not** change P@K/R@K (valids always rank first; those metrics are
+> set-membership over top-K) — so the MCS effect is instead surfaced as a **distinct
+> `mean_mcs_atom_coverage`** metric on `rules_plus_mcs` (null on `rules_only`), which is where the real
+> MCS signal is reported. **Design note:** MCS is a *supporting bonus*, not an equivalence gate — Orange Book `TE_Code`
 > (U-TE) remains the intended regulatory backbone for therapeutic equivalence; MCS is chemical support.
 > Gated by `ENABLE_SPEC_MCS` (default on), graceful when RDKit/SMILES absent.
 

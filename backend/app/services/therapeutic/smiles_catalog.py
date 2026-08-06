@@ -64,11 +64,15 @@ def resolve_smiles_catalog(*, drugbank_id: str | None, name: str | None) -> str 
     k = _nkey(name)
     if k in smap:
         return smap[k]
+    # Salt-normalise — but only if stripping leaves a real ingredient. Names composed
+    # only of salt words (e.g. "sodium chloride", "potassium chloride") strip to empty
+    # or to a bare counter-ion; do NOT resolve those to a wrong/partial molecule.
     ks = _strip_salt(k)
-    if ks in smap:
+    if ks and ks != k and ks in smap:
         return smap[ks]
-    # First ingredient token (e.g. "amoxicillin clavulanate" → "amoxicillin").
-    first = ks.split()[0] if ks.split() else ""
-    if first and first in smap:
-        return smap[first]
+    # Single-ingredient first-token fallback ONLY (never for combinations like
+    # "amoxicillin clavulanate", where a single-component SMILES would be misleading).
+    tokens = ks.split()
+    if len(tokens) == 1 and tokens[0] in smap:
+        return smap[tokens[0]]
     return None

@@ -258,6 +258,12 @@ def run_dq2_recommendation_evaluation(db: Session) -> dict[str, Any]:
             invalid = [x for x in items if not x.pharmacist_valid_candidate]
             # Retrieved ranking: valid-first, then (when MCS on) by real atom coverage,
             # then the gold candidate rank.
+            #
+            # NOTE: because pharmacist-valid candidates always sort ahead of invalid ones
+            # and P@K/R@K are set-membership over the top-K, re-ordering valids *among
+            # themselves* by MCS coverage does NOT change P@K/R@K. So MCS is instead
+            # surfaced as a distinct structural-quality metric (mean atom coverage of the
+            # valid candidates, below) — that is where the real MCS signal is reported.
             ranked = sorted(
                 items,
                 key=lambda x: (
@@ -265,6 +271,17 @@ def run_dq2_recommendation_evaluation(db: Session) -> dict[str, Any]:
                     -(_mcs_coverage(x.reference_medicine, x.candidate_medicine) if use_mcs_rank_boost else 0.0),
                     x.candidate_rank if x.candidate_rank is not None else 99,
                 ),
+            )
+            # Structural-quality signal (only meaningful for the MCS condition): mean
+            # atom coverage of the pharmacist-valid candidates vs the reference.
+            mcs_covs = (
+                [
+                    _mcs_coverage(x.reference_medicine, x.candidate_medicine)
+                    for x in items
+                    if x.pharmacist_valid_candidate
+                ]
+                if use_mcs_rank_boost
+                else []
             )
             rows.append(
                 {
@@ -275,12 +292,22 @@ def run_dq2_recommendation_evaluation(db: Session) -> dict[str, Any]:
                     "accepted_count": len(valid),
                     "judged_count": len(items),
                     "rejection_reasons": [x.pharmacist_reason for x in invalid if x.pharmacist_reason],
+                    "mean_mcs_atom_coverage": (
+                        round(sum(mcs_covs) / len(mcs_covs), 4) if mcs_covs else None
+                    ),
                 }
             )
         return rows
 
     rules_only = aggregate_recommendation_metrics(per_case=build_per_case(False))
-    rules_mcs = aggregate_recommendation_metrics(per_case=build_per_case(True))
+    _mcs_cases = build_per_case(True)
+    rules_mcs = aggregate_recommendation_metrics(per_case=_mcs_cases)
+    # Aggregate the real MCS structural-quality signal (this is what actually differs
+    # between the two conditions — the ranking metrics are provably identical, see note
+    # in build_per_case). rules_only has no MCS, so this stays None there.
+    _covs = [c["mean_mcs_atom_coverage"] for c in _mcs_cases if c.get("mean_mcs_atom_coverage") is not None]
+    rules_mcs["mean_mcs_atom_coverage"] = round(sum(_covs) / len(_covs), 4) if _covs else None
+    rules_only["mean_mcs_atom_coverage"] = None
     availability = MetricAvailability.AVAILABLE.value
     if rules_only["n_cases"] < 1:
         availability = MetricAvailability.INSUFFICIENT_SAMPLE.value
@@ -306,13 +333,19 @@ def run_dq2_recommendation_evaluation(db: Session) -> dict[str, Any]:
             )
         out["rejection_reason_distribution"] = m.get("rejection_reason_distribution")
         out["n_cases"] = m.get("n_cases")
+        out["mean_mcs_atom_coverage"] = m.get("mean_mcs_atom_coverage")
         return out
 
     return {
         "availability": availability,
         "rules_only": wrap(rules_only),
         "rules_plus_mcs": wrap(rules_mcs),
-        "note": "Recall@3 denominator = all pharmacist-valid gold candidates.",
+        "note": (
+            "Recall@3 denominator = all pharmacist-valid gold candidates. "
+            "P@K/R@K are identical across conditions by construction (valid candidates "
+            "always rank first; metrics are set-membership over top-K). The MCS effect is "
+            "reported as mean_mcs_atom_coverage (structural quality of the valid candidates)."
+        ),
     }
 
 
