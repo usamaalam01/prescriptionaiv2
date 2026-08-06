@@ -264,15 +264,18 @@ fabricated-metric problems, which are the only non-negotiable fixes.*
 - **Clears:** D7-03 (major). **Deps:** Phase B. **Approach:** build DQ2 `retrieved_ranked` from the
   actual recommendation engine, not a re-sorted pharmacist list. **Test:** ranking traces to engine. **Effort:** M.
 
-### U12 — Encode approved acceptance thresholds ✅ DONE
-- **Cleared:** D7-04 (major). **Route:** Fix.
+### U12 — Encode approved acceptance thresholds ✅ MECHANISM DONE
+- **Cleared:** D7-04 (major) — the threshold *mechanism* (targets, direction, gating, badges) is complete
+  and validated. OCR-target (WER/CER) *verdicts* stay withheld until real DQ1 data (U3 / D7-09). **Route:** Fix.
 - **As-built:** `metric_status.py` gains an `ACCEPTANCE_TARGETS` map (wer<0.15, cer<0.10, P@3≥0.70,
   R@3≥0.60, bertscore_f1≥0.80) + `evaluate_target()` (per-metric direction: `min` for error rates,
   `max` for the rest). `metric_envelope` auto-attaches an `acceptance{target,direction,label,pass}`
-  block keyed by the metric name — so the existing DQ1 (wer/cer), DQ2 (precision_at_3/recall_at_3) and
-  DQ3 (bertscore_f1) emitters pick it up with **no emitter changes**. `pass` is computed only on an
-  AVAILABLE numeric value (None otherwise). `ResearchEvaluationPanel.tsx` renders a PASS/FAIL chip
-  next to each tracked metric. Labels use ASCII (`>=`/`<`) to stay encoding-safe.
+  block keyed by the metric name — so the **DQ2 (precision_at_3/recall_at_3)** and **DQ3 (bertscore_f1)**
+  emitters pick it up with **no emitter changes**; the **DQ1 (wer/cer)** emitter opts *out* via
+  `suppress_acceptance=True` (its values are fabricated — see the fix note below). `pass` is computed
+  only on an AVAILABLE numeric value (None otherwise). `ResearchEvaluationPanel.tsx` renders a PASS/FAIL
+  chip next to each tracked metric (via `MetricValue`/`AcceptanceBadge` — verified as the live render
+  path, not a JSON dump). Labels use ASCII (`>=`/`<`) to stay encoding-safe.
 - **Validated (2 passes; 2nd independent):** direction + boundary correctness (WER 0.08→PASS, 0.20→FAIL;
   P@3 0.60→FAIL, 0.70→PASS; bertscore 0.80→PASS, 0.79→FAIL); unavailable → `pass=None`; untracked → no
   acceptance key; all 5 targets reachable by live emitters (exact name match); JSON clean; build ok; 16/16.
