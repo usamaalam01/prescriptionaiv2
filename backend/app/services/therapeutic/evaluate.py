@@ -43,7 +43,15 @@ def _real_xai_for_score(score: dict) -> dict:
         # Cover any weight not represented in components.
         for k in WEIGHTS:
             feature_values.setdefault(k, 0.0)
-        return explain_candidate_xai(feature_values=feature_values, weights=WEIGHTS, baseline=0.0)
+        weights = dict(WEIGHTS)
+        # Include the MCS structural bonus as an explicit feature so the SHAP/LIME
+        # bars sum to the DISPLAYED total_score (base + mcs_bonus), not just the base.
+        # Without this the explanation silently under-explains the headline number.
+        mcs_bonus = float(score.get("mcs_bonus_points") or 0)
+        if mcs_bonus:
+            feature_values["mcs_structural_bonus"] = 1.0
+            weights["mcs_structural_bonus"] = mcs_bonus
+        return explain_candidate_xai(feature_values=feature_values, weights=weights, baseline=0.0)
     except Exception:  # noqa: BLE001 - XAI must never break a recommendation
         return {"score": score.get("total_score"), "real_shap": None, "real_lime": None,
                 "reconciliation": {"status": "error"}, "flags": {}}

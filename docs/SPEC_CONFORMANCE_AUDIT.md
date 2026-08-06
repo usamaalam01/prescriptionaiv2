@@ -183,16 +183,31 @@ The delivered artefact is a **well-engineered FastAPI + React + PostgreSQL syste
 
 #### `B4 / A8 / O5 / DQ4` — XAI / explainability  ·  _critical_
 
-> **U10 status — CLEARED.** The spec-named **`shap` and `lime` libraries** now run over the additive
-> Evidence Match Score (`research_eval/xai_real.py`), and the library SHAP values are **verified to
-> reconcile with the exact analytical `w·x` attribution** (residual ~1e-14). Each ranked candidate
-> carries a `real_xai` block (`therapeutic/evaluate.py`), and the React panel
-> (`TherapeuticAlternativesPanel.tsx`) renders an **Explainability** section with SHAP + LIME **signed
-> bar charts** (pure SVG), a reconciliation chip, library labels, and the honesty disclaimer.
-> Flag-gated (`ENABLE_SPEC_SHAP`/`ENABLE_SPEC_LIME`) with analytical fallback. Note: the earlier plan's
-> "depends on U5 (molecular feature)" was incorrect — the live 9-feature score has no MCS feature, so the
-> dashboard explains the real shipping score. (FDA-Sources content already exists as the provenance
-> `source_claims` cards; U10 adds the SHAP/LIME visualisations that were missing.)
+> **U10 status — SUBSTANTIALLY ADDRESSED (not literal-spec CLEARED).** Verified by an independent
+> adversarial review. **What genuinely holds:** the spec-named **`shap` and `lime` libraries** run over
+> the additive Evidence Match Score (`research_eval/xai_real.py`); library SHAP is **verified to
+> reconcile with the exact analytical `w·x` attribution** (residual ~1e-14, `ExactExplainer`, zeros
+> background); LIME keys map to bare feature names (not condition strings — checked); each ranked
+> candidate carries a `real_xai` block; the React panel renders SHAP + LIME **signed SVG bar charts**
+> with a reconciliation chip and disclaimer; the "depends on U5" assumption was false (live score has no
+> MCS feature). XAI never raises into a request (guarded).
+>
+> **Honest gaps that keep this short of literal B4 conformance:**
+> 1. **Defect found & FIXED in validation:** for same-moiety product candidates the SHAP/LIME bars
+>    summed to the *base* score, not the displayed `base + mcs_bonus` — a provable explanation↔headline
+>    mismatch of up to +15. Fixed by adding an explicit `mcs_structural_bonus` feature so the bars now
+>    sum to the displayed score (re-verified: 62 == 62, reconciled).
+> 2. **Layout differs from spec:** spec named a **three-tab** dashboard ("SHAP | LIME | FDA Sources")
+>    with chart titles "SHAP Feature Contributions" / "LIME Local Explanation"; as-built is one
+>    Explainability accordion with two SVG sections, and FDA Sources remains a separate provenance
+>    accordion. Functionally equivalent, not literally the B4 screenshot layout.
+> 3. **Flags default OFF** (`ENABLE_SPEC_SHAP`/`ENABLE_SPEC_LIME`) — the *library* SHAP/LIME +
+>    reconciliation run only when enabled; the default runtime shows the exact **analytical** bars
+>    (still correct attributions, just not the library path).
+>
+> Net: the critical "no SHAP/LIME, no charts" deviation is resolved (real libs + charts exist and are
+> correct); full B4 literal conformance (3 tabs + exact titles + on-by-default) is a small remaining
+> polish item, tracked here rather than claimed as done.
 
 - **Spec ref (B4 screenshots / A8 IT Artefact / O5):** B4 required UI: an "Explainability Dashboard" with THREE TABS "SHAP | LIME | FDA Sources" — SHAP tab a horizontal bar chart titled "SHAP Feature Contributions", LIME tab a chart titled "LIME Local Explanation", FDA Sources tab numbered evidence cards. A8: "SHAP + LIME + source attribution cards embedded inline in Step 4". O5: integrate SHAP and LIME for transparency in the recommendation flow.
 - **As-built:** No Explainability Dashboard and no charts exist anywhere in the frontend. In the inline Step-4 alternatives panel, feature attribution is rendered as a single one-line text caption ('Experimental component contribution: feature (+contribution), ...'). The Research Evaluation DQ4 tab only offers a 'Preview explanation conditions A/B/C' button that dumps raw JSON via JSON.stringify, plus a survey-import button. There are no SHAP/LIME tabs, no bar charts, no feature-importance visualisation. No charting library (recharts, chart.js, d3, plotly, victory, nivo) is declared in frontend/package.json.
