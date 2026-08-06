@@ -640,6 +640,14 @@ The delivered artefact is a **well-engineered FastAPI + React + PostgreSQL syste
 
 #### `D7-04` — Evaluation harness (DQ1–DQ4)  ·  _major_
 
+> **U12 status — CLEARED.** `metric_status.py` now encodes the B3 targets (`ACCEPTANCE_TARGETS`:
+> WER<0.15, CER<0.10, P@3≥0.70, R@3≥0.60, BERTScore F1≥0.80) with per-metric direction, and
+> `metric_envelope` attaches an `acceptance{target,direction,label,pass}` block (keyed by metric name,
+> so DQ1/DQ2/DQ3 emitters get it automatically). `pass` is computed only on an AVAILABLE numeric value.
+> `ResearchEvaluationPanel.tsx` renders a PASS/FAIL chip per metric. Verified: direction/boundary
+> correctness and availability gating (unavailable → no verdict). The dashboard can now state whether
+> each DQ target was met.
+
 - **Spec ref (B3 (Quantitative targets), B4 Page 2):** B3 quantitative targets table (all must be checkable): WER<15%, CER<10%, P@3>=0.70, R@3>=0.60, BERTScore>=0.80.
 - **As-built:** None of the approved numeric acceptance thresholds are encoded anywhere. A repo-wide search found only unrelated numbers (OCR confidence 0.60/0.75, MCS atom-coverage 0.9). ranking_metrics/ocr_metrics contain no threshold constants; service wrap() emits raw values with no pass/fail; the frontend MetricValue simply renders value.toFixed(4) with no comparison to a target. So the dashboard cannot report metrics against the approved acceptance criteria.
 - **Research/DQ impact:** DQ1-DQ3: the Evaluation Dashboard shows scores but cannot evidence conformance to WER<15%, CER<10%, P@3>=0.70, R@3>=0.60, BERTScore>=0.80 as required by B3.

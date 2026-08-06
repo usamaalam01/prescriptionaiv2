@@ -14,11 +14,33 @@ import {
 } from '@mui/material'
 import { api } from '../api'
 
+type Acceptance = {
+  target: number
+  direction: 'min' | 'max'
+  label: string
+  pass: boolean | null
+}
+
 type MetricEnv = {
   metric: string
   value: number | null
   availability: string
   note?: string | null
+  acceptance?: Acceptance | null
+}
+
+// U12 — PASS/FAIL badge against the approved B3 acceptance target.
+function AcceptanceBadge({ acceptance }: { acceptance?: Acceptance | null }) {
+  if (!acceptance || acceptance.pass === null || acceptance.pass === undefined) return null
+  return (
+    <Chip
+      size="small"
+      color={acceptance.pass ? 'success' : 'error'}
+      label={`${acceptance.pass ? 'PASS' : 'FAIL'} · ${acceptance.label}`}
+      variant="outlined"
+      sx={{ ml: 1 }}
+    />
+  )
 }
 
 function MetricValue({ m }: { m?: MetricEnv | null }) {
@@ -32,7 +54,14 @@ function MetricValue({ m }: { m?: MetricEnv | null }) {
       />
     )
   }
-  return <Typography variant="body1">{typeof m.value === 'number' ? m.value.toFixed(4) : String(m.value)}</Typography>
+  return (
+    <Stack direction="row" alignItems="center" component="span">
+      <Typography variant="body1" component="span">
+        {typeof m.value === 'number' ? m.value.toFixed(4) : String(m.value)}
+      </Typography>
+      <AcceptanceBadge acceptance={m.acceptance} />
+    </Stack>
+  )
 }
 
 export function ResearchEvaluationPanel() {

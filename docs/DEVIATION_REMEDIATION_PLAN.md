@@ -264,9 +264,19 @@ fabricated-metric problems, which are the only non-negotiable fixes.*
 - **Clears:** D7-03 (major). **Deps:** Phase B. **Approach:** build DQ2 `retrieved_ranked` from the
   actual recommendation engine, not a re-sorted pharmacist list. **Test:** ranking traces to engine. **Effort:** M.
 
-### U12 — Encode approved acceptance thresholds
-- **Clears:** D7-04 (major). **Approach:** encode WER<15%, CER<10%, P@3≥0.70, R@3≥0.60, BERTScore≥0.80 as
-  pass/fail in the harness + UI. **Test:** harness reports pass/fail vs each threshold. **Effort:** S.
+### U12 — Encode approved acceptance thresholds ✅ DONE
+- **Cleared:** D7-04 (major). **Route:** Fix.
+- **As-built:** `metric_status.py` gains an `ACCEPTANCE_TARGETS` map (wer<0.15, cer<0.10, P@3≥0.70,
+  R@3≥0.60, bertscore_f1≥0.80) + `evaluate_target()` (per-metric direction: `min` for error rates,
+  `max` for the rest). `metric_envelope` auto-attaches an `acceptance{target,direction,label,pass}`
+  block keyed by the metric name — so the existing DQ1 (wer/cer), DQ2 (precision_at_3/recall_at_3) and
+  DQ3 (bertscore_f1) emitters pick it up with **no emitter changes**. `pass` is computed only on an
+  AVAILABLE numeric value (None otherwise). `ResearchEvaluationPanel.tsx` renders a PASS/FAIL chip
+  next to each tracked metric. Labels use ASCII (`>=`/`<`) to stay encoding-safe.
+- **Validated:** direction + boundary correctness (WER 0.08→PASS, 0.20→FAIL; P@3 0.60→FAIL, 0.70→PASS;
+  bertscore 0.80→PASS, 0.79→FAIL); unavailable → `pass=None` (no false verdict); untracked metrics get
+  no acceptance key; DQ3 e2e (bertscore 0.9148 → pass=true vs 0.80); JSON-serializes cleanly; frontend
+  builds; research suite 16/16. **Effort:** S.
 
 ### U13 — Evaluation dataset (synthetic Rx images + ground truth)
 - **Clears:** D7-09 (major). **Route:** Data (needs your input). **Approach:** add the spec's 25–30
@@ -328,7 +338,7 @@ Full list in the audit doc's tables.
 | U9 Knowledge graph | D4-01, D3-05, D4-02 | Decision | S/XL | ☐ |
 | U10 SHAP/LIME + dashboard | D6-xai (crit) + SHAP/LIME/feature-mismatch + D8 LIME-dep | Fix | XL | ◑ **substantially addressed — 2× validated (defect fixed; B4-literal polish remains)** |
 | U11 DQ2 real engine | D7-03 | Fix | M | ☐ |
-| U12 Eval thresholds | D7-04 | Fix | S | ☐ |
+| U12 Eval thresholds | D7-04 | Fix | S | ✅ **done — validated** |
 | U13 Eval dataset | D7-09 | Data | M | ☐ |
 | U14 Direct Drug Search | D2 UC2 | Fix | L | ☐ |
 | U15 Dashboard access | D8 reviewer-only | Fix/Doc | S | ☐ |
