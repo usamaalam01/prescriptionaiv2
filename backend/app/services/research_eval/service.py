@@ -371,9 +371,10 @@ def run_dq2_recommendation_evaluation(db: Session) -> dict[str, Any]:
                 "references_total": len(refs),
                 "by_reference": by_ref,
                 "note": (
-                    "Regulatory relevant-set per reference = FDA A-rated products in the same "
-                    "pharmaceutical-equivalence group (subletter-scoped, DISCN excluded). Use as a "
-                    "defensible DQ2 ground truth alongside the pharmacist-confirmed gold."
+                    "Regulatory relevant-set per reference = FDA A-rated products for the ingredient "
+                    "(DISCN excluded). NOTE: computed ingredient-wide here (no form/strength filter), so "
+                    "it spans forms/strengths and mixes subletters — a coarse regulatory ground truth, "
+                    "offered alongside the pharmacist-confirmed gold, not a strict PE-group set."
                 ),
             }
     except Exception as exc:  # noqa: BLE001

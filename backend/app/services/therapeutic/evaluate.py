@@ -26,21 +26,37 @@ from app.services.therapeutic.seed_data import DATASET_VERSION, DEMO_LABEL, RULE
 from app.services.therapeutic.xai import DISCLAIMER, build_source_claims, explain_candidate
 
 
-def _te_block_for_candidate(cand: dict, cand_env: dict | None) -> dict:
+def _te_block_for_candidate(cand: dict, cand_env: dict | None, *, same_ingredient: bool) -> dict:
     """U-TE — FDA Orange Book therapeutic-equivalence evidence for a candidate.
 
-    Decision-support evidence only; does NOT re-rank or gate. Never raises.
+    Decision-support evidence only; does NOT re-rank or gate. Never raises. The
+    returned block describes the CANDIDATE'S OWN Orange Book status (i.e. whether
+    *its* generics are interchangeable with each other), NOT equivalence to the
+    prescribed medicine — `applies_to` makes that explicit so a different-ingredient
+    candidate's `substitutable=True` is never misread as "substitutable for the Rx".
     """
     try:
         from app.services.therapeutic.orange_book import te_status_for
 
         env = cand_env or {}
-        return te_status_for(
+        block = te_status_for(
             ingredient=cand.get("active_ingredient") or cand.get("candidate_name"),
             dosage_form=env.get("dosage_form") or env.get("canonical_form"),
             route=env.get("route"),
             strength=env.get("normalised_strength") or env.get("strength"),
         )
+        block["applies_to"] = (
+            "candidate_vs_prescribed_same_ingredient"
+            if same_ingredient
+            else "candidate_own_generics_only"
+        )
+        if not same_ingredient:
+            block["cross_ingredient_note"] = (
+                "This candidate has a DIFFERENT active ingredient from the prescribed medicine, so it is "
+                "NOT therapeutically equivalent to the prescription under the Orange Book. The TE fields "
+                "below describe substitutability among the candidate's OWN generics only."
+            )
+        return block
     except Exception:  # noqa: BLE001 - TE evidence must never break a recommendation
         return {"available": False, "source": "FDA Orange Book", "note": "TE lookup error."}
 
@@ -462,7 +478,7 @@ def _evaluate_one(
             "passed_filters": filters["passed_filters"],
             "failed_filters": [],
             "canonical_envelope": cand_env,
-            "therapeutic_equivalence": _te_block_for_candidate(cand, cand_env),  # U-TE
+            "therapeutic_equivalence": _te_block_for_candidate(cand, cand_env, same_ingredient=True),  # U-TE
             "ingredient_relationship": "same_active_moiety",
             "salt_base_relationship": {
                 "source": source_envelope.get("salt_or_ester"),
@@ -615,6 +631,7 @@ def _evaluate_one(
                     "route": (safety.get("route_comparison") or {}).get("candidate"),
                     "dosage_form": (safety.get("dosage_form_comparison") or {}).get("candidate"),
                 },
+                same_ingredient=False,
             ),
         }
 

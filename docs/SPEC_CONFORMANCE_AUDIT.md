@@ -119,13 +119,19 @@ The delivered artefact is a **well-engineered FastAPI + React + PostgreSQL syste
 > (U-TE) remains the intended regulatory backbone for therapeutic equivalence; MCS is chemical support.
 > Gated by `ENABLE_SPEC_MCS` (default on), graceful when RDKit/SMILES absent.
 >
-> **U-TE status — regulatory TE backbone now IN PLACE.** The FDA Orange Book is ingested
-> (`orange_products`, 48.5k rows); `orange_book.te_status_for` resolves a medicine's authoritative
-> `TE_Code` (A* = substitutable, empty = single-source), honouring the **subletter rule** (AB1≠AB2≠AB3)
-> and excluding DISCN. Each candidate carries a `therapeutic_equivalence` **evidence** block (surfaced,
-> not auto-substituted — HITL). So D3-02 is addressed on **both** axes: chemical (MCS support) and
-> regulatory (Orange Book TE). Remaining: A10-style scope-addition sign-off; crosswalk is US-only /
-> name+form+strength (misses foreign/compounded).
+> **U-TE status — regulatory TE backbone IN PLACE (subletter-safe after validation).** The FDA Orange
+> Book is ingested (`orange_products`, 48.5k rows); `orange_book.te_status_for` resolves a medicine's
+> authoritative `TE_Code` (A* = substitutable, empty = single-source), excluding DISCN. Each candidate
+> carries a `therapeutic_equivalence` **evidence** block (surfaced, not auto-substituted — HITL).
+> **Subletter safety (fixed in U-TE validation):** the first cut returned a flat `substitutable=True`
+> over mixed AB1/AB2/AB3 — validation caught this as unsafe. Now A-codes are split into per-subletter
+> subgroups (`subletter_subgroups`), `substitution_scope=subletter_scoped` + a `subletter_warning` when
+> multiple exist, and RLD brands are surfaced at group level (`reference_listed_drugs` — verified:
+> metformin ER → FORTAMET/GLUCOPHAGE XR/GLUMETZA as distinct references). Different-ingredient candidates
+> carry `applies_to=candidate_own_generics_only` + a cross-ingredient note so their TE is never misread
+> as equivalence to the prescribed drug. So D3-02 is addressed on **both** axes: chemical (MCS support)
+> and regulatory (Orange Book TE). Remaining: A10-style scope-addition sign-off; crosswalk is US-only /
+> name+form+strength (misses foreign/compounded/combinations).
 
 - **Spec ref (O3 / A8 / A10):** O3: 'Implement a salt-aware therapeutic recommendation engine using RDKit Maximum Common Substructure (MCS)'. A8: 'NetworkX DiGraph + RDKit MCS (90% atom coverage)'. A10 approved change: VF2 was 'Replaced with RDKit MCS'.
 - **As-built:** RDKit MCS is NOT the matching algorithm and is not a gate. The actual candidate matcher is name-based salt normalisation + mandatory hard filters; MCS runs strictly AFTER mandatory filters as optional 'supporting evidence' that can add at most a 15-point bonus and 'must never override filters'. Moreover rdkit is not installed in backend/.venv and is declared only in the optional requirements-spec-research.txt, so rdkit_available() returns False and compute_mcs_similarity returns status 'unavailable' with atom_coverage=None by default — contributing 0 to ranking. The 90%/0.9 atom-coverage threshold is computed only as an informational meets_spec_threshold_0_9 flag, never used to include/exclude a candidate.
@@ -668,11 +674,13 @@ The delivered artefact is a **well-engineered FastAPI + React + PostgreSQL syste
 
 > **U-TE status — regulatory gold standard added.** DQ2 now exposes `orange_book_gold_standard` — for
 > each reference medicine, the FDA Orange Book **A-rated products in the same pharmaceutical-equivalence
-> group** (subletter-scoped, DISCN excluded). This is a *defensible regulatory relevant-set* for
-> Precision@K/Recall@K, offered alongside (not replacing) the pharmacist-confirmed gold — addressing the
-> "no defensible relevant set" gap. Verified: metformin returns the AB/AB1/AB2/AB3 group (the
-> non-cross-substitutable ER variants), aspirin returns none (single-source). Wiring the harness to
-> *compute* P@K/R@K against this set (vs just exposing it) + the synthetic dataset (D7-09) remain.
+> group** (DISCN excluded). This is a *defensible regulatory relevant-set* for Precision@K/Recall@K,
+> offered alongside (not replacing) the pharmacist-confirmed gold — addressing the "no defensible
+> relevant set" gap. **Scope caveat (validation):** as wired in the DQ2 harness it is computed
+> **ingredient-wide** (no form/strength filter), so it spans forms/strengths and mixes subletters — a
+> *coarse* regulatory ground truth, not a strict PE-group set (narrow by form+route+strength for that).
+> Verified: metformin returns its A-rated group, aspirin returns none (single-source). Remaining: the
+> harness *exposes* the set but does not yet *compute* P@K/R@K against it; + the synthetic dataset (D7-09).
 
 - **Spec ref (O6, A9 (Quantitative-Recommendation), B3 (DQ2)):** A9/DQ2: 'Precision@K & Recall@K - Effectiveness of RDKit MCS identifying therapeutically equivalent alternatives in top-ranked results'; B3 targets P@3>=0.70, R@3>=0.60.
 - **As-built:** DQ2 does not evaluate the recommendation engine's output. build_per_case constructs the 'retrieved_ranked' list by sorting the pharmacist gold-standard rows themselves (valid-first, optional same_active_moiety boost, then stored candidate_rank) — comment: 'Simulated retrieved ranking: gold ranks, optionally boost same-moiety with MCS flag'. Because the 'retrieved' list is derived from the gold labels, Precision@K/Recall@K are largely self-fulfilling. The 'rules_plus_mcs' condition boosts by the boolean same_active_moiety gold field, not by RDKit maximum-common-substructure; rdkit is not installed and the real MCS module (services/therapeutic/mcs.py) is never invoked in DQ2.
