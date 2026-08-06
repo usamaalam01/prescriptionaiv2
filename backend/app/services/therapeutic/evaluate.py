@@ -26,6 +26,25 @@ from app.services.therapeutic.seed_data import DATASET_VERSION, DEMO_LABEL, RULE
 from app.services.therapeutic.xai import DISCLAIMER, build_source_claims, explain_candidate
 
 
+def _te_block_for_candidate(cand: dict, cand_env: dict | None) -> dict:
+    """U-TE — FDA Orange Book therapeutic-equivalence evidence for a candidate.
+
+    Decision-support evidence only; does NOT re-rank or gate. Never raises.
+    """
+    try:
+        from app.services.therapeutic.orange_book import te_status_for
+
+        env = cand_env or {}
+        return te_status_for(
+            ingredient=cand.get("active_ingredient") or cand.get("candidate_name"),
+            dosage_form=env.get("dosage_form") or env.get("canonical_form"),
+            route=env.get("route"),
+            strength=env.get("normalised_strength") or env.get("strength"),
+        )
+    except Exception:  # noqa: BLE001 - TE evidence must never break a recommendation
+        return {"available": False, "source": "FDA Orange Book", "note": "TE lookup error."}
+
+
 def _real_xai_for_score(score: dict) -> dict:
     """U10 — build the SHAP/LIME XAI payload from an Evidence Match Score result.
 
@@ -443,6 +462,7 @@ def _evaluate_one(
             "passed_filters": filters["passed_filters"],
             "failed_filters": [],
             "canonical_envelope": cand_env,
+            "therapeutic_equivalence": _te_block_for_candidate(cand, cand_env),  # U-TE
             "ingredient_relationship": "same_active_moiety",
             "salt_base_relationship": {
                 "source": source_envelope.get("salt_or_ester"),
@@ -586,6 +606,16 @@ def _evaluate_one(
             "provenance_label": prov,
             "interchangeability_claim": False,
             "pharmacist_action_required": True,
+            # U-TE: the candidate's own FDA Orange Book status. For a *different*-ingredient
+            # candidate this reflects its own ingredient's TE — it is never therapeutically
+            # equivalent to the source under Orange Book (different pharmaceutical-equivalence group).
+            "therapeutic_equivalence": _te_block_for_candidate(
+                cand,
+                {
+                    "route": (safety.get("route_comparison") or {}).get("candidate"),
+                    "dosage_form": (safety.get("dosage_form_comparison") or {}).get("candidate"),
+                },
+            ),
         }
 
         if safety["status"] == "withdrawn_or_discontinued":

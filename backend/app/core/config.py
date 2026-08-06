@@ -50,6 +50,9 @@ class Settings(BaseSettings):
 
     # Spec Design O3–O5 research layers (post-HITL Confirm only — never auto-prescribe)
     ENABLE_SPEC_MCS: bool = True
+    # U-TE — FDA Orange Book therapeutic-equivalence signal (decision-support evidence
+    # only; never auto-substitutes). No-op when the orange_products table is absent.
+    ENABLE_ORANGE_BOOK: bool = True
     ENABLE_SPEC_RAG: bool = True
     ENABLE_SPEC_GROQ: bool = False
     ENABLE_SPEC_SHAP: bool = False

@@ -349,15 +349,47 @@ def run_dq2_recommendation_evaluation(db: Session) -> dict[str, Any]:
         )
         return out
 
+    # U-TE — regulatory DQ2 gold standard: the FDA Orange Book A-rated group for each
+    # distinct reference medicine in the evaluated set. This is a *defensible* relevant-set
+    # (regulatory ground truth) that NDC/DrugBank/SPL cannot provide, offered alongside the
+    # pharmacist-confirmed gold rather than silently replacing it.
+    ob_gold: dict[str, Any] = {"available": False, "note": "Orange Book unavailable."}
+    try:
+        from app.services.therapeutic.orange_book import orange_book_available, orange_book_gold
+
+        if orange_book_available():
+            refs = sorted({(g.reference_medicine or "").strip() for g in gold if g.reference_medicine})
+            by_ref = {}
+            for ref in refs:
+                res = orange_book_gold(ingredient=ref)
+                if res.get("available") and res.get("n"):
+                    by_ref[ref] = {"a_rated_products": res["a_rated_products"], "n": res["n"], "subletter_groups": res["subletter_groups"]}
+            ob_gold = {
+                "available": True,
+                "source": "FDA Orange Book",
+                "references_with_gold": len(by_ref),
+                "references_total": len(refs),
+                "by_reference": by_ref,
+                "note": (
+                    "Regulatory relevant-set per reference = FDA A-rated products in the same "
+                    "pharmaceutical-equivalence group (subletter-scoped, DISCN excluded). Use as a "
+                    "defensible DQ2 ground truth alongside the pharmacist-confirmed gold."
+                ),
+            }
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Orange Book DQ2 gold unavailable (%s).", exc)
+
     return {
         "availability": availability,
         "rules_only": wrap(rules_only),
         "rules_plus_mcs": wrap(rules_mcs),
+        "orange_book_gold_standard": ob_gold,
         "note": (
             "Recall@3 denominator = all pharmacist-valid gold candidates. "
             "P@K/R@K are identical across conditions by construction (valid candidates "
             "always rank first; metrics are set-membership over top-K). The MCS effect is "
-            "reported as mean_mcs_atom_coverage (structural quality of the valid candidates)."
+            "reported as mean_mcs_atom_coverage (structural quality of the valid candidates). "
+            "orange_book_gold_standard provides a regulatory relevant-set per reference."
         ),
     }
 

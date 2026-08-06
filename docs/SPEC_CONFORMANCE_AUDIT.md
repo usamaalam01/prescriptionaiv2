@@ -118,6 +118,14 @@ The delivered artefact is a **well-engineered FastAPI + React + PostgreSQL syste
 > MCS signal is reported. **Design note:** MCS is a *supporting bonus*, not an equivalence gate — Orange Book `TE_Code`
 > (U-TE) remains the intended regulatory backbone for therapeutic equivalence; MCS is chemical support.
 > Gated by `ENABLE_SPEC_MCS` (default on), graceful when RDKit/SMILES absent.
+>
+> **U-TE status — regulatory TE backbone now IN PLACE.** The FDA Orange Book is ingested
+> (`orange_products`, 48.5k rows); `orange_book.te_status_for` resolves a medicine's authoritative
+> `TE_Code` (A* = substitutable, empty = single-source), honouring the **subletter rule** (AB1≠AB2≠AB3)
+> and excluding DISCN. Each candidate carries a `therapeutic_equivalence` **evidence** block (surfaced,
+> not auto-substituted — HITL). So D3-02 is addressed on **both** axes: chemical (MCS support) and
+> regulatory (Orange Book TE). Remaining: A10-style scope-addition sign-off; crosswalk is US-only /
+> name+form+strength (misses foreign/compounded).
 
 - **Spec ref (O3 / A8 / A10):** O3: 'Implement a salt-aware therapeutic recommendation engine using RDKit Maximum Common Substructure (MCS)'. A8: 'NetworkX DiGraph + RDKit MCS (90% atom coverage)'. A10 approved change: VF2 was 'Replaced with RDKit MCS'.
 - **As-built:** RDKit MCS is NOT the matching algorithm and is not a gate. The actual candidate matcher is name-based salt normalisation + mandatory hard filters; MCS runs strictly AFTER mandatory filters as optional 'supporting evidence' that can add at most a 15-point bonus and 'must never override filters'. Moreover rdkit is not installed in backend/.venv and is declared only in the optional requirements-spec-research.txt, so rdkit_available() returns False and compute_mcs_similarity returns status 'unavailable' with atom_coverage=None by default — contributing 0 to ranking. The 90%/0.9 atom-coverage threshold is computed only as an informational meets_spec_threshold_0_9 flag, never used to include/exclude a candidate.
@@ -657,6 +665,14 @@ The delivered artefact is a **well-engineered FastAPI + React + PostgreSQL syste
 - **Verifier correction:** As-built is accurate: the scoring model uses nine components (scoring.py:6-16: indication_relationship, atc_or_therapeutic_class, mechanism_relationship, target_or_pathway, route_compatibility, dosage_form_compatibility, patient_population_compatibility, contraindication_warning_assessment, interaction_assessment_coverage) plus an optional molecular_similarity_mcs feature (feature_xai.py:41) that is only appended when mcs status=='ok' (feature_xai.py:38) — which never fires because RDKit is not installed. There is no 'Brand Name' or 'Strength Difference (%)' feature and no baseline E[f(x)]=72.0 or sum-check caption (baseline defaults to 0.0, xai_conditions.py:18). However the severity should be MODERATE, not major: per the rubric, divergence in feature naming/coverage where the per-feature attribution mechanism still exists and the research claim survives with reworded feature names/values is moderate, not major. The underlying weighted per-component attribution is implemented and rendered; only the specific spec-illustration feature names, +4.00/+4.00/+20.00 values and 72.0 baseline are not reproducible.
 
 #### `D7-03` — Evaluation harness (DQ1–DQ4)  ·  _major_
+
+> **U-TE status — regulatory gold standard added.** DQ2 now exposes `orange_book_gold_standard` — for
+> each reference medicine, the FDA Orange Book **A-rated products in the same pharmaceutical-equivalence
+> group** (subletter-scoped, DISCN excluded). This is a *defensible regulatory relevant-set* for
+> Precision@K/Recall@K, offered alongside (not replacing) the pharmacist-confirmed gold — addressing the
+> "no defensible relevant set" gap. Verified: metformin returns the AB/AB1/AB2/AB3 group (the
+> non-cross-substitutable ER variants), aspirin returns none (single-source). Wiring the harness to
+> *compute* P@K/R@K against this set (vs just exposing it) + the synthetic dataset (D7-09) remain.
 
 - **Spec ref (O6, A9 (Quantitative-Recommendation), B3 (DQ2)):** A9/DQ2: 'Precision@K & Recall@K - Effectiveness of RDKit MCS identifying therapeutically equivalent alternatives in top-ranked results'; B3 targets P@3>=0.70, R@3>=0.60.
 - **As-built:** DQ2 does not evaluate the recommendation engine's output. build_per_case constructs the 'retrieved_ranked' list by sorting the pharmacist gold-standard rows themselves (valid-first, optional same_active_moiety boost, then stored candidate_rank) — comment: 'Simulated retrieved ranking: gold ranks, optionally boost same-moiety with MCS flag'. Because the 'retrieved' list is derived from the gold labels, Precision@K/Recall@K are largely self-fulfilling. The 'rules_plus_mcs' condition boosts by the boolean same_active_moiety gold field, not by RDKit maximum-common-substructure; rdkit is not installed and the real MCS module (services/therapeutic/mcs.py) is never invoked in DQ2.
