@@ -273,10 +273,15 @@ fabricated-metric problems, which are the only non-negotiable fixes.*
   DQ3 (bertscore_f1) emitters pick it up with **no emitter changes**. `pass` is computed only on an
   AVAILABLE numeric value (None otherwise). `ResearchEvaluationPanel.tsx` renders a PASS/FAIL chip
   next to each tracked metric. Labels use ASCII (`>=`/`<`) to stay encoding-safe.
-- **Validated:** direction + boundary correctness (WER 0.08→PASS, 0.20→FAIL; P@3 0.60→FAIL, 0.70→PASS;
-  bertscore 0.80→PASS, 0.79→FAIL); unavailable → `pass=None` (no false verdict); untracked metrics get
-  no acceptance key; DQ3 e2e (bertscore 0.9148 → pass=true vs 0.80); JSON-serializes cleanly; frontend
-  builds; research suite 16/16. **Effort:** S.
+- **Validated (2 passes; 2nd independent):** direction + boundary correctness (WER 0.08→PASS, 0.20→FAIL;
+  P@3 0.60→FAIL, 0.70→PASS; bertscore 0.80→PASS, 0.79→FAIL); unavailable → `pass=None`; untracked → no
+  acceptance key; all 5 targets reachable by live emitters (exact name match); JSON clean; build ok; 16/16.
+- **⚠ Fixed in 2nd (independent) validation:** (1) **DQ1 WER/CER badges suppressed** — those metrics come
+  from `simulate_engine_outputs` noise (the DQ1 fabrication), so a PASS/FAIL there would certify fake data;
+  added `suppress_acceptance` and set it on the DQ1 emitter. Real WER/CER verdicts await U3 + D7-09.
+  (2) **NaN/bool guarded** in `evaluate_target` (a NaN comparison would have shown a misleading FAIL).
+- **Net:** the threshold *mechanism* is done and correct; only DQ2 (P@3/R@3) badges ride on genuine data
+  today — DQ1 verdicts are withheld by design, DQ3's BERTScore is circular pending U2. **Effort:** S.
 
 ### U13 — Evaluation dataset (synthetic Rx images + ground truth)
 - **Clears:** D7-09 (major). **Route:** Data (needs your input). **Approach:** add the spec's 25–30
@@ -338,7 +343,7 @@ Full list in the audit doc's tables.
 | U9 Knowledge graph | D4-01, D3-05, D4-02 | Decision | S/XL | ☐ |
 | U10 SHAP/LIME + dashboard | D6-xai (crit) + SHAP/LIME/feature-mismatch + D8 LIME-dep | Fix | XL | ◑ **substantially addressed — 2× validated (defect fixed; B4-literal polish remains)** |
 | U11 DQ2 real engine | D7-03 | Fix | M | ☐ |
-| U12 Eval thresholds | D7-04 | Fix | S | ✅ **done — validated** |
+| U12 Eval thresholds | D7-04 | Fix | S | ✅ **mechanism done — 2× validated (DQ1 WER/CER badge suppressed: fabricated data)** |
 | U13 Eval dataset | D7-09 | Data | M | ☐ |
 | U14 Direct Drug Search | D2 UC2 | Fix | L | ☐ |
 | U15 Dashboard access | D8 reviewer-only | Fix/Doc | S | ☐ |

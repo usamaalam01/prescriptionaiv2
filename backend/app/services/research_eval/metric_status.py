@@ -43,7 +43,10 @@ def evaluate_target(metric_key: str, value: Any) -> dict[str, Any] | None:
     if spec is None:
         return None
     passed: bool | None = None
-    if isinstance(value, (int, float)):
+    # Guard: exclude bool (a subclass of int) and NaN — a NaN comparison is always
+    # False and would render a misleading "FAIL" on a garbage value.
+    numeric = isinstance(value, (int, float)) and not isinstance(value, bool) and value == value
+    if numeric:
         passed = value <= spec["target"] if spec["direction"] == "min" else value >= spec["target"]
     return {
         "target": spec["target"],
@@ -60,6 +63,7 @@ def metric_envelope(
     availability: MetricAvailability | str = MetricAvailability.NOT_CALCULATED,
     note: str | None = None,
     target_key: str | None = None,
+    suppress_acceptance: bool = False,
 ) -> dict[str, Any]:
     avail = availability.value if isinstance(availability, MetricAvailability) else str(availability)
     surfaced = value if avail == MetricAvailability.AVAILABLE.value else None
@@ -71,9 +75,13 @@ def metric_envelope(
     }
     # U12: attach the B3 acceptance target + pass/fail when this metric is tracked.
     # Pass/fail is evaluated only on a surfaced (AVAILABLE) numeric value.
-    tgt = evaluate_target(target_key or name, surfaced)
-    if tgt is not None:
-        env["acceptance"] = tgt
+    # ``suppress_acceptance`` is set by callers whose values are NOT trustworthy for a
+    # pass/fail verdict (e.g. DQ1 metrics computed over simulate_engine_outputs noise) —
+    # attaching an official PASS/FAIL to fabricated data would be misleading.
+    if not suppress_acceptance:
+        tgt = evaluate_target(target_key or name, surfaced)
+        if tgt is not None:
+            env["acceptance"] = tgt
     return env
 
 

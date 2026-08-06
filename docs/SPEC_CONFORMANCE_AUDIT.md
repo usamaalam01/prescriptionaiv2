@@ -640,13 +640,20 @@ The delivered artefact is a **well-engineered FastAPI + React + PostgreSQL syste
 
 #### `D7-04` — Evaluation harness (DQ1–DQ4)  ·  _major_
 
-> **U12 status — CLEARED.** `metric_status.py` now encodes the B3 targets (`ACCEPTANCE_TARGETS`:
-> WER<0.15, CER<0.10, P@3≥0.70, R@3≥0.60, BERTScore F1≥0.80) with per-metric direction, and
-> `metric_envelope` attaches an `acceptance{target,direction,label,pass}` block (keyed by metric name,
-> so DQ1/DQ2/DQ3 emitters get it automatically). `pass` is computed only on an AVAILABLE numeric value.
-> `ResearchEvaluationPanel.tsx` renders a PASS/FAIL chip per metric. Verified: direction/boundary
-> correctness and availability gating (unavailable → no verdict). The dashboard can now state whether
-> each DQ target was met.
+> **U12 status — mechanism CLEARED; WER/CER verdicts gated to real data.** `metric_status.py` encodes
+> the B3 targets (`ACCEPTANCE_TARGETS`: WER<0.15, CER<0.10, P@3≥0.70, R@3≥0.60, BERTScore F1≥0.80) with
+> per-metric direction, and `metric_envelope` attaches `acceptance{target,direction,label,pass}` keyed by
+> metric name (DQ1/DQ2/DQ3 emitters pick it up automatically). `pass` is computed only on an AVAILABLE
+> numeric value; NaN/bool are guarded → no verdict. `ResearchEvaluationPanel.tsx` renders a PASS/FAIL chip.
+> Verified: direction/boundary correctness, availability gating, key-match reachability (all 5 targets
+> reachable by live emitters).
+>
+> **Honesty gate (from U12's independent validation):** the **DQ1 WER/CER** metrics are computed over
+> `simulate_engine_outputs` noise (the DQ1 fabrication, see D7-01), so attaching an official PASS/FAIL to
+> them would certify fabricated data. U12 therefore **suppresses the acceptance badge for DQ1** — WER/CER
+> PASS/FAIL is withheld until a real DQ1 path + evaluation dataset exist (U3 / D7-09). So the *threshold
+> mechanism* is done and correct; the P@3/R@3 (DQ2) and BERTScore (DQ3, itself circular pending U2)
+> badges render, but the OCR-target verdicts are intentionally not shown until real data backs them.
 
 - **Spec ref (B3 (Quantitative targets), B4 Page 2):** B3 quantitative targets table (all must be checkable): WER<15%, CER<10%, P@3>=0.70, R@3>=0.60, BERTScore>=0.80.
 - **As-built:** None of the approved numeric acceptance thresholds are encoded anywhere. A repo-wide search found only unrelated numbers (OCR confidence 0.60/0.75, MCS atom-coverage 0.9). ranking_metrics/ocr_metrics contain no threshold constants; service wrap() emits raw values with no pass/fail; the frontend MetricValue simply renders value.toFixed(4) with no comparison to a target. So the dashboard cannot report metrics against the approved acceptance criteria.

@@ -171,6 +171,11 @@ def run_dq1_ocr_evaluation(db: Session, *, evaluation_case_id: str) -> dict[str,
                     name=k,
                     value=v,
                     availability=MetricAvailability.AVAILABLE,
+                    # DQ1 metrics are computed over simulate_engine_outputs noise, not a
+                    # real OCR run — so do NOT attach a B3 PASS/FAIL verdict (it would
+                    # certify fabricated numbers). Real WER/CER pass/fail awaits a real
+                    # DQ1 path + evaluation dataset (see U3 / D7-09).
+                    suppress_acceptance=True,
                 )
                 for k, v in {
                     "cer": metrics["cer"],
