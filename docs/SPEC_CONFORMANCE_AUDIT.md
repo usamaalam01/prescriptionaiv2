@@ -183,6 +183,17 @@ The delivered artefact is a **well-engineered FastAPI + React + PostgreSQL syste
 
 #### `B4 / A8 / O5 / DQ4` — XAI / explainability  ·  _critical_
 
+> **U10 status — CLEARED.** The spec-named **`shap` and `lime` libraries** now run over the additive
+> Evidence Match Score (`research_eval/xai_real.py`), and the library SHAP values are **verified to
+> reconcile with the exact analytical `w·x` attribution** (residual ~1e-14). Each ranked candidate
+> carries a `real_xai` block (`therapeutic/evaluate.py`), and the React panel
+> (`TherapeuticAlternativesPanel.tsx`) renders an **Explainability** section with SHAP + LIME **signed
+> bar charts** (pure SVG), a reconciliation chip, library labels, and the honesty disclaimer.
+> Flag-gated (`ENABLE_SPEC_SHAP`/`ENABLE_SPEC_LIME`) with analytical fallback. Note: the earlier plan's
+> "depends on U5 (molecular feature)" was incorrect — the live 9-feature score has no MCS feature, so the
+> dashboard explains the real shipping score. (FDA-Sources content already exists as the provenance
+> `source_claims` cards; U10 adds the SHAP/LIME visualisations that were missing.)
+
 - **Spec ref (B4 screenshots / A8 IT Artefact / O5):** B4 required UI: an "Explainability Dashboard" with THREE TABS "SHAP | LIME | FDA Sources" — SHAP tab a horizontal bar chart titled "SHAP Feature Contributions", LIME tab a chart titled "LIME Local Explanation", FDA Sources tab numbered evidence cards. A8: "SHAP + LIME + source attribution cards embedded inline in Step 4". O5: integrate SHAP and LIME for transparency in the recommendation flow.
 - **As-built:** No Explainability Dashboard and no charts exist anywhere in the frontend. In the inline Step-4 alternatives panel, feature attribution is rendered as a single one-line text caption ('Experimental component contribution: feature (+contribution), ...'). The Research Evaluation DQ4 tab only offers a 'Preview explanation conditions A/B/C' button that dumps raw JSON via JSON.stringify, plus a survey-import button. There are no SHAP/LIME tabs, no bar charts, no feature-importance visualisation. No charting library (recharts, chart.js, d3, plotly, victory, nivo) is declared in frontend/package.json.
 - **Research/DQ impact:** DQ4 ('impact of SHAP/LIME explanations and source attribution on pharmacist trust') cannot be evidenced as specified: the SHAP/LIME explanation condition has no visual artefact for participants to react to. O5 ('integrate SHAP and LIME ... in the recommendation flow') and A7 hybrid inline explainability are unsupportable in the UI.

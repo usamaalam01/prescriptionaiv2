@@ -53,6 +53,7 @@ class Settings(BaseSettings):
     ENABLE_SPEC_RAG: bool = True
     ENABLE_SPEC_GROQ: bool = False
     ENABLE_SPEC_SHAP: bool = False
+    ENABLE_SPEC_LIME: bool = False  # U10 — real lime library over the additive score
     GROQ_API_KEY: str = ""
     GROQ_MODEL: str = "llama-3.3-70b-versatile"
 

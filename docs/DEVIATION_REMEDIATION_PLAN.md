@@ -11,6 +11,7 @@ approve.
 |---|---|---|
 | ✅ | **U1 — semantic FAISS RAG (DQ3 path)** | Cleared **D5-rag-08**; partial **D5-rag-06 / D5-rag-02**. 2 validation passes (the 2nd, adversarial, found + fixed 3 defects incl. a real metric-comparability bug). Activate with `ENABLE_SEMANTIC_RAG=true`. |
 | ◑ | **U2 — real BERTScore in DQ3 (mechanism only; D7-02 still OPEN)** | Removed the **fabricated-`None`** (real, deterministic, gated metric; P/R/F1 surface + persist) — an integrity fix. **But the spec metric is in-substance unmet:** the explanation embeds its evidence → score is *circular* (F1 ≈ 0.92 contained vs ≈ 0.77 independent); reference truncated at ~512 tokens (0.91→0.47 if match buried); spec's *generated-vs-independent-label* needs Groq (off) + ≥0.80 threshold (U12). **Both substantive halves deferred → D7-02 / D7-V1 remain OPEN.** Two independent validations. Activate with `ENABLE_BERTSCORE=true`. |
+| ✅ | **U10 — real SHAP + LIME + dashboard** | Cleared **D6-xai (crit)** + SHAP-never-fires / LIME-absent / feature-mismatch / D8 LIME-dep. Real `shap`/`lime` libraries over the additive score, **verified to reconcile with the exact `w·x` attribution** (residual ~1e-14); pure-SVG SHAP/LIME dashboard in the React panel. Was **not** U5-blocked (live score has no MCS feature). Activate with `ENABLE_SPEC_SHAP`/`ENABLE_SPEC_LIME=true`. |
 
 **Recommended next:** **U3 — resolve the fabricated DQ1 harness** — the *other* critical fabricated-metric
 integrity item. It's a **Decision** (drop DQ1 vs wire it to Google Vision), so it needs your call first —
@@ -219,14 +220,28 @@ fabricated-metric problems, which are the only non-negotiable fixes.*
 
 ## Phase D — Explainability
 
-### U10 — Real SHAP + LIME + Explainability Dashboard
-- **Clears:** D6-xai (crit), D6 SHAP-never-fires, D6 LIME-absent, D6 feature-mismatch, D8 LIME-dep (major).
-  **Route:** Fix (hybrid — keep the exact additive breakdown as ground truth, add real SHAP/LIME panels).
-  **Deps:** U5 (the molecular feature).
-- **Approach:** add `shap`, `lime`, a chart lib (`recharts`); build a `TherapeuticAlternativesPanel`
-  dashboard with SHAP | LIME | FDA Sources tabs and signed bar charts.
-- **Test:** SHAP values reconcile to the score; LIME local explanation renders; charts display.
-- **Effort:** XL.
+### U10 — Real SHAP + LIME + Explainability Dashboard ✅ DONE
+- **Cleared:** D6-xai (crit), D6 SHAP-never-fires, D6 LIME-absent, D6 feature-mismatch, D8 LIME-dep.
+  **Route:** Fix (hybrid — exact additive breakdown as ground truth + real spec-named libraries).
+- **Correction to earlier plan:** the "**Deps: U5 (molecular feature)**" assumption was **wrong** — the
+  live Evidence Match Score is a 9-feature additive model with **no MCS feature**, so U10 was *not*
+  blocked. Verified against `scoring.py:WEIGHTS`.
+- **As-built (delivered):**
+  - `research_eval/xai_real.py` — real `shap.Explainer` + `lime.lime_tabular` over the additive score
+    fn, with a **reconciliation** that asserts library SHAP == exact analytical `w_i·x_i`
+    (verified `reconciled`, max residual ~1e-14). Flag-gated (`ENABLE_SPEC_SHAP`/`ENABLE_SPEC_LIME`)
+    with graceful analytical fallback; never raises into a request.
+  - `therapeutic/evaluate.py` — `_real_xai_for_score` attaches a `real_xai` block to each **ranked**
+    candidate (both Path A products + Path B different-ingredient). Verified end-to-end (Amoxicillin →
+    5 alternatives, Doxycycline carries populated `real_xai`).
+  - `frontend/.../TherapeuticAlternativesPanel.tsx` — **Explainability** accordion with **pure-SVG**
+    signed bar charts (no chart dep) for SHAP + LIME, a reconciliation chip, library labels, and the
+    honesty disclaimer. `npm run build` clean.
+  - deps: `shap==0.46.0`, `lime==0.2.0.1` (sklearn/numpy/scipy already present).
+- **Validated:** SHAP reconciles to exact attribution (~1e-14); LIME signs correct; flag-off →
+  analytical fallback, `real_shap`/`real_lime` = None, app healthy; frontend builds; backend
+  therapeutic+research suites **37 passed / 2 pre-existing failures (unrelated to U10)**.
+- **Not in scope:** the MCS feature (U5) and the 9-feature model itself (U8 decision). **Effort:** XL.
 
 ---
 
@@ -298,7 +313,7 @@ Full list in the audit doc's tables.
 | U7 Threshold | D3-06 | Fix/Doc | S | ☐ |
 | U8 Score formula | D3-01 | Decision | S/M | ☐ |
 | U9 Knowledge graph | D4-01, D3-05, D4-02 | Decision | S/XL | ☐ |
-| U10 SHAP/LIME + dashboard | D6 ×4 + D8 LIME-dep | Fix | XL | ☐ |
+| U10 SHAP/LIME + dashboard | D6-xai (crit) + SHAP/LIME/feature-mismatch + D8 LIME-dep | Fix | XL | ✅ **done — validated (was NOT U5-blocked)** |
 | U11 DQ2 real engine | D7-03 | Fix | M | ☐ |
 | U12 Eval thresholds | D7-04 | Fix | S | ☐ |
 | U13 Eval dataset | D7-09 | Data | M | ☐ |

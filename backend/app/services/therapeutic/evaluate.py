@@ -21,9 +21,32 @@ from app.services.therapeutic.product_candidates import retrieve_same_moiety_pro
 from app.services.therapeutic.rag_evidence import maybe_groq_summarise, retrieve_label_excerpts
 from app.services.therapeutic.retriever import retrieve_candidates
 from app.services.therapeutic.safety import screen_candidate
-from app.services.therapeutic.scoring import calculate_evidence_match_score
+from app.services.therapeutic.scoring import WEIGHTS, calculate_evidence_match_score
 from app.services.therapeutic.seed_data import DATASET_VERSION, DEMO_LABEL, RULES_ENGINE_VERSION
 from app.services.therapeutic.xai import DISCLAIMER, build_source_claims, explain_candidate
+
+
+def _real_xai_for_score(score: dict) -> dict:
+    """U10 — build the SHAP/LIME XAI payload from an Evidence Match Score result.
+
+    Reconstructs the additive feature vector from the score's components
+    (matched → 1.0, else 0.0) and runs the real SHAP/LIME explainers (flag-gated,
+    analytical fallback). Never raises — returns a minimal block on any failure.
+    """
+    try:
+        from app.services.research_eval.xai_real import explain_candidate_xai
+
+        feature_values = {
+            c["component"]: (1.0 if c.get("status") == "matched" else 0.0)
+            for c in (score.get("components") or [])
+        }
+        # Cover any weight not represented in components.
+        for k in WEIGHTS:
+            feature_values.setdefault(k, 0.0)
+        return explain_candidate_xai(feature_values=feature_values, weights=WEIGHTS, baseline=0.0)
+    except Exception:  # noqa: BLE001 - XAI must never break a recommendation
+        return {"score": score.get("total_score"), "real_shap": None, "real_lime": None,
+                "reconciliation": {"status": "error"}, "flags": {}}
 
 
 INSUFFICIENT_CONTEXT = "Insufficient clinical context to rank therapeutic alternatives safely."
@@ -461,6 +484,7 @@ def _evaluate_one(
         explanation["mcs_note"] = MCS_LIMITATION
         payload["important_differences"] = explanation["important_differences"]
         payload["explanation"] = explanation
+        payload["real_xai"] = _real_xai_for_score(score)  # U10: SHAP/LIME dashboard data
         payload["rule_based_explanation"] = _rule_based_explanation(
             rank=idx,
             score=score,
@@ -610,6 +634,7 @@ def _evaluate_one(
         explanation["mcs_note"] = MCS_LIMITATION
         payload["important_differences"] = explanation["important_differences"]
         payload["explanation"] = explanation
+        payload["real_xai"] = _real_xai_for_score(score)  # U10: SHAP/LIME dashboard data
         payload["rule_based_explanation"] = _rule_based_explanation(
             rank=idx,
             score=score,

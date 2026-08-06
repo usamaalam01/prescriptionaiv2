@@ -30,3 +30,9 @@ faiss-cpu==1.9.0.post1
 sentence-transformers==3.3.1
 huggingface_hub==0.27.1
 
+# U10 — spec-named XAI libraries (enable via ENABLE_SPEC_SHAP / ENABLE_SPEC_LIME).
+# Explain the additive Evidence Match Score and reconcile with the exact analytical
+# attribution. scikit-learn/numpy/scipy already resolve via sentence-transformers.
+shap==0.46.0
+lime==0.2.0.1
+

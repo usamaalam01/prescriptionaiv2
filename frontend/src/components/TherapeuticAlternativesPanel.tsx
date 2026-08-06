@@ -60,6 +60,93 @@ function ProvenanceChip({ label }: { label?: string | null }) {
   )
 }
 
+// U10 — signed horizontal bar chart (pure SVG, no chart dependency).
+// Renders {feature: value} contributions with a centre zero-line: green = positive,
+// red = negative, bar length proportional to |value| / max|value|.
+function SignedBars({ data }: { data: Record<string, number> }) {
+  const entries = Object.entries(data || {}).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
+  const maxAbs = Math.max(1e-9, ...entries.map(([, v]) => Math.abs(v)))
+  const rowH = 22
+  const labelW = 190
+  const barW = 180
+  const width = labelW + barW * 2 + 60
+  const height = entries.length * rowH + 8
+  const mid = labelW + barW
+  return (
+    <Box sx={{ overflowX: 'auto' }}>
+      <svg width={width} height={height} role="img" aria-label="feature contributions">
+        <line x1={mid} y1={0} x2={mid} y2={height} stroke="#bbb" strokeWidth={1} />
+        {entries.map(([k, v], i) => {
+          const y = i * rowH + 4
+          const len = (Math.abs(v) / maxAbs) * barW
+          const positive = v >= 0
+          const x = positive ? mid : mid - len
+          return (
+            <g key={k}>
+              <text x={labelW - 6} y={y + rowH / 2} textAnchor="end" dominantBaseline="middle" fontSize={11} fill="currentColor">
+                {k}
+              </text>
+              <rect x={x} y={y + 3} width={Math.max(1, len)} height={rowH - 8} fill={positive ? '#2e7d32' : '#c62828'} rx={2} />
+              <text x={positive ? mid + len + 4 : mid - len - 4} y={y + rowH / 2} textAnchor={positive ? 'start' : 'end'} dominantBaseline="middle" fontSize={10} fill="currentColor">
+                {v >= 0 ? '+' : ''}{Math.round(v * 100) / 100}
+              </text>
+            </g>
+          )
+        })}
+      </svg>
+    </Box>
+  )
+}
+
+function XaiDashboard({ xai }: { xai: NonNullable<Candidate['real_xai']> }) {
+  const shapData = xai.real_shap?.feature_values || xai.analytical_shap || {}
+  const limeData = xai.real_lime?.local_feature_weights || xai.analytical_lime || {}
+  const rec = xai.reconciliation || {}
+  const flags = xai.flags || {}
+  const usingLibShap = !!xai.real_shap
+  const usingLibLime = !!xai.real_lime
+  return (
+    <Stack spacing={1.5}>
+      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+        <Chip
+          size="small"
+          color={rec.status === 'reconciled' ? 'success' : rec.status === 'not_computed' ? 'default' : 'warning'}
+          label={
+            rec.status === 'reconciled'
+              ? `SHAP reconciled (residual < ${rec.tolerance})`
+              : rec.status === 'not_computed'
+                ? 'Library SHAP not enabled — showing exact additive attribution'
+                : `Reconciliation: ${rec.status}`
+          }
+        />
+        <Chip size="small" variant="outlined" label={`SHAP: ${usingLibShap ? xai.real_shap?.library || 'library' : 'analytical (exact)'}`} />
+        <Chip size="small" variant="outlined" label={`LIME: ${usingLibLime ? xai.real_lime?.library || 'library' : 'analytical'}`} />
+      </Stack>
+
+      <Box>
+        <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
+          SHAP — feature contributions to the Evidence Match Score
+          {usingLibShap ? ' (spec-named shap library; verified equal to exact w·x)' : ' (exact additive attribution)'}
+        </Typography>
+        {Object.keys(shapData).length ? <SignedBars data={shapData} /> : <Typography variant="body2">No SHAP data.</Typography>}
+      </Box>
+
+      <Box>
+        <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
+          LIME — local feature weights{usingLibLime ? ' (spec-named lime library)' : ' (analytical approximation)'}
+        </Typography>
+        {Object.keys(limeData).length ? <SignedBars data={limeData} /> : <Typography variant="body2">No LIME data.</Typography>}
+      </Box>
+
+      <Typography variant="caption" color="text.secondary">
+        {xai.disclaimer ||
+          'SHAP/LIME explain the rule-based Evidence Match Score, not clinical correctness or therapeutic equivalence. Pharmacist verification required.'}
+        {!flags.shap_enabled && ' · Enable ENABLE_SPEC_SHAP / ENABLE_SPEC_LIME to run the libraries.'}
+      </Typography>
+    </Stack>
+  )
+}
+
 interface ConfirmedMedicine {
   id: string
   item_number: number
@@ -124,6 +211,17 @@ interface Candidate {
   feature_attribution?: {
     method?: string
     top_positive?: Array<{ feature?: string; contribution?: number }>
+    disclaimer?: string
+  }
+  real_xai?: {
+    score?: number
+    baseline?: number
+    analytical_shap?: Record<string, number>
+    analytical_lime?: Record<string, number>
+    real_shap?: { library?: string; base_value?: number; feature_values?: Record<string, number> } | null
+    real_lime?: { library?: string; local_feature_weights?: Record<string, number> } | null
+    reconciliation?: { status?: string; max_abs_residual?: number; tolerance?: number; note?: string }
+    flags?: { shap_enabled?: boolean; lime_enabled?: boolean; shap_computed?: boolean; lime_computed?: boolean }
     disclaimer?: string
   }
   rag_evidence?: {
@@ -339,6 +437,17 @@ function CandidateCard({
           </Stack>
         </AccordionDetails>
       </Accordion>
+
+      {cand.real_xai && (
+        <Accordion disableGutters sx={{ bgcolor: 'transparent', boxShadow: 'none', '&:before': { display: 'none' } }}>
+          <AccordionSummary>
+            <Typography variant="body2">Explainability (SHAP / LIME)</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <XaiDashboard xai={cand.real_xai} />
+          </AccordionDetails>
+        </Accordion>
+      )}
 
       <TextField
         size="small"
