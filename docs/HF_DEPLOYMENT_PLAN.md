@@ -4,6 +4,17 @@
 same-origin. **Database:** external free Postgres (Neon or Supabase) so data persists across the
 Space's ephemeral restarts and the app's `CREATE SCHEMA` migrations work.
 
+> **Environment finding (local testing, 2026-08):** on the local **Windows + Python 3.13** dev box,
+> **TrOCR (`trocr-large-handwritten`) segfaults torch intermittently** — it crashes even in a bare
+> standalone process (no server / faiss / BERTScore), with *and* without `KMP_DUPLICATE_LIB_OK`,
+> exiting 0 once and 139 twice on the identical load+generate. This is a **native torch/OpenMP
+> instability on Windows**, not an app bug. Consequences: (1) for **local** testing, keep OCR
+> **Vision-only** (`ENABLE_TROCR_RETRY=false`, `ENABLE_PADDLE_DETECT=false`) — stable and fast;
+> (2) TrOCR is expected to work in the **Linux Docker** image (Linux torch builds don't hit this
+> conflict; `KMP_DUPLICATE_LIB_OK=TRUE` is already set in the Dockerfile as defensive cover). Also
+> note: running **RAG + BERTScore together** on Windows needs `KMP_DUPLICATE_LIB_OK=TRUE` (already
+> in `.env`/Dockerfile) or it segfaults on the same class of OpenMP conflict.
+
 ## Why one container, same-origin
 The frontend already calls the API with `axios baseURL: ''` (relative `/api`), so if FastAPI serves
 the built React `dist/`, the browser talks to one origin — no CORS, no Vite proxy, no second service.
