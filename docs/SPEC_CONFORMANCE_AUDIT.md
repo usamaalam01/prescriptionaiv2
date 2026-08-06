@@ -18,7 +18,7 @@
 The delivered artefact is a **well-engineered FastAPI + React + PostgreSQL system**, but it is a *different artefact* from the one the Spec approved on several headline points. The four dissertation questions (DQ1–DQ4) are the worst affected: their **named technologies are absent, optional, or never execute in the default runtime**.
 
 - **DQ1 (TrOCR OCR accuracy):** TrOCR is **not** the primary engine and its `torch`/`transformers` stack is **not installed or installable** in the current venv — Google Vision is primary in every shipped config. TrOCR WER/CER cannot be produced.
-- **DQ2 (RDKit-MCS therapeutic matching):** RDKit is **not installed**, so MCS never runs; matching is catalogue/rule-based.
+- **DQ2 (RDKit-MCS therapeutic matching):** *(original finding — since SUPERSEDED by O3/U5)* RDKit was not installed and MCS never ran. **Now:** `rdkit==2026.3.5` is installed; real rdFMCS atom coverage feeds a bounded score bonus and a `mean_mcs_atom_coverage` DQ2 metric (see the D3-02 / D3-03 status blocks). Matching remains catalogue/rule-based with MCS as a supporting structural signal, not a gate.
 - **DQ3 (FAISS RAG + BERTScore):** retrieval is **keyword SPL lookup**, not FAISS vector RAG; BERTScore optional.
 - **DQ4 (SHAP/LIME XAI):** the scoring model is explained by a **bespoke additive breakdown**; SHAP is optional/never fires, LIME absent.
 - **Platform:** approved Streamlit/HF-Spaces UI was **re-platformed to React + FastAPI + Docker/Postgres** (an A10-scale change) — legitimate but must be documented as an approved deviation, not shipped silently.
@@ -432,6 +432,16 @@ The delivered artefact is a **well-engineered FastAPI + React + PostgreSQL syste
 - **Effort:** L  ·  **Files:** frontend/src/pages/CatalogExplorerPage.tsx, backend/app/api/v1/prescriptions.py, backend/app/services/prescription_service.py
 
 #### `D3-03` — Recommendation / therapeutic matching  ·  _major_
+
+> **O3/U5 status — updated (the As-built below is now HISTORICAL).** DQ2's `rules_plus_mcs` no longer
+> uses the `same_active_moiety` flag: `run_dq2_recommendation_evaluation` now calls real
+> `compute_mcs_similarity` (rdFMCS atom coverage over catalogue SMILES) per (reference, candidate) pair,
+> cached. **Nuance (found in validation):** re-ordering pharmacist-valid candidates by coverage does not
+> change P@K/R@K (valids always rank first; those metrics are set-membership over top-K), so the MCS
+> effect is reported as a **distinct `mean_mcs_atom_coverage`** metric on `rules_plus_mcs` (a
+> `metric_envelope`; `NOT_CALCULATED` on `rules_only`). So DQ2 now genuinely exercises RDKit MCS, but its
+> *quantitative* contribution is the coverage metric, not P@K/R@K. The As-built text and line refs below
+> predate this change.
 
 - **Spec ref (DQ2):** DQ2: 'How effectively does RDKit MCS identify therapeutically equivalent generic medicines? (Precision@K & Recall@K)'.
 - **As-built:** The DQ2 evaluation compares two conditions 'rules_only' vs 'rules_plus_mcs', but the 'rules_plus_mcs' condition does not invoke RDKit MCS at all. It re-ranks gold-standard rows using a stored boolean flag RecommendationGoldStandard.same_active_moiety as a proxy 'MCS rank boost'. No atom coverage, no rdFMCS, no SMILES are involved in the metric. Precision/Recall functions themselves are correct, but the 'MCS' condition is a name/flag simulation.

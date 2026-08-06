@@ -20,9 +20,12 @@ logger = logging.getLogger(__name__)
 
 _SALT_WORDS = (
     r"\b(hydrochloride|hcl|sodium|potassium|calcium|magnesium|sulfate|sulphate|"
-    r"phosphate|maleate|besylate|mesylate|tartrate|succinate|fumarate|citrate|"
-    r"acetate|bromide|chloride|nitrate|dihydrate|trihydrate|monohydrate|hydrate|"
-    r"hydrobromide|tosylate|estolate|valerate|propionate|dipropionate|base)\b"
+    r"bisulfate|hemisulfate|phosphate|maleate|besylate|mesylate|tartrate|"
+    r"bitartrate|succinate|fumarate|hemifumarate|citrate|acetate|bromide|chloride|"
+    r"nitrate|dihydrate|trihydrate|monohydrate|hydrate|hydrobromide|tosylate|"
+    r"estolate|valerate|propionate|dipropionate|pamoate|embonate|decanoate|"
+    r"lactate|xinafoate|isethionate|gluconate|stearate|palmitate|oxalate|"
+    r"aspartate|carbonate|salicylate|benzoate|butyrate|caproate|enanthate|base)\b"
 )
 
 

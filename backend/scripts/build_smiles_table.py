@@ -17,31 +17,17 @@ into the same {name: {"name","synonyms","smiles"}} shape and pass its pickle pat
 from __future__ import annotations
 
 import pickle
-import re
 import sqlite3
 import sys
 from pathlib import Path
 
 from app.services.datasets.paths import catalog_db_path
 
+# Reuse the resolver's normalisation so the builder's keys always match the lookup
+# keys (single source of truth — no salt-regex drift between build and query).
+from app.services.therapeutic.smiles_catalog import _nkey, _strip_salt
+
 _DEFAULT_SOURCE = Path("D:/AI Learning/AIPrescription/prescription/data/drugbank_parsed.pkl")
-
-_SALT_WORDS = (
-    r"\b(hydrochloride|hcl|sodium|potassium|calcium|magnesium|sulfate|sulphate|"
-    r"phosphate|maleate|besylate|mesylate|tartrate|succinate|fumarate|citrate|"
-    r"acetate|bromide|chloride|nitrate|dihydrate|trihydrate|monohydrate|hydrate|"
-    r"hydrobromide|tosylate|estolate|valerate|propionate|dipropionate|base)\b"
-)
-
-
-def _nkey(s: str | None) -> str:
-    if not s:
-        return ""
-    return " ".join(str(s).lower().replace("-", " ").split())
-
-
-def _strip_salt(k: str) -> str:
-    return " ".join(re.sub(_SALT_WORDS, " ", k).split())
 
 
 def build(source: Path) -> None:

@@ -333,7 +333,20 @@ def run_dq2_recommendation_evaluation(db: Session) -> dict[str, Any]:
             )
         out["rejection_reason_distribution"] = m.get("rejection_reason_distribution")
         out["n_cases"] = m.get("n_cases")
-        out["mean_mcs_atom_coverage"] = m.get("mean_mcs_atom_coverage")
+        # Wrap like the sibling metrics so consumers read a consistent envelope shape.
+        # AVAILABLE only when a value exists (i.e. the MCS condition); NOT_CALCULATED
+        # for rules_only (no MCS) so it renders as an availability chip, not "undefined".
+        _mcs_cov = m.get("mean_mcs_atom_coverage")
+        out["mean_mcs_atom_coverage"] = metric_envelope(
+            name="mean_mcs_atom_coverage",
+            value=_mcs_cov,
+            availability=(
+                MetricAvailability.AVAILABLE
+                if _mcs_cov is not None
+                else MetricAvailability.NOT_CALCULATED
+            ),
+            note="Mean RDKit-MCS atom coverage of pharmacist-valid candidates (per-case mean, then averaged across cases). Structural quality only; not therapeutic equivalence.",
+        )
         return out
 
     return {
