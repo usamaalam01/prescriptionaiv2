@@ -21,7 +21,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     FRONTEND_DIST_DIR=/app/frontend/dist \
     HF_CACHE_ROOT=/tmp/hf-cache \
     # App reads runtime artefacts from here (downloaded at startup on HF).
-    DATA_DIR=/data
+    DATA_DIR=/data \
+    # faiss-cpu and torch/bert-score each bundle an OpenMP runtime; loading both in
+    # one process (semantic RAG + BERTScore in DQ3) can abort with a duplicate-libiomp
+    # error / segfault. Allow the duplicate load. (Linux images rarely hit this, but
+    # set it defensively so ENABLE_SEMANTIC_RAG + ENABLE_BERTSCORE are safe together.)
+    KMP_DUPLICATE_LIB_OK=TRUE
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \

@@ -23,6 +23,11 @@ narrative removes the circularity.)*
 *(Deployment note: HF-Spaces deploy is **paused** — HF now gates Docker Spaces behind PRO; the Neon DB +
 runtime artefacts are staged and the app is deploy-ready for any container host. Unrelated to the units below.)*
 
+*(Runtime note — found in live testing: with **both** `ENABLE_SEMANTIC_RAG` and `ENABLE_BERTSCORE` on,
+faiss + torch each load an OpenMP runtime in the same process (DQ3), which **segfaults on Windows** without
+`KMP_DUPLICATE_LIB_OK=TRUE`. Now set in the Dockerfile ENV and `.env`. Live smoke test with the fix:
+DQ3 returns real retrieval + BERTScore (keyword F1 0.81 → badge PASS, faiss 0.79 → FAIL) with no crash.)*
+
 ## Scope
 
 - **Accepted / out of scope** (per your decisions): the entire **OCR** dimension (D1 — Vision-primary,
