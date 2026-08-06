@@ -11,12 +11,14 @@ approve.
 |---|---|---|
 | ✅ | **U1 — semantic FAISS RAG (DQ3 path)** | Cleared **D5-rag-08**; partial **D5-rag-06 / D5-rag-02**. 2 validation passes (the 2nd, adversarial, found + fixed 3 defects incl. a real metric-comparability bug). Activate with `ENABLE_SEMANTIC_RAG=true`. |
 | ◑ | **U2 — real BERTScore in DQ3 (mechanism only; D7-02 still OPEN)** | Removed the **fabricated-`None`** (real, deterministic, gated metric; P/R/F1 surface + persist) — an integrity fix. **But the spec metric is in-substance unmet:** the explanation embeds its evidence → score is *circular* (F1 ≈ 0.92 contained vs ≈ 0.77 independent); reference truncated at ~512 tokens (0.91→0.47 if match buried); spec's *generated-vs-independent-label* needs Groq (off) + ≥0.80 threshold (U12). **Both substantive halves deferred → D7-02 / D7-V1 remain OPEN.** Two independent validations. Activate with `ENABLE_BERTSCORE=true`. |
-| ◑ | **U10 — real SHAP + LIME + dashboard (substantially addressed)** | Real `shap`/`lime` over the additive score, **reconciled with exact `w·x`** (~1e-14); pure-SVG SHAP/LIME dashboard. Was **not** U5-blocked. **2nd (adversarial) validation found + FIXED a defect:** product-candidate bars summed to base not `base+mcs_bonus` (now include an `mcs_structural_bonus` bar → bars sum to displayed score). **Remaining polish (not literal B4):** one accordion+2 SVG sections not 3 tabs; libs default OFF (analytical bars shown by default). Activate with `ENABLE_SPEC_SHAP`/`ENABLE_SPEC_LIME=true`. |
+| ◑ | **U10 — real SHAP + LIME + dashboard (substantially addressed)** | Real `shap`/`lime` over the additive score, **reconciled with exact `w·x`** (~1e-14); pure-SVG SHAP/LIME dashboard. Was **not** U5-blocked. **3 validation rounds found + FIXED 2 defects** (base-vs-displayed bar sum; then the `min(100)` cap → bonus weight clamped to `100−base`). **Remaining polish (not literal B4):** one accordion+2 SVG sections not 3 tabs; libs default OFF. Activate with `ENABLE_SPEC_SHAP`/`ENABLE_SPEC_LIME=true`. |
+| ✅ | **U12 — B3 acceptance thresholds + PASS/FAIL badges** | Mechanism done (targets, per-metric direction, availability gating, live-rendered badge). **3 validation rounds:** DQ1 WER/CER badge **suppressed** (rides on fabricated data); NaN/bool guarded. DQ2 P@3/R@3 badges live; DQ3 BERTScore circular (U2); DQ1 verdicts await real data (U3/D7-09). Activate with `ENABLE_BERTSCORE=true`. |
 
 **Recommended next:** **U3 — resolve the fabricated DQ1 harness** — the *other* critical fabricated-metric
-integrity item. It's a **Decision** (drop DQ1 vs wire it to Google Vision), so it needs your call first —
-see the Decision Register. *(Note: fully closing D7-02 is now folded into the deferred RAG/Groq unit —
-an independent LLM narrative removes the circularity.)*
+integrity item, now *more* pointed since U12's WER/CER PASS/FAIL badges are withheld until DQ1 has real
+data. It's a **Decision** (drop DQ1 vs wire it to Google Vision), so it needs your call — see the Decision
+Register. *(Note: fully closing D7-02 is folded into the deferred RAG/Groq unit — an independent LLM
+narrative removes the circularity.)*
 
 *(Deployment note: HF-Spaces deploy is **paused** — HF now gates Docker Spaces behind PRO; the Neon DB +
 runtime artefacts are staged and the app is deploy-ready for any container host. Unrelated to the units below.)*
