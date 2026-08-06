@@ -339,17 +339,21 @@ Full list in the audit doc's tables.
 
 | Crit | Unit | Blocking status |
 |---|---|---|
+| D6-xai (SHAP/LIME) | U10 | ◑ **Substantially addressed** — real libs + charts + reconciliation done; only literal-B4 polish (3 tabs, default-on) left |
 | D7-02 / D7-V1 (BERTScore) | U2 + RAG/Groq | Fabrication removed ✅; spec metric OPEN (needs independent LLM narrative + U12 threshold) |
 | D7-01 / D1-03 (fabricated DQ1) | **U3** | **Ready — needs a Decision (drop DQ1 vs run over Google Vision)** |
 | D3-02 (MCS = TE) | U-TE / U5 | Reframed by Orange Book; needs U-TE crosswalk decision |
 | D3-01 (score formula) | U8 | Decision (reconcile vs re-document) |
 | D4-01 (knowledge graph) | U9 | Decision (build vs re-document) |
-| D6-xai (SHAP/LIME) | U10 | Fix, XL; deps U5 |
 | D5-rag-01 (production RAG) | U1b | Deferred (production wiring + spec chunked rebuild) |
+
+**Progress on criticals:** 7 critical originally in scope → **U10 substantially clears D6-xai**; U1+U2
+removed the DQ3 fabrication (D7-02 mechanism); **1 critical (D7-01/DQ1) is fully ready to start now**;
+the rest (D3-02, D3-01, D4-01) are gated on Decisions/crosswalk, and D5-rag-01 is the deferred RAG rebuild.
 
 **Recommended next unit → U3 (fabricated DQ1 harness).** Rationale: it's the *only remaining
 critical that is fully ready to start* (no dependency, no rebuild, no external data) and it removes the
 last **fabricated-metric integrity** problem — the highest-value class, and the same class U2 just
 addressed. It needs one small **decision** from you (drop DQ1 vs wire to Google Vision) — see the
 Decision Register. Everything else critical is either a bigger Decision (U8/U9), depends on the
-Orange-Book crosswalk call (U-TE), or is XL/deferred (U10/U1b).
+Orange-Book crosswalk call (U-TE), or is XL/deferred (U1b).
