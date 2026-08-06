@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from app.services.therapeutic.smiles_seed import lookup_smiles
+from app.services.therapeutic.smiles_catalog import resolve_smiles_catalog
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,8 @@ def rdkit_available() -> bool:
 
 
 def resolve_smiles(*, drugbank_id: str | None, name: str | None) -> str | None:
-    return lookup_smiles(drugbank_id=drugbank_id, name=name)
+    # Catalogue-backed (DrugBank structures) with the curated seed as fallback.
+    return resolve_smiles_catalog(drugbank_id=drugbank_id, name=name)
 
 
 def compute_mcs_similarity(

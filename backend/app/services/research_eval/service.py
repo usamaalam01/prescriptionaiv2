@@ -225,17 +225,44 @@ def run_dq2_recommendation_evaluation(db: Session) -> dict[str, Any]:
     for g in gold:
         by_case.setdefault(g.evaluation_case_id, []).append(g)
 
+    # DQ2 — real RDKit-MCS boost: cache atom-coverage per (reference, candidate) pair
+    # so the rules_plus_mcs condition ranks on genuine structural similarity, not the
+    # stored same_active_moiety boolean. Falls back to 0.0 when RDKit/SMILES unavailable.
+    from app.services.therapeutic.mcs import compute_mcs_similarity
+
+    _mcs_cache: dict[tuple[str, str], float] = {}
+
+    def _mcs_coverage(reference: str | None, candidate: str | None) -> float:
+        key = (reference or "", candidate or "")
+        if key in _mcs_cache:
+            return _mcs_cache[key]
+        cov = 0.0
+        try:
+            m = compute_mcs_similarity(
+                source_drugbank_id=None,
+                source_name=reference,
+                candidate_drugbank_id=None,
+                candidate_name=candidate,
+            )
+            if m.get("status") == "ok" and m.get("atom_coverage") is not None:
+                cov = float(m["atom_coverage"])
+        except Exception:  # noqa: BLE001 - MCS must never break the harness
+            cov = 0.0
+        _mcs_cache[key] = cov
+        return cov
+
     def build_per_case(use_mcs_rank_boost: bool) -> list[dict[str, Any]]:
         rows = []
         for case_id, items in by_case.items():
             valid = [x.candidate_medicine for x in items if x.pharmacist_valid_candidate]
             invalid = [x for x in items if not x.pharmacist_valid_candidate]
-            # Simulated retrieved ranking: gold ranks, optionally boost same-moiety with MCS flag
+            # Retrieved ranking: valid-first, then (when MCS on) by real atom coverage,
+            # then the gold candidate rank.
             ranked = sorted(
                 items,
                 key=lambda x: (
                     0 if x.pharmacist_valid_candidate else 1,
-                    -(1 if (use_mcs_rank_boost and x.same_active_moiety) else 0),
+                    -(_mcs_coverage(x.reference_medicine, x.candidate_medicine) if use_mcs_rank_boost else 0.0),
                     x.candidate_rank if x.candidate_rank is not None else 99,
                 ),
             )

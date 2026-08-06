@@ -13,6 +13,7 @@ approve.
 | ◑ | **U2 — real BERTScore in DQ3 (mechanism only; D7-02 still OPEN)** | Removed the **fabricated-`None`** (real, deterministic, gated metric; P/R/F1 surface + persist) — an integrity fix. **But the spec metric is in-substance unmet:** the explanation embeds its evidence → score is *circular* (F1 ≈ 0.92 contained vs ≈ 0.77 independent); reference truncated at ~512 tokens (0.91→0.47 if match buried); spec's *generated-vs-independent-label* needs Groq (off) + ≥0.80 threshold (U12). **Both substantive halves deferred → D7-02 / D7-V1 remain OPEN.** Two independent validations. Activate with `ENABLE_BERTSCORE=true`. |
 | ◑ | **U10 — real SHAP + LIME + dashboard (substantially addressed)** | Real `shap`/`lime` over the additive score, **reconciled with exact `w·x`** (~1e-14); pure-SVG SHAP/LIME dashboard. Was **not** U5-blocked. **3 validation rounds found + FIXED 2 defects** (base-vs-displayed bar sum; then the `min(100)` cap → bonus weight clamped to `100−base`). **Remaining polish (not literal B4):** one accordion+2 SVG sections not 3 tabs; libs default OFF. Activate with `ENABLE_SPEC_SHAP`/`ENABLE_SPEC_LIME=true`. |
 | ✅ | **U12 — B3 acceptance thresholds + PASS/FAIL badges** | Mechanism done (targets, per-metric direction, availability gating, live-rendered badge). **3 validation rounds:** DQ1 WER/CER badge **suppressed** (rides on fabricated data); NaN/bool guarded. DQ2 P@3/R@3 badges live; DQ3 BERTScore circular (U2); DQ1 verdicts await real data (U3/D7-09). Activate with `ENABLE_BERTSCORE=true`. |
+| ✅ | **O3/DQ2 — RDKit-MCS + graph (U4+U5+U9)** | **U4:** catalogue `smiles_by_name` table (59.7k, salt-normalized) + reproducible builder. **U5:** `rdkit==2026.3.5` installed (no segfault, unlike torch); real MCS atom-coverage → bounded score bonus (amox/ampicillin **0.96**≥0.9; metformin/atorvastatin 0.05); DQ2 `rules_plus_mcs` now ranks on **real** coverage, not the `same_active_moiety` flag. **U9:** NetworkX DiGraph **re-documented** as the relational-catalogue substitute (A10-style). Gated by `ENABLE_SPEC_MCS` (default on). |
 
 **Recommended next:** **U3 — resolve the fabricated DQ1 harness** — the *other* critical fabricated-metric
 integrity item, now *more* pointed since U12's WER/CER PASS/FAIL badges are withheld until DQ1 has real
@@ -333,7 +334,7 @@ Full list in the audit doc's tables.
 | U3 | Drop DQ1, **or** keep it real over Google Vision? |
 | U7 | Add ≥70 threshold, **or** document hard-filter approach? |
 | U8 | Reconcile to spec 3-component score, **or** re-document the 9-component model? |
-| U9 | Build a NetworkX graph, **or** re-document the relational catalogue? |
+| U9 | ~~Build a NetworkX graph, **or** re-document the relational catalogue?~~ **RESOLVED → re-document** (relational catalogue is an approved A10-style substitute; supervisor sign-off pending). |
 | U15 | Give pharmacists the Evaluation Dashboard, **or** keep reviewer-only? |
 | U16 | Ethics/PII re-documentation + consent alignment (supervisor sign-off). |
 
@@ -345,12 +346,12 @@ Full list in the audit doc's tables.
 | U2 Real BERTScore | removes fabricated-`None` (mechanism). D7-02/D7-V1 **still OPEN** — circular ref + threshold both → RAG/Groq unit + U12 | Fix | L | ◑ **mechanism only — 2× validated** |
 | U3 DQ1 fabrication | D7-01/D1-03 | Decision | S/M | ☐ |
 | **U-TE Orange Book TE layer** | D3-02 (reframe), R28, DQ2 gold std (D7-03/04) | Fix + Doc | L–XL | ☐ *(leads Phase B)* |
-| U4 SMILES ingest | D3-04, D4-04 | Fix | L | ☐ *(now supporting)* |
-| U5 RDKit MCS | D3-02, D3-03 | Fix | L | ☐ |
-| U6 Salt-awareness | D3-10, D4-03 | Fix | M | ☐ |
+| U4 SMILES ingest | D3-04, D4-04 | Fix | L | ✅ **done** — `smiles_by_name` table (59.7k, salt-normalized) + reproducible builder |
+| U5 RDKit MCS | D3-02, D3-03 | Fix | L | ✅ **done** — rdkit installed; real atom-coverage bonus (amox/ampicillin 0.96); DQ2 uses real MCS |
+| U6 Salt-awareness | D3-10, D4-03 | Fix | M | ☐ *(partially served: salt-strip in SMILES resolver)* |
 | U7 Threshold | D3-06 | Fix/Doc | S | ☐ |
 | U8 Score formula | D3-01 | Decision | S/M | ☐ |
-| U9 Knowledge graph | D4-01, D3-05, D4-02 | Decision | S/XL | ☐ |
+| U9 Knowledge graph | D4-01, D3-05, D4-02 | **Decision → RE-DOCUMENT** | S | ◑ **re-documented** (relational catalogue = approved DiGraph substitute; A10-style) |
 | U10 SHAP/LIME + dashboard | D6-xai (crit) + SHAP/LIME/feature-mismatch + D8 LIME-dep | Fix | XL | ◑ **substantially addressed — 2× validated (defect fixed; B4-literal polish remains)** |
 | U11 DQ2 real engine | D7-03 | Fix | M | ☐ |
 | U12 Eval thresholds | D7-04 | Fix | S | ✅ **mechanism done — 2× validated (DQ1 WER/CER badge suppressed: fabricated data)** |

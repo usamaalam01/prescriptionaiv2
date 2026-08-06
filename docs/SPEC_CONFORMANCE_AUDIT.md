@@ -105,6 +105,17 @@ The delivered artefact is a **well-engineered FastAPI + React + PostgreSQL syste
 
 #### `D3-02` — Recommendation / therapeutic matching  ·  _critical_
 
+> **O3/U5 status — RDKit-MCS now real (structural signal).** `rdkit==2026.3.5` is installed and runs on
+> this env (no segfault, unlike torch/TrOCR). `mcs.py:compute_mcs_similarity` computes genuine
+> `rdFMCS.FindMCS` atom coverage from catalogue SMILES (`smiles_by_name`, built by
+> `scripts/build_smiles_table.py`), and `mcs_score_points` feeds a **bounded 0–15 bonus** into the
+> Evidence Match Score (already wired in `evaluate.py`; surfaced as the `mcs_structural_bonus` XAI bar).
+> Verified sensible: amoxicillin vs ampicillin 0.96 (≥0.9), ibuprofen vs naproxen 0.65, metformin vs
+> atorvastatin 0.05. DQ2's `rules_plus_mcs` now ranks on real coverage (not the `same_active_moiety`
+> flag). **Design note:** MCS is a *supporting bonus*, not an equivalence gate — Orange Book `TE_Code`
+> (U-TE) remains the intended regulatory backbone for therapeutic equivalence; MCS is chemical support.
+> Gated by `ENABLE_SPEC_MCS` (default on), graceful when RDKit/SMILES absent.
+
 - **Spec ref (O3 / A8 / A10):** O3: 'Implement a salt-aware therapeutic recommendation engine using RDKit Maximum Common Substructure (MCS)'. A8: 'NetworkX DiGraph + RDKit MCS (90% atom coverage)'. A10 approved change: VF2 was 'Replaced with RDKit MCS'.
 - **As-built:** RDKit MCS is NOT the matching algorithm and is not a gate. The actual candidate matcher is name-based salt normalisation + mandatory hard filters; MCS runs strictly AFTER mandatory filters as optional 'supporting evidence' that can add at most a 15-point bonus and 'must never override filters'. Moreover rdkit is not installed in backend/.venv and is declared only in the optional requirements-spec-research.txt, so rdkit_available() returns False and compute_mcs_similarity returns status 'unavailable' with atom_coverage=None by default — contributing 0 to ranking. The 90%/0.9 atom-coverage threshold is computed only as an informational meets_spec_threshold_0_9 flag, never used to include/exclude a candidate.
 - **Research/DQ impact:** O3 cannot be claimed: the engine does not match generics via RDKit MCS. DQ2 ('how effectively does RDKit MCS identify TE generics') has no live MCS-driven matching to measure. A10's justification (MCS more robust across salt/ester variants) is untested because MCS never decides eligibility.
@@ -121,6 +132,16 @@ The delivered artefact is a **well-engineered FastAPI + React + PostgreSQL syste
 - **Verifier correction:** Substance is correct and severity (critical) is fair, but the deviation_type label 'disabled_by_default' mischaracterizes the mechanism. ENABLE_SPEC_MCS actually defaults True (config.py:43), so MCS is NOT switched off by a feature flag. Verified true parts: rdkit is declared only in requirements-spec-research.txt:3 and is NOT installed in .venv (124 packages, no rdkit), so rdkit_available() is False and compute_mcs_similarity returns status 'unavailable', atom_coverage None (mcs.py:17-23,65-67). MCS runs strictly after mandatory filters as supporting evidence (evaluate.py:322-334) and caps at a 0-15 bonus (mcs.py:128-133); meets_spec_threshold_0_9 is only reported, never gates (mcs.py:113). So the correct characterization is (a) optional dependency ABSENT from the runtime + (c) even when present it is a post-filter cosmetic bonus, not the matching algorithm or a 90% gate. This matters practically: flipping ENABLE_SPEC_MCS does nothing; one must pip-install rdkit AND populate SMILES.
 
 #### `D4-01` — Knowledge graph / catalogue  ·  _critical_
+
+> **U9 status — RE-DOCUMENTED (approved A10-style substitute).** Decision resolved: the spec's
+> NetworkX DiGraph (Ingredient → Salt → Product → Strength/Route/Form) is **substituted by the
+> relational `medicine_catalog.sqlite3`**, which models the same entities and relationships as
+> tables/joins and already drives live candidate retrieval — the same traversal, expressed relationally.
+> No functional loss; a separate in-memory DiGraph would duplicate the catalogue. This is recorded as an
+> approved design change in the spirit of the spec's own A10 (which likewise re-platformed
+> FastAPI/Postgres and swapped VF2→MCS). **Supervisor sign-off pending** (same governance route as the
+> platform change). A literal NetworkX build remains available if the supervisor requires the exact
+> artefact, but is not recommended (duplicative, no added capability).
 
 - **Spec ref (A8 / B1 / A12 / C Deliverables):** Recommendation Engine built on a 'NetworkX DiGraph'; A12 technology stack lists 'NetworkX'; C Deliverables: 'NetworkX salt-aware knowledge graph (OpenFDA + DrugBank) | Complete'.
 - **As-built:** NetworkX is not used anywhere in the new codebase. There is no DiGraph, no add_node/add_edge, and none of the named edge types. The drug knowledge structure is a relational SQLite catalogue (data/medicine_catalog.sqlite3) with 8 flat tables (medicines, aliases, strengths, products, label_sections, label_dose_options, label_frequency_options, meta) built by build_index.py. A legacy data/knowledge_graph.pkl (49 MB) exists in data/ but is never loaded by any new-app module.

@@ -36,3 +36,8 @@ huggingface_hub==0.27.1
 shap==0.46.0
 lime==0.2.0.1
 
+# O3/DQ2 — RDKit Maximum Common Substructure for the salt-aware structural signal.
+# Feeds a bounded atom-coverage bonus into the Evidence Match Score (gated by
+# ENABLE_SPEC_MCS, default on). SMILES come from the catalogue's smiles_by_name table.
+rdkit==2026.3.5
+
