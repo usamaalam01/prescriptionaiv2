@@ -512,14 +512,20 @@ The delivered artefact is a **well-engineered FastAPI + React + PostgreSQL syste
 
 #### `D3-10` — Recommendation / therapeutic matching  ·  _major_
 
-> **U6 status — CLEARED (data-driven).** The hardcoded ~16-ingredient `_MOIETY_FORMS` dict is replaced
-> by a DrugBank-derived `salt_forms` table (`scripts/build_salt_forms.py`; 5,248 salt forms across
-> **2,292 base ingredients**). `salt_normalisation.resolve_moiety` resolves salts via that table first
-> (`salt_map_drugbank`, conf 0.9), with the curated 16 kept as a hand-verified override and the salt-strip
-> heuristic as fallback; graceful when the table is absent. Verified: salt forms outside the original 16
-> (clopidogrel bisulfate/besilate, quetiapine fumarate, amlodipine camsylate, warfarin sodium) now
-> resolve, and cross-salt `same_active_moiety` pairs match. Complements the RDKit-MCS chemical basis
-> (U5) — this is the *name/data-driven* salt map the engine uses before/around MCS. Decision-support only.
+> **U6 status — salt-map data-provenance addressed (mechanism caveat below).** The hardcoded
+> ~16-ingredient `_MOIETY_FORMS` dict is replaced by a DrugBank-derived `salt_forms` table
+> (`scripts/build_salt_forms.py`; **4,901 salt forms across 2,292 base ingredients** after the safety
+> filter). `salt_normalisation.resolve_moiety` resolves salts via that table (`salt_map_drugbank`, conf
+> 0.9), curated 16 as override (0.95), salt-strip heuristic as fallback; graceful when absent. Verified:
+> salts outside the original 16 resolve; cross-salt `same_active_moiety` pairs match. **Validation fixes:**
+> DrugBank's `salt_forms` field lists non-salt entities (e.g. NPH insulin under insulin human) — the
+> builder now ingests **only genuine `<base> <salt>` counter-ion forms**, so NPH insulin ≢ regular insulin
+> (was wrongly True). Build/query normalisation unified (was 1.8% unreachable rows).
+> **Honest scope:** this fixes the *salt-map data provenance* (16-dict → source data). But `same_active_moiety`
+> is still a **name/string** comparison, NOT the spec's RDKit-MCS-over-structure or graph traversal — so
+> D3-10's *mechanism* (MCS as the salt-equivalence determinant, U5 chemical support) and D4-03's graph
+> (U9 re-documented as relational) are the complementary pieces; U6 clears the *hardcoded-map* half.
+> Decision-support only (HITL).
 
 - **Spec ref (O3 / A10):** O3/A10: salt-awareness achieved via RDKit MCS identifying base molecules across salt/ester variants (chemical basis).
 - **As-built:** Salt-awareness is implemented by a curated, name-based salt/base surface-form map covering only 16 base ingredients, plus token-strip heuristics and confidence thresholds. same_active_moiety() decides salt equivalence purely from normalised name strings; the chemical structure (MCS) plays no part in the eligibility decision. Anything outside the 16-ingredient map falls to a low-confidence 'passthrough' that fails the moiety gate.

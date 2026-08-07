@@ -89,7 +89,7 @@ def apply_mandatory_filters(
     if not compatible:
         fail(FilterRejectReason(reason) if reason in FilterRejectReason._value2member_map_ else FilterRejectReason.ACTIVE_MOIETY_UNVERIFIED)
     else:
-        ok("ACTIVE_MOIETY", "Active moiety relationship verified from curated salt/base map.")
+        ok("ACTIVE_MOIETY", "Active moiety relationship verified from the DrugBank-derived salt/base map (with curated overrides).")
         ok("SALT_RELATIONSHIP", "Salt/base/ester relationship compatible or both base forms.")
 
     if not _routes_compatible(source_envelope.get("route"), candidate_envelope.get("route")):

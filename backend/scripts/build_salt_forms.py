@@ -23,23 +23,20 @@ from pathlib import Path
 
 from app.services.datasets.paths import catalog_db_path
 
-# Reuse the resolver's normalisation so keys match at query time (no drift).
-from app.services.therapeutic.smiles_catalog import _nkey, _strip_salt
+# Use the SAME key function resolve_moiety() queries with, so stored keys are always
+# reachable (no build-vs-query normalisation drift).
+from app.services.therapeutic.salt_normalisation import normalize_key as _nkey
 
 _DEFAULT_SOURCE = Path("D:/AI Learning/AIPrescription/prescription/data/drugbank_parsed.pkl")
 
 
 def _salt_token(form_key: str, base_key: str) -> str | None:
-    """The salt remainder of a form relative to its base (e.g. 'besylate')."""
-    if form_key.startswith(base_key):
-        rem = form_key[len(base_key):].strip()
-        return rem or None
-    # Fall back to whatever salt-strip removes.
-    stripped = _strip_salt(form_key)
-    if stripped and stripped != form_key:
-        rem = form_key.replace(stripped, "").strip()
-        return rem or None
-    return None
+    """The salt remainder of a form relative to its base (e.g. 'besylate').
+
+    Only called for forms that start with the base, so this is a clean suffix.
+    """
+    rem = form_key[len(base_key):].strip()
+    return rem or None
 
 
 def build(source: Path) -> None:
@@ -67,7 +64,12 @@ def build(source: Path) -> None:
             sf_key = _nkey(sf)
             if not sf_key:
                 continue
-            rows.setdefault(sf_key, (base_key, base_display, _salt_token(sf_key, base_key)))
+            # SAFETY: only accept genuine counter-ion salts of THIS base — i.e. the
+            # form is "<base> <salt-word(s)>". DrugBank's salt_forms also lists
+            # non-salt entities (e.g. NPH insulin under insulin human, conjugate
+            # acids); those must NOT be treated as the same active moiety.
+            if sf_key == base_key or sf_key.startswith(base_key + " "):
+                rows.setdefault(sf_key, (base_key, base_display, _salt_token(sf_key, base_key)))
 
     con = sqlite3.connect(str(catalog_db_path()))
     try:
