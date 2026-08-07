@@ -514,13 +514,15 @@ The delivered artefact is a **well-engineered FastAPI + React + PostgreSQL syste
 
 > **U6 status — salt-map data-provenance addressed (mechanism caveat below).** The hardcoded
 > ~16-ingredient `_MOIETY_FORMS` dict is replaced by a DrugBank-derived `salt_forms` table
-> (`scripts/build_salt_forms.py`; **4,901 salt forms across 2,292 base ingredients** after the safety
-> filter). `salt_normalisation.resolve_moiety` resolves salts via that table (`salt_map_drugbank`, conf
+> (`scripts/build_salt_forms.py`; **4,956 rows = 2,292 base-identity + 2,664 salt forms** after the
+> safety filter + conjugate recovery). `salt_normalisation.resolve_moiety` resolves salts via that table (`salt_map_drugbank`, conf
 > 0.9), curated 16 as override (0.95), salt-strip heuristic as fallback; graceful when absent. Verified:
 > salts outside the original 16 resolve; cross-salt `same_active_moiety` pairs match. **Validation fixes:**
 > DrugBank's `salt_forms` field lists non-salt entities (e.g. NPH insulin under insulin human) — the
 > builder now ingests **only genuine `<base> <salt>` counter-ion forms**, so NPH insulin ≢ regular insulin
-> (was wrongly True). Build/query normalisation unified (was 1.8% unreachable rows).
+> (was wrongly True). A 2nd round found that filter over-dropped genuine **acid↔ate conjugates**
+> (valproate↔valproic, clavulanate↔clavulanic) — recovered via a shared-root rule that still excludes the
+> different-word non-salts. Build/query normalisation unified (was 1.8% unreachable rows).
 > **Honest scope:** this fixes the *salt-map data provenance* (16-dict → source data). But `same_active_moiety`
 > is still a **name/string** comparison, NOT the spec's RDKit-MCS-over-structure or graph traversal — so
 > D3-10's *mechanism* (MCS as the salt-equivalence determinant, U5 chemical support) and D4-03's graph

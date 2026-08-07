@@ -31,12 +31,22 @@ _DEFAULT_SOURCE = Path("D:/AI Learning/AIPrescription/prescription/data/drugbank
 
 
 def _salt_token(form_key: str, base_key: str) -> str | None:
-    """The salt remainder of a form relative to its base (e.g. 'besylate').
+    """The salt counter-ion of a form relative to its base (e.g. 'besylate').
 
-    Only called for forms that start with the base, so this is a clean suffix.
+    Handles the direct '<base> <salt>' case and the acid↔ate conjugate case
+    (base '<root>ic acid' → form '<root>ate <counter-ion>').
     """
-    rem = form_key[len(base_key):].strip()
-    return rem or None
+    if form_key == base_key:
+        return None
+    if form_key.startswith(base_key + " "):
+        return form_key[len(base_key):].strip() or None
+    # Conjugate: strip the leading '<root>ate' token, return the counter-ion.
+    if base_key.endswith("ic acid"):
+        root = base_key[: -len("ic acid")].strip()
+        ate = root + "ate"
+        if form_key.startswith(ate):
+            return form_key[len(ate):].strip() or "ate"
+    return None
 
 
 def build(source: Path) -> None:
@@ -60,15 +70,28 @@ def build(source: Path) -> None:
         n_bases += 1
         # The base itself resolves to base (identity).
         rows.setdefault(base_key, (base_key, base_display, None))
+        # Accept the acid↔ate conjugate pattern too: a base "<root>ic acid" whose salt
+        # is "<root>ate <counter-ion>" (e.g. valproic acid ↔ valproate sodium,
+        # clavulanic acid ↔ clavulanate potassium). Requires a SHARED word root, so it
+        # recovers true conjugates WITHOUT re-admitting different-word non-salts
+        # (NPH insulin, argipressin — no shared root, stay excluded).
+        conj_root = None
+        if base_key.endswith("ic acid"):
+            conj_root = base_key[: -len("ic acid")].strip()  # 'valproic acid' -> 'valpro'
+
         for sf in salt_forms:
             sf_key = _nkey(sf)
             if not sf_key:
                 continue
-            # SAFETY: only accept genuine counter-ion salts of THIS base — i.e. the
-            # form is "<base> <salt-word(s)>". DrugBank's salt_forms also lists
-            # non-salt entities (e.g. NPH insulin under insulin human, conjugate
-            # acids); those must NOT be treated as the same active moiety.
-            if sf_key == base_key or sf_key.startswith(base_key + " "):
+            # SAFETY: only accept genuine counter-ion salts of THIS base — the form is
+            # "<base> <salt-word(s)>", OR the acid↔ate conjugate of a "<root>ic acid".
+            # DrugBank's salt_forms also lists non-salt entities (NPH insulin under
+            # insulin human, etc.); those must NOT be treated as the same active moiety.
+            is_direct_salt = sf_key == base_key or sf_key.startswith(base_key + " ")
+            is_conjugate = bool(conj_root) and (
+                sf_key == conj_root + "ate" or sf_key.startswith(conj_root + "ate ")
+            )
+            if is_direct_salt or is_conjugate:
                 rows.setdefault(sf_key, (base_key, base_display, _salt_token(sf_key, base_key)))
 
     con = sqlite3.connect(str(catalog_db_path()))
