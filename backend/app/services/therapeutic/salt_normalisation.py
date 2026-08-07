@@ -5,10 +5,17 @@ Does not silently replace OCR values — returns a suggestion envelope for HITL.
 
 from __future__ import annotations
 
+import logging
 import re
+import sqlite3
+from functools import lru_cache
 from typing import Any
 
-# base_ingredient -> accepted salt/ester/hydrate surface forms (normalised keys)
+logger = logging.getLogger(__name__)
+
+# U6 — base_ingredient -> accepted salt/ester/hydrate surface forms (normalised keys).
+# This curated map is now a small hand-verified OVERRIDE; the primary, data-driven
+# source is the DrugBank-derived `salt_forms` catalogue table (see resolve_moiety).
 _MOIETY_FORMS: dict[str, set[str]] = {
     "cetirizine": {
         "cetirizine",
@@ -60,6 +67,28 @@ _FORM_TO_BASE: dict[str, str] = {}
 for _base, forms in _MOIETY_FORMS.items():
     for f in forms:
         _FORM_TO_BASE[f] = _base
+
+
+@lru_cache(maxsize=1)
+def _catalogue_salt_map() -> dict[str, tuple[str, str | None]]:
+    """DrugBank-derived salt→base map from the catalogue `salt_forms` table.
+
+    Returns {form_key: (base_key, salt_token)}. Empty (falls back to the curated
+    map + heuristics) when the table is absent — keeps older catalogues working.
+    """
+    try:
+        from app.services.datasets.paths import catalog_db_path
+
+        con = sqlite3.connect(f"file:{catalog_db_path()}?mode=ro", uri=True)
+        try:
+            rows = con.execute("SELECT form_key, base_key, salt_token FROM salt_forms").fetchall()
+        finally:
+            con.close()
+        return {fk: (bk, st) for fk, bk, st in rows if fk and bk}
+    except Exception as exc:  # noqa: BLE001 - table may not exist on older catalogues
+        logger.info("salt_forms table unavailable (%s); using curated map + heuristics.", exc)
+        return {}
+
 
 _SALT_TOKENS = (
     "hydrochloride",
@@ -130,6 +159,20 @@ def resolve_moiety(name: str | None) -> dict[str, Any]:
             "canonical_ingredient_name": base.title() if not salt else f"{base} {salt}".title(),
             "match_method": "salt_map_exact",
             "confidence": 0.95,
+            "warnings": warnings,
+        }
+
+    # U6 — data-driven salt map from DrugBank (thousands of ingredients, not the
+    # curated 16). High confidence: this is a source-data salt→base relationship.
+    cat_map = _catalogue_salt_map()
+    if key in cat_map:
+        base, salt = cat_map[key]
+        return {
+            "base_ingredient": base,
+            "salt_or_ester": salt or _detect_salt(key, base),
+            "canonical_ingredient_name": base.title() if not salt else f"{base} {salt}".title(),
+            "match_method": "salt_map_drugbank",
+            "confidence": 0.9,
             "warnings": warnings,
         }
 

@@ -512,6 +512,15 @@ The delivered artefact is a **well-engineered FastAPI + React + PostgreSQL syste
 
 #### `D3-10` — Recommendation / therapeutic matching  ·  _major_
 
+> **U6 status — CLEARED (data-driven).** The hardcoded ~16-ingredient `_MOIETY_FORMS` dict is replaced
+> by a DrugBank-derived `salt_forms` table (`scripts/build_salt_forms.py`; 5,248 salt forms across
+> **2,292 base ingredients**). `salt_normalisation.resolve_moiety` resolves salts via that table first
+> (`salt_map_drugbank`, conf 0.9), with the curated 16 kept as a hand-verified override and the salt-strip
+> heuristic as fallback; graceful when the table is absent. Verified: salt forms outside the original 16
+> (clopidogrel bisulfate/besilate, quetiapine fumarate, amlodipine camsylate, warfarin sodium) now
+> resolve, and cross-salt `same_active_moiety` pairs match. Complements the RDKit-MCS chemical basis
+> (U5) — this is the *name/data-driven* salt map the engine uses before/around MCS. Decision-support only.
+
 - **Spec ref (O3 / A10):** O3/A10: salt-awareness achieved via RDKit MCS identifying base molecules across salt/ester variants (chemical basis).
 - **As-built:** Salt-awareness is implemented by a curated, name-based salt/base surface-form map covering only 16 base ingredients, plus token-strip heuristics and confidence thresholds. same_active_moiety() decides salt equivalence purely from normalised name strings; the chemical structure (MCS) plays no part in the eligibility decision. Anything outside the 16-ingredient map falls to a low-confidence 'passthrough' that fails the moiety gate.
 - **Research/DQ impact:** O3: salt-awareness is demonstrable only for 16 curated ingredients and by string matching, not by the approved chemical MCS mechanism; the robustness claim of A10 (base molecule across salt/ester variants) is not achieved chemically.
@@ -538,6 +547,13 @@ The delivered artefact is a **well-engineered FastAPI + React + PostgreSQL syste
 - **Effort:** L  ·  **Files:** backend/app/services/datasets/build_index.py, backend/app/services/datasets/catalog_store.py
 
 #### `D4-03` — Knowledge graph / catalogue  ·  _major_
+
+> **U6 status — salt map now data-driven (graph substitution stands via U9).** The "hardcoded ~16
+> ingredient dict" As-built below is superseded: salt/base relationships are now derived from
+> **DrugBank `salt_forms`** into a `salt_forms` catalogue table (2,292 base ingredients) and consumed by
+> `resolve_moiety`. The DrugBank-sourced salt relationships the spec wanted are therefore persisted and
+> used — just relationally (in the catalogue), consistent with the U9 re-documentation of the NetworkX
+> DiGraph as a relational substitute. Retrieval remains catalogue SQL, not graph traversal (U9).
 
 - **Spec ref (B1 / B2 (salt-aware traversal)):** 'Salt-aware knowledge graph' where salt/base relationships derive from the DrugBank-sourced Salt Form nodes and are traversed by the recommendation engine (A8/B1/B2).
 - **As-built:** Salt-awareness is a hardcoded curated Python dictionary `_MOIETY_FORMS` of ~16 base ingredients (cetirizine, amlodipine, diclofenac, metformin, omeprazole, pantoprazole, ibuprofen, naproxen, loratadine, paracetamol/acetaminophen, amoxicillin, sertraline, fluoxetine, losartan, atorvastatin) plus a fixed `_SALT_TOKENS` list. Candidate retrieval is a SQL `LIKE '%term%'` substring search over medicines.canonical_name, not graph traversal; graph functions find_products/find_equivalent_salts do not exist in the new app.
