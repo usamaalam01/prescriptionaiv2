@@ -6,7 +6,7 @@ colorTo: blue
 sdk: docker
 app_port: 7860
 pinned: false
-short_description: AI-powered pharmacist decision-support (FDA NDC / DrugBank / SPL).
+short_description: AI-powered pharmacist decision-support prototype
 ---
 
 # PharmaAssist — award-path HITL decision support
