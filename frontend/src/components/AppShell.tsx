@@ -9,13 +9,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           PharmaAssist
         </Typography>
         <Typography variant="body2" sx={{ opacity: 0.9 }}>
-          AI-Powered Pharma Assistant · University of Liverpool · CSCK700
+          AI-Powered Pharma Assistant · NED University of Engineering &amp; Technology · CSCK700
         </Typography>
       </Box>
 
       <Box sx={{ bgcolor: '#EAF2FA', px: { xs: 2, md: 4 }, py: 1 }}>
         <Typography variant="caption">
-          MSc Information Systems Management · Academic research prototype
+          PGD in Generative AI · Academic research prototype
         </Typography>
       </Box>
 
@@ -43,8 +43,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <Box sx={{ bgcolor: '#003366', color: '#fff', textAlign: 'center', py: 2, px: 2 }}>
         <Typography variant="caption">
-          Prototype developed for academic research as part of the University of Liverpool CSCK700
-          Computer Science Capstone Project.
+          Prototype developed for academic research as part of the NED University of Engineering &amp; Technology
+          CSCK700 Computer Science Capstone Project.
         </Typography>
       </Box>
     </Box>

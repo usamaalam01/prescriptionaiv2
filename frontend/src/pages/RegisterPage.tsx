@@ -31,7 +31,7 @@ import {
   pisText,
 } from '../content/researchDocuments'
 
-const WEAK_SUBSTRINGS = ['password', '123456', 'pharmaassist', 'liverpool']
+const WEAK_SUBSTRINGS = ['password', '123456', 'pharmaassist', 'neduet']
 
 function passwordPolicyMessage(password: string, username: string): string | null {
   if (password.length < 12) return 'Password must be at least 12 characters'

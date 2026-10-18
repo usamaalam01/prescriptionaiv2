@@ -5,7 +5,7 @@ These instructions override default behavior — follow them.
 
 ## What This Project Is
 
-**PharmaAssist** — an AI-powered pharmacist **decision-support** prototype (University of Liverpool CSCK700
+**PharmaAssist** — an AI-powered pharmacist **decision-support** prototype (NED University of Engineering & Technology CSCK700
 capstone; student Muhammad Zohaib, #200052400; ethics 18274). A pharmacist uploads a handwritten
 prescription → OCR extracts drug fields → the pharmacist verifies/corrects them (HITL) → the system
 recommends therapeutically-relevant alternatives with a rule-based **Evidence Match Score**, FDA-label

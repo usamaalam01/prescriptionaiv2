@@ -16,7 +16,7 @@
 | Intended audience | Dissertation assessors, supervisors, software handover, architecture review, QA, research-question traceability, healthcare AI safety review |
 | Document status | Draft for academic and technical review (as-built) |
 | Approved Spec reference | *Design and Evaluation of an AI-Powered Pharma Assistant* (Specification and Design Report) v1.0; ethics **18274**; SHA-256 `fde3eac1d146f7171b64bb949a3c20425af2e33b1998cb4a76b3e0c491c1d91f` (`docs/approved-specification/specification_manifest.json`) |
-| Author (project) | Muhammad Zohaib · student number 200052400 · University of Liverpool · MSc Information Systems Management |
+| Author (project) | Muhammad Zohaib · student number 200052400 · NED University of Engineering & Technology · MSc Information Systems Management |
 | Language | British English |
 
 ### Revision history
@@ -40,7 +40,7 @@
 
 ## 2. Executive summary
 
-PharmaAssist is a pharmacist-facing **human-in-the-loop (HITL) clinical decision-support research prototype** developed for the University of Liverpool CSCK700 capstone. It addresses the operational and research problem of **illegible or ambiguous handwritten prescriptions** by combining OCR, trusted drug-knowledge matching (FDA NDC, FDA SPL, DrugBank-derived catalogue), structured field verification, optional therapeutic-candidate ranking, and a separate research-evaluation layer (DQ1–DQ4).
+PharmaAssist is a pharmacist-facing **human-in-the-loop (HITL) clinical decision-support research prototype** developed for the NED University of Engineering & Technology CSCK700 capstone. It addresses the operational and research problem of **illegible or ambiguous handwritten prescriptions** by combining OCR, trusted drug-knowledge matching (FDA NDC, FDA SPL, DrugBank-derived catalogue), structured field verification, optional therapeutic-candidate ranking, and a separate research-evaluation layer (DQ1–DQ4).
 
 **What the system does (as-built):** authenticates administrators, pharmacists and reviewers; allows pharmacist registration with consent; accepts prescription image upload; runs a configurable multi-engine OCR stack; extracts medicine lines and SIG-like fields; matches candidates against a local SQLite medicine catalogue; presents a cascade HITL verification table; gates therapeutic evaluation behind pharmacist Confirm; records HITL and therapeutic audit events; and provides reviewer APIs/UI for OCR and recommendation evaluation metrics.
 

@@ -43,7 +43,7 @@ What participation involves:
 All prescription samples used in the study are synthetic and contain no real patient information.
 
 Data use:
-- The University of Liverpool acts as Data Controller.
+- NED University of Engineering & Technology acts as Data Controller.
 - Research data is processed for academic research.
 - Research outputs are anonymized.
 - Registration data is used only for authentication, administration, consent and access control.
@@ -73,15 +73,15 @@ Results may be presented in an MSc dissertation and may be disseminated through 
 Contacts:
 Student Researcher:
 Muhammad Zohaib
-m.zohaib@liverpool.ac.uk
+m.zohaib@neduet.edu.pk
 
 Principal Investigator / Dissertation Advisor:
 Dr. Nazmul Hussain
-Nazmul.Hussain@liverpool.ac.uk
+Nazmul.Hussain@neduet.edu.pk
 
 Ethics and Complaints:
-University of Liverpool Research Ethics and Integrity Office
-ethics@liv.ac.uk
+NED University of Engineering & Technology Research Ethics and Integrity Office
+ethics@neduet.edu.pk
 `
 
 export const consentStatements = [
@@ -96,7 +96,7 @@ export const consentStatements = [
   'I understand that I may withdraw before submitting the anonymous questionnaire without giving a reason.',
   'I understand that I may decline to answer any questionnaire question.',
   'I understand that after anonymous questionnaire submission, it may no longer be possible to withdraw my response.',
-  'I understand that research data will be handled securely under University of Liverpool data-protection requirements.',
+  'I understand that research data will be handled securely under NED University of Engineering & Technology data-protection requirements.',
   'I understand that registration information will be separated from anonymized research results.',
   'I understand that temporary prescription images will be securely deleted after processing or submission.',
   'I understand that anonymized results may be used in an MSc dissertation and related academic dissemination.',

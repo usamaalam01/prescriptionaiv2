@@ -14,7 +14,7 @@ _WEAK_SUBSTRINGS = (
     "password",
     "123456",
     "pharmaassist",
-    "liverpool",
+    "neduet",
 )
 
 

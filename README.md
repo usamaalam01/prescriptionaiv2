@@ -11,7 +11,7 @@ short_description: AI-powered pharmacist decision-support (FDA NDC / DrugBank / 
 
 # PharmaAssist — award-path HITL decision support
 
-Pharmacist **decision-support** prototype (University of Liverpool CSCK700).  
+Pharmacist **decision-support** prototype (NED University of Engineering & Technology CSCK700).  
 Uses local **FDA NDC + DrugBank + FDA SPL** for verification. **Not clinical care.**
 
 > **Hugging Face Spaces:** the YAML front-matter above configures this repo as a **Docker SDK**

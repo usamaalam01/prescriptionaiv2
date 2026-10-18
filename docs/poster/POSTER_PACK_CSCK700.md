@@ -2,7 +2,7 @@
 
 **Module:** CSCK700 Computer Science Capstone Project  
 **Programme:** MSc Information Systems Management  
-**University:** University of Liverpool  
+**University:** NED University of Engineering & Technology  
 **Student:** Muhammad Zohaib (200052400)  
 **Advisor:** Dr. Nazmul Hussain  
 
@@ -34,14 +34,14 @@
 **PharmaAssist: Human-in-the-Loop Verification of Handwritten Prescriptions**
 
 Subtitle (smaller):  
-Catalog-backed decision support using FDA NDC, DrugBank and FDA SPL · University of Liverpool · CSCK700
+Catalog-backed decision support using FDA NDC, DrugBank and FDA SPL · NED University of Engineering & Technology · CSCK700
 
 ---
 
 ## 3. Poster body copy (paste into PowerPoint) — ~550 words
 
 ### Header strip
-Muhammad Zohaib · MSc Information Systems Management · CSCK700 Capstone · University of Liverpool · Advisor: Dr. Nazmul Hussain
+Muhammad Zohaib · MSc Information Systems Management · CSCK700 Capstone · NED University of Engineering & Technology · Advisor: Dr. Nazmul Hussain
 
 ### Introduction
 Handwritten prescriptions remain hard for machines to read reliably. Errors in drug name, strength or directions can harm patients. **PharmaAssist** is an academic decision-support prototype that extracts medicine details from prescription images, matches them to a trusted medicines catalog, and requires a pharmacist to confirm every field before a record is accepted. The system does **not** diagnose, prescribe or dispense.
@@ -89,7 +89,7 @@ PharmaAssist shows that **catalog-constrained HITL** is a safer academic path to
 3. Wishart et al. DrugBank.  
 4. Google Cloud Vision API — DOCUMENT_TEXT_DETECTION.  
 5. Amann et al. (2020). Explainability for AI in medicine — use with clinical oversight.  
-6. University of Liverpool CSCK700 Capstone guidelines.
+6. NED University of Engineering & Technology CSCK700 Capstone guidelines.
 
 ---
 

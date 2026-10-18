@@ -10,7 +10,7 @@ Module CSCK700 — Computer Science Capstone Project
 Programme MSc Information Systems Management 
 Student Name Muhammad Zohaib 
 Student Number 200052400 
-Student Email m.zohaib@liverpool.ac.uk 
+Student Email m.zohaib@neduet.edu.pk
 Dissertation Advisor (DA) Dr. Nazmul Hussain 
 Dissertation Lead (DL) Dr. Kathleen M. Kelm 
 Report Version 1.0 
@@ -100,7 +100,7 @@ reliability of drug explanations? (BERTScore & OpenFDA cross-validation)
 DQ4 XAI Trust Impact What impact do SHAP/LIME explanations and source attribution have on pharmacist 
 trust, transparency, and perceived accuracy? 
 A6.  Ethical Considerations 
-The University of Liverpool Online Research Ethics Committee has given full ethical approval for this 
+The NED University of Engineering & Technology Online Research Ethics Committee has given full ethical approval for this
 research (Application 18274 signed 29 April 2026; Dr Nazmul Hussain). The ethical principles are based 
 on the concepts of Fairness, Accountability, Transparency and Explainability (FATE). 
 Key provisions are summarised below. 
@@ -398,7 +398,7 @@ collected from five licensed pharmacists via
 Microsoft Forms 
 Used for artefact evaluation and 
 usability assessment 
-* All data is stored on the University of Liverpool encrypted M Drive (password-protected, access 
+* All data is stored on the NED University of Engineering & Technology encrypted M Drive (password-protected, access
 restricted to researcher and supervisor). 
  
  
