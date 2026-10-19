@@ -311,7 +311,7 @@ function PrescriptionsTab() {
   return (
     <Stack spacing={2}>
       <Alert severity="info">
-        PharmaAssist is a pharmacist decision-support prototype using curated datasets. It is not a
+        MediScan is a pharmacist decision-support prototype using curated datasets. It is not a
         clinical care system and must not be used as the sole basis for prescribing, dispensing, or
         patient treatment decisions.
       </Alert>

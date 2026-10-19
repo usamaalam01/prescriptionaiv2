@@ -31,7 +31,7 @@ Voluntary participation:
 Participation is voluntary. You may decline or withdraw before submitting the anonymous questionnaire without giving a reason and without disadvantage.
 
 What participation involves:
-- Accessing the PharmaAssist prototype.
+- Accessing the MediScan prototype.
 - Reviewing 25–30 synthetic handwritten prescription samples.
 - Reviewing OCR-extracted medication information.
 - Correcting extracted information where required.

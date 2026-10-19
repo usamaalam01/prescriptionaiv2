@@ -435,7 +435,7 @@ export function ResearchEvaluationPanel() {
             pharmacist-confirmed ground truth. Do not invent WER/CER.
           </Alert>
           <Typography variant="body2">
-            <strong>Reframed research question:</strong> How accurately does the PharmaAssist OCR pipeline
+            <strong>Reframed research question:</strong> How accurately does the MediScan OCR pipeline
             (and each configured engine, including TrOCR) extract medicine names and dosages, measured by
             WER and CER against pharmacist-confirmed ground truth?
           </Typography>
@@ -614,7 +614,7 @@ export function ResearchEvaluationPanel() {
       {tab === 4 && (
         <Stack spacing={2}>
           <Alert severity="info">
-            The pharmacist questionnaire is <strong>not collected inside PharmaAssist</strong>. Share it on an
+            The pharmacist questionnaire is <strong>not collected inside MediScan</strong>. Share it on an
             external platform (e.g. Microsoft Forms v1.2). After export, map responses into{' '}
             <code>data/research_evaluation/survey_responses_v1.json</code> (pseudonyms only — no names, emails,
             registration numbers, workplaces, or IPs), then import below.

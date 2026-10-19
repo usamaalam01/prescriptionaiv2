@@ -68,7 +68,7 @@ export function LoginPage({ onLogin }: { onLogin: (user: User) => void }) {
           Sign in
         </Typography>
         <Typography color="text.secondary" mb={3}>
-          Access the PharmaAssist research prototype.
+          Access the MediScan research prototype.
         </Typography>
 
         {error && (

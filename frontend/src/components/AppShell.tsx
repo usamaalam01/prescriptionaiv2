@@ -6,10 +6,11 @@ export function AppShell({ children }: { children: ReactNode }) {
     <Box minHeight="100vh" display="flex" flexDirection="column" sx={{ overflowX: 'hidden' }}>
       <Box sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', px: { xs: 2, md: 4 }, py: 2 }}>
         <Typography variant="h5" component="div">
-          PharmaAssist
+          MediScan
         </Typography>
         <Typography variant="body2" sx={{ opacity: 0.9 }}>
-          AI-Powered Pharma Assistant · NED University of Engineering &amp; Technology
+          Human-in-the-Loop, Explainable AI Decision-Support for Prescription Reading &amp; Therapeutically-Equivalent
+          Medicine Substitution · NED University of Engineering &amp; Technology
         </Typography>
       </Box>
 
@@ -42,9 +43,12 @@ export function AppShell({ children }: { children: ReactNode }) {
       </Box>
 
       <Box sx={{ bgcolor: '#003366', color: '#fff', textAlign: 'center', py: 2, px: 2 }}>
-        <Typography variant="caption">
+        <Typography variant="caption" display="block">
           Prototype developed for academic research as part of Post Graduate Diploma in Generative AI at NED
           University of Engineering &amp; Technology
+        </Typography>
+        <Typography variant="caption" display="block">
+          Student: Muhammad Usama Alam · Supervisor: Sajid Majeed
         </Typography>
       </Box>
     </Box>
