@@ -43,8 +43,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <Box sx={{ bgcolor: '#003366', color: '#fff', textAlign: 'center', py: 2, px: 2 }}>
         <Typography variant="caption">
-          Prototype developed for academic research as part of a NED University of Engineering &amp; Technology
-          Computer Science Capstone Project.
+          Prototype developed for academic research as part of Post Graduate Diploma in Generative AI at NED
+          University of Engineering &amp; Technology
         </Typography>
       </Box>
     </Box>
