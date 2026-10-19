@@ -9,7 +9,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           PharmaAssist
         </Typography>
         <Typography variant="body2" sx={{ opacity: 0.9 }}>
-          AI-Powered Pharma Assistant · NED University of Engineering &amp; Technology · CSCK700
+          AI-Powered Pharma Assistant · NED University of Engineering &amp; Technology
         </Typography>
       </Box>
 
@@ -43,8 +43,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <Box sx={{ bgcolor: '#003366', color: '#fff', textAlign: 'center', py: 2, px: 2 }}>
         <Typography variant="caption">
-          Prototype developed for academic research as part of the NED University of Engineering &amp; Technology
-          CSCK700 Computer Science Capstone Project.
+          Prototype developed for academic research as part of a NED University of Engineering &amp; Technology
+          Computer Science Capstone Project.
         </Typography>
       </Box>
     </Box>

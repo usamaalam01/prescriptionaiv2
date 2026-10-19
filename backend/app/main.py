@@ -103,7 +103,7 @@ if not _cors:
 app = FastAPI(
     title=settings.APP_NAME,
     description=(
-        "AI-Powered Pharma Assist — NED University of Engineering & Technology CSCK700. "
+        "AI-Powered Pharma Assist — NED University of Engineering & Technology. "
         "Pharmacist decision-support with FDA NDC / DrugBank / FDA SPL catalog HITL. "
         "Not for clinical care; pharmacist confirmation is mandatory."
     ),
