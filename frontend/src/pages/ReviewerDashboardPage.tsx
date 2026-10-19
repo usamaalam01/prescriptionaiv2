@@ -12,6 +12,11 @@ import { Link as RouterLink } from 'react-router-dom'
 import { api } from '../api'
 import { ResearchEvaluationPanel } from '../components/ResearchEvaluationPanel'
 
+// Dissertation DQ1-DQ4 harness depends on data/research_evaluation/*.json, which
+// has never been populated (known gap, see SPEC_CONFORMANCE_AUDIT.md). Hidden
+// until that dataset exists so reviewers don't hit dead-end import buttons.
+const SHOW_RESEARCH_EVALUATION_PANEL = false
+
 interface Snapshot {
   phase: string
   disclaimer: string
@@ -118,7 +123,7 @@ export function ReviewerDashboardPage({ onLogout }: { onLogout?: () => void }) {
         for the intended future live adapters.
       </Typography>
 
-      <ResearchEvaluationPanel />
+      {SHOW_RESEARCH_EVALUATION_PANEL && <ResearchEvaluationPanel />}
     </Stack>
   )
 }
