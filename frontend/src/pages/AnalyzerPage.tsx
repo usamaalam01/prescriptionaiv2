@@ -351,6 +351,9 @@ export function AnalyzerPage({ onLogout }: { onLogout?: () => void }) {
           <Button component={RouterLink} to="/catalog" variant="outlined" size="small">
             Browse catalog
           </Button>
+          <Button component={RouterLink} to="/change-password" variant="outlined" size="small">
+            Change password
+          </Button>
           {onLogout && (
             <Button variant="outlined" size="small" onClick={() => void onLogout()}>
               Logout

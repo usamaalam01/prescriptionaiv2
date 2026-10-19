@@ -15,7 +15,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material'
-import { useSearchParams } from 'react-router-dom'
+import { Link as RouterLink, useSearchParams } from 'react-router-dom'
 import { Button } from '@mui/material'
 import { api } from '../api'
 import { AdminRegistrationsPage } from './AdminRegistrationsPage'
@@ -469,11 +469,16 @@ export function AdminPortalPage({ onLogout }: { onLogout?: () => void }) {
     <Stack spacing={2}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={1}>
         <Typography variant="h4">Administrator portal</Typography>
-        {onLogout && (
-          <Button variant="outlined" size="small" onClick={() => void onLogout()}>
-            Logout
+        <Stack direction="row" spacing={1}>
+          <Button component={RouterLink} to="/change-password" variant="outlined" size="small">
+            Change password
           </Button>
-        )}
+          {onLogout && (
+            <Button variant="outlined" size="small" onClick={() => void onLogout()}>
+              Logout
+            </Button>
+          )}
+        </Stack>
       </Stack>
       <Tabs
         value={tab}

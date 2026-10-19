@@ -8,6 +8,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
+import { Link as RouterLink } from 'react-router-dom'
 import { api } from '../api'
 import { ResearchEvaluationPanel } from '../components/ResearchEvaluationPanel'
 
@@ -52,11 +53,16 @@ export function ReviewerDashboardPage({ onLogout }: { onLogout?: () => void }) {
     <Stack spacing={2}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={1}>
         <Typography variant="h4">Research evaluation snapshot</Typography>
-        {onLogout && (
-          <Button variant="outlined" size="small" onClick={() => void onLogout()}>
-            Logout
+        <Stack direction="row" spacing={1}>
+          <Button component={RouterLink} to="/change-password" variant="outlined" size="small">
+            Change password
           </Button>
-        )}
+          {onLogout && (
+            <Button variant="outlined" size="small" onClick={() => void onLogout()}>
+              Logout
+            </Button>
+          )}
+        </Stack>
       </Stack>
       <Alert severity="warning">{snapshot.disclaimer}</Alert>
       <Alert severity="info">

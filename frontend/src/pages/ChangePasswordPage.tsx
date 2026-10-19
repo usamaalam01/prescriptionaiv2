@@ -49,7 +49,9 @@ export function ChangePasswordPage({
     defaultValues: { current_password: '', new_password: '', confirm_password: '' },
   })
 
-  // Stale localStorage can keep must_change_password=true after the DB flag is cleared.
+  // Refresh the user record (e.g. stale localStorage) but DO NOT auto-navigate away —
+  // this page is also reached voluntarily via a "Change password" link, so an
+  // optional account (must_change_password=false) should still see the form.
   useEffect(() => {
     let cancelled = false
     void api
@@ -58,9 +60,6 @@ export function ChangePasswordPage({
         if (cancelled) return
         localStorage.setItem('user', JSON.stringify(res.data))
         onChanged(res.data)
-        if (!res.data.must_change_password) {
-          navigate(homePathForUser(res.data), { replace: true })
-        }
       })
       .catch(() => {
         /* keep form if /me fails */
@@ -71,7 +70,7 @@ export function ChangePasswordPage({
     return () => {
       cancelled = true
     }
-  }, [navigate, onChanged])
+  }, [onChanged])
 
   const onSubmit = async (values: FormValues) => {
     setError('')
