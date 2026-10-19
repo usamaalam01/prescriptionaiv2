@@ -10,7 +10,8 @@ export const ELECTRONIC_AFFIRMATION =
 export const pisText = `Participant Information Sheet
 
 Study title:
-Computer Science - Design and Evaluation of an AI-Powered Pharmaceutical Assistant
+MediScan: A Human-in-the-Loop, Explainable AI Decision-Support System for Prescription Reading and
+Therapeutically-Equivalent Medicine Substitution
 
 Version:
 Version ${DOCUMENT_VERSION}
@@ -68,16 +69,16 @@ Benefits:
 There are no guaranteed direct personal benefits. Participation may contribute to research into safer prescription interpretation and transparent AI-assisted pharmacist support.
 
 Research outputs:
-Results may be presented in an MSc dissertation and may be disseminated through academic conferences or peer-reviewed publications. Results must be reported anonymously.
+Results may be presented in a Postgraduate Diploma (PGD) project report and may be disseminated through academic conferences or peer-reviewed publications. Results must be reported anonymously.
 
 Contacts:
 Student Researcher:
-Muhammad Zohaib
-m.zohaib@neduet.edu.pk
+Muhammad Usama Alam
+musamaalam@neduet.edu.pk
 
-Principal Investigator / Dissertation Advisor:
-Dr. Nazmul Hussain
-Nazmul.Hussain@neduet.edu.pk
+Principal Investigator / Project Supervisor:
+Sajid Majeed
+sajid.majeed@neduet.edu.pk
 
 Ethics and Complaints:
 NED University of Engineering & Technology Research Ethics and Integrity Office
@@ -99,7 +100,7 @@ export const consentStatements = [
   'I understand that research data will be handled securely under NED University of Engineering & Technology data-protection requirements.',
   'I understand that registration information will be separated from anonymized research results.',
   'I understand that temporary prescription images will be securely deleted after processing or submission.',
-  'I understand that anonymized results may be used in an MSc dissertation and related academic dissemination.',
+  'I understand that anonymized results may be used in a Postgraduate Diploma (PGD) project report and related academic dissemination.',
   'I understand that the data will not be reused for unrelated future research without appropriate approval and consent.',
   'I confirm that I am 18 years of age or older.',
   'I agree to take part in this research study.',
