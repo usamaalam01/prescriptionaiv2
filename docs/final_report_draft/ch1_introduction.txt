@@ -1,0 +1,89 @@
+CHAPTER 1: INTRODUCTION
+
+1.1 Background
+
+Medicines are the most common intervention in healthcare, and the prescription is the instrument that carries a clinician's intention to the pharmacist who dispenses it. That handover is not always clean. Handwritten prescriptions remain common across much of the world, and illegible ones still get misread. Drug names compound the difficulty: a great many of them look alike and sound alike, so a single ambiguous character can move a reader from one medicine to a different one entirely.
+
+The consequences are well documented. Medication errors are recognised internationally as a persistent source of avoidable patient harm, and the World Health Organization made medication safety the subject of a global patient safety challenge, Medication Without Harm, in 2017, with a stated ambition of reducing severe, avoidable medication-related harm by half within five years (World Health Organization, 2017). Errors arising at the prescribing and transcription stages are a meaningful share of that burden, and illegibility and look-alike drug names are recurring, named causes within that literature (Aronson, 2009; Lambert et al., 1999). The problem is not confined to any one country or health system. Wherever handwritten prescriptions are still in routine use, the same failure mode recurs: a clinician writes quickly under time pressure, and the pharmacist reading the result has no way to ask the clinician what was actually meant.
+
+Pakistan, where this project is based, is a useful illustration of why the problem persists rather than an exception to it. Handwritten prescriptions remain the norm in much outpatient practice, pharmacist-to-patient ratios are low relative to prescription volume, and a single community pharmacist may interpret several hundred prescriptions in a working day. Under that volume, a misread name is not a rare event; it is a recurring operational risk that existing tooling does nothing to reduce.
+
+There is a second, quieter problem sitting alongside the first. Pharmacists frequently find that a prescribed medicine is unavailable: out of stock, discontinued, not carried, or simply beyond what the patient can afford. In that situation the pharmacist must decide whether some other product can reasonably serve in its place. This is a judgement with real clinical weight, and it is one that most pharmacists make today with no formal decision-support tool at all. They rely on training, memory, and whatever references happen to be at hand.
+
+Neither problem is unaddressed by technology in general terms. Optical character recognition has advanced considerably over the last decade, and consumer drug-information platforms are plentiful. What is missing is a tool that joins the two tasks together. Existing platforms do not read prescription images, and they do not reason about regulated therapeutic equivalence. Meanwhile, most artificial intelligence systems that make recommendations behave as opaque "black boxes," offering an answer without showing the reasoning behind it. In clinical settings that opacity is a well-documented barrier to adoption (Rudin, 2019): a professional who is accountable for an outcome is understandably reluctant to act on a recommendation whose basis is hidden.
+
+This project sits at that intersection. It presents MediScan, a working prototype decision-support system that reads a prescription image, extracts the medicine and dosage, requires a pharmacist to verify and confirm what was extracted, and then proposes therapeutically relevant alternatives, each one carrying a transparent score, regulatory equivalence evidence, a source-grounded explanation, and an explainable-AI attribution.
+
+1.2 Problem Statement
+
+Pharmacists face two connected difficulties that current tools do not adequately support.
+
+The first is interpretation. Reading a handwritten prescription correctly is a precondition for everything that follows. Errors here propagate: a misread name leads to the wrong medicine being considered, and any downstream reasoning inherits that mistake.
+
+The second is substitution. When the prescribed medicine cannot be supplied, identifying an appropriate alternative requires reasoning about active ingredient, strength, dosage form, route of administration, and whether the substitution is regulatorily sanctioned. Pharmacists perform this reasoning informally and without systematic support.
+
+A third difficulty cuts across both. Any automated system introduced into this workflow must earn the pharmacist's trust. A tool that produces an answer without justification is unlikely to be used, and arguably should not be used, in a setting where the professional retains legal and ethical responsibility for the outcome.
+
+The problem this project addresses can therefore be stated as follows: pharmacists lack a decision-support tool that reads prescription images, proposes therapeutically relevant alternatives grounded in authoritative regulatory and label evidence, and explains its reasoning transparently enough to be trusted, while keeping the pharmacist, not the system, as the decision-maker.
+
+1.3 Objectives
+
+The primary objective was to design, build, and evaluate a functional prototype that supports safer and faster pharmacist decision-making across the substitution workflow.
+
+The supporting objectives were:
+
+a. To implement a multi-engine OCR pipeline that extracts medicine name, strength, dosage form, and route from prescription images.
+
+b. To provide a verification interface through which the pharmacist inspects, corrects, and confirms every extracted field before any downstream processing occurs.
+
+c. To build a recommendation engine that retrieves candidate medicines from a trusted drug-knowledge catalogue, applies mandatory eligibility filters, and computes a transparent, weighted relevance score.
+
+d. To integrate an authoritative regulatory therapeutic-equivalence layer, so that substitution suggestions are grounded in official equivalence determinations rather than heuristics alone.
+
+e. To ground each recommendation in retrieved drug-label evidence, reducing the risk of unsupported claims.
+
+f. To integrate explainable-AI techniques so that a pharmacist can see how each recommendation was scored.
+
+One further objective cuts across all six: research integrity. No performance metric and no equivalence claim would be asserted unless real data backed it, and where a source was incomplete the system would say the metric was unavailable instead of offering an estimate. This constraint shaped both the system's design and how results are reported here, and it is a thread that runs through every chapter that follows.
+
+1.4 Scope
+
+In scope. The project delivers image-based extraction of prescription fields; a human-in-the-loop verification workflow; retrieval and ranking of therapeutically relevant alternatives with a transparent per-component score; a regulatory therapeutic-equivalence evidence layer; evidence-grounded explanations drawn from official label text; explainable-AI attributions; role-based access for pharmacist, reviewer, and administrator roles with authentication and audit trails; and a separate evaluation layer for measuring technical performance. All development and testing used synthetic prescriptions and publicly available drug datasets.
+
+Out of scope. The project does not perform autonomous prescribing, dispensing, or automatic drug substitution. It does not process real patient records or any personally identifiable information. It makes no claim to be a clinical source of truth. Drug-drug interaction checking is noted as a potential future extension rather than a core deliverable. The deliverable is a research-grade prototype, not a production clinical system.
+
+This boundary is drawn for safety, not for convenience. The pharmacist makes the final decision in every case, and nothing in the system is permitted to make that decision instead.
+
+1.5 Methodology in Brief
+
+The project followed a Design Science Research approach: build, demonstrate, evaluate, repeated as an iterative cycle rather than a single pass. The reasoning for choosing it, and the detail of how each stage was carried out, is set out in full in Chapter 3. In outline, the system was developed as a modular web application, with each capability, OCR, verification, recommendation, regulatory equivalence, evidence retrieval, and explainability, built behind its own feature flag so that the platform degrades gracefully rather than failing outright when an optional capability is unavailable.
+
+The artefact itself, MediScan, is a FastAPI backend paired with a React single-page frontend, deployed as a single Docker container on Hugging Face Spaces with an external managed Postgres database. A pharmacist signs in, uploads a prescription image, and watches a sequential OCR stack (Google Vision as the primary engine, with TrOCR and Tesseract available as fallbacks) extract candidate text. Nothing proceeds until the pharmacist has stepped through every extracted field, drug name, route, strength, dose, and frequency, confirming or correcting each one against a catalogue of marketed medicines; the system will not let a session move forward while any required field is still unresolved. Only once a field is marked confirmed does it become eligible for the recommendation engine, which applies a set of mandatory eligibility filters (matching ingredient, route, dosage form, and strength) before scoring the surviving candidates against nine weighted clinical-relevance components. Alongside each candidate the system attaches, where available, a regulatory therapeutic-equivalence rating drawn from the FDA Orange Book, supporting label evidence retrieved from a Structured Product Labeling corpus, and a feature-by-feature explanation of how the score was built.
+
+Figure 1.1 summarises this flow end to end, from the uploaded image through to the explained recommendation.
+
+[FIGURE 1.1: End-to-end data flow from prescription image to explained recommendation]
+
+A separate, reviewer-facing evaluation layer was built alongside the pharmacist-facing application, intended to measure the system against four research questions covering extraction accuracy, recommendation quality, evidence grounding, and the effect of explanation on pharmacist trust, each with a pre-registered metric and acceptance threshold rather than a judgement made after the fact. Chapter 4 reports on how far that evaluation layer could be exercised within the time available for this report.
+
+1.6 Expected Outcomes
+
+The primary expected outcome was a working, demonstrable decision-support prototype that takes a pharmacist from a prescription image to a set of evidenced, explained, therapeutically relevant alternatives, with a human confirmation gate at the centre of its safety model.
+
+Alongside the artefact, the project was expected to produce baseline empirical results on extraction accuracy, recommendation quality, and explanation reliability, together with qualitative findings on pharmacist trust and usability. These were intended to indicate whether transparent, evidence-grounded AI meaningfully supports the substitution decision.
+
+More broadly, the project was expected to demonstrate an integrated approach in which OCR, trusted-source retrieval, regulatory equivalence reasoning, and explainable AI are combined within a single human-in-the-loop workflow. It was also expected to surface honest limitations, among them dataset coverage, the region-specific nature of equivalence data, and the boundary between decision support and clinical decision-making, that define directions for future work. Chapter 4 reports on which of these outcomes were reached within the time available and which remain open.
+
+1.7 Beneficiaries
+
+Pharmacists are the direct beneficiaries. The system is designed around their workflow and is intended to reduce the cognitive load of interpretation and substitution while leaving professional judgement intact. A pharmacist working through a busy dispensing queue gains a second pair of eyes on an illegible name and a structured starting point for a substitution decision they would otherwise have to make unaided, without the system ever removing their authority to reject what it suggests.
+
+For patients the benefit is indirect: fewer dispensing errors, and better-informed substitution when a prescribed medicine cannot be supplied. Neither of these benefits depends on the patient ever being aware the tool exists; the safety case rests entirely on the quality of the pharmacist's decision, which the system is intended to support rather than replace.
+
+Institutions gain something more prosaic but useful, namely an auditable record of what was verified and what was decided. In a dispute over what a prescription said or why a substitution was made, a timestamped record of the pharmacist's own confirmation is a more defensible artefact than an unaided professional's recollection.
+
+The research community benefits from a documented account of how regulatory equivalence data, chemical similarity, retrieval-grounded evidence, and explainability techniques can be combined in a safety-critical workflow, including where that combination proved difficult in practice. Much of the value of this project, as later chapters show, lies as much in the honest account of where the integration did not go as planned as in the parts that worked.
+
+1.8 Organization of the Report
+
+Chapter 2 reviews the literature across the strands the system draws on and identifies the gap this project addresses. Chapter 3 sets out the methodology: the Design Science Research paradigm and why it suits a project whose contribution is a built artefact, the research questions, the system design and study design, the data sources, the evaluation plan with its metrics and thresholds, and the ethical safeguards governing any work involving pharmacist participants. Chapter 4 reports results and discusses them, including where the measurement apparatus could not yet be exercised against a complete dataset and what that means for the findings. Chapter 5 draws conclusions, states the project's limitations and makes recommendations for future work.

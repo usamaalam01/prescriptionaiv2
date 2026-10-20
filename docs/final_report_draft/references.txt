@@ -1,0 +1,47 @@
+Ancker, J. S., Edwards, A., Nosal, S., Hauser, D., Mauer, E., & Kaushal, R. (2017). Effects of workload, work complexity, and repeated alerts on alert fatigue in a clinical decision support system. BMC Medical Informatics and Decision Making, 17(1), 36. https://doi.org/10.1186/s12911-017-0430-8
+
+Aronson, J. K. (2009). Medication errors: Definitions and classification. British Journal of Clinical Pharmacology, 67(6), 599-604. https://doi.org/10.1111/j.1365-2125.2009.03415.x
+
+Bates, D. W., Kuperman, G. J., Wang, S., Gandhi, T., Kittler, A., Volk, L., Spurr, C., Khorasani, R., Tanasijevic, M., & Middleton, B. (2003). Ten commandments for effective clinical decision support: Making the practice of evidence-based medicine a reality. Journal of the American Medical Informatics Association, 10(6), 523-530. https://doi.org/10.1197/jamia.M1370
+
+Colgan, S., Faasse, K., Martin, L. R., Stephens, M. H., Grey, A., & Petrie, K. J. (2015). Perceptions of generic medication in the general population, doctors and pharmacists: A systematic review. BMJ Open, 5(12), e008915. https://doi.org/10.1136/bmjopen-2015-008915
+
+Es, S., James, J., Espinosa-Anke, L., & Schockaert, S. (2024). RAGAs: Automated evaluation of retrieval augmented generation. In Proceedings of the 18th Conference of the European Chapter of the Association for Computational Linguistics: System Demonstrations (pp. 150-158). Association for Computational Linguistics.
+
+Friedman, C., Rindflesch, T. C., & Corn, M. (2013). Natural language processing: State of the art and prospects for significant progress, a workshop sponsored by the National Library of Medicine. Journal of Biomedical Informatics, 46(5), 765-773. https://doi.org/10.1016/j.jbi.2013.06.004
+
+Graves, A., Liwicki, M., Fernandez, S., Bertolami, R., Bunke, H., & Schmidhuber, J. (2009). A novel connectionist system for unconstrained handwriting recognition. IEEE Transactions on Pattern Analysis and Machine Intelligence, 31(5), 855-868. https://doi.org/10.1109/TPAMI.2008.137
+
+Hevner, A. R., March, S. T., Park, J., & Ram, S. (2004). Design science in information systems research. MIS Quarterly, 28(1), 75-105. https://doi.org/10.2307/25148625
+
+Jain, R., Sharma, A., & Malhotra, M. (2021). Handwriting recognition for medical prescriptions using a CNN-Bi-LSTM model. In Proceedings of the 2nd International Conference on Intelligent Engineering and Management (ICIEM) (pp. 596-601). IEEE. https://doi.org/10.1109/ICIEM51511.2021.9445317
+
+Kesselheim, A. S., Misono, A. S., Lee, J. L., Stedman, M. R., Brookhart, M. A., Choudhry, N. K., & Shrank, W. H. (2008). Clinical equivalence of generic and brand-name drugs used in cardiovascular disease: A systematic review and meta-analysis. JAMA, 300(21), 2514-2526. https://doi.org/10.1001/jama.2008.758
+
+Lambert, B. L., Lin, S.-J., Chang, K.-Y., & Gandhi, S. K. (1999). Similarity as a risk factor in drug-name confusion errors: The look-alike (orthographic) and sound-alike (phonetic) model. Medical Care, 37(12), 1214-1225. https://doi.org/10.1097/00005650-199912000-00005
+
+Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., Küttler, H., Lewis, M., Yih, W., Rocktäschel, T., Riedel, S., & Kiela, D. (2020). Retrieval-augmented generation for knowledge-intensive NLP tasks. In Advances in Neural Information Processing Systems 33 (NeurIPS 2020) (pp. 9459-9474). Curran Associates.
+
+Li, M., Lv, T., Chen, J., Cui, L., Lu, Y., Florencio, D., Zhang, C., Li, Z., & Wei, F. (2023). TrOCR: Transformer-based optical character recognition with pre-trained models. Proceedings of the AAAI Conference on Artificial Intelligence, 37(11), 13094-13102. https://doi.org/10.1609/aaai.v37i11.26538
+
+Lundberg, S. M., & Lee, S.-I. (2017). A unified approach to interpreting model predictions. In Advances in Neural Information Processing Systems 30 (NIPS 2017) (pp. 4765-4774). Curran Associates.
+
+Parasuraman, R., & Manzey, D. H. (2010). Complacency and bias in human use of automation: An attentional integration. Human Factors, 52(3), 381-410. https://doi.org/10.1177/0018720810376055
+
+Peffers, K., Tuunanen, T., Rothenberger, M. A., & Chatterjee, S. (2007). A design science research methodology for information systems research. Journal of Management Information Systems, 24(3), 45-77. https://doi.org/10.2753/MIS0742-1222240302
+
+Ribeiro, M. T., Singh, S., & Guestrin, C. (2016). "Why should I trust you?": Explaining the predictions of any classifier. In Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (pp. 1135-1144). Association for Computing Machinery. https://doi.org/10.1145/2939672.2939778
+
+Rudin, C. (2019). Stop explaining black box machine learning models for high stakes decisions and use interpretable models instead. Nature Machine Intelligence, 1(5), 206-215. https://doi.org/10.1038/s42256-019-0048-x
+
+Sarpatwari, A., Gagne, J. J., Lu, Z., Dutcher, S. K., Jiang, W., & Kesselheim, A. S. (2018). Generic versions of narrow therapeutic index drugs: A national survey of pharmacists' substitution beliefs and practices. Clinical Pharmacology & Therapeutics, 103(5), 816-824. https://doi.org/10.1002/cpt.830
+
+Tabassum, S., Rahman, M. M., Hossain, M. S., Rahman, M. A., & Khan, M. I. (2021). Recognition of doctors' cursive handwritten medical words by using bidirectional LSTM and SRU with grid search. In 2021 IEEE 12th Annual Ubiquitous Computing, Electronics & Mobile Communication Conference (UEMCON) (pp. 790-796). IEEE.
+
+Tonekaboni, S., Joshi, S., McCradden, M. D., & Goldenberg, A. (2019). What clinicians want: Contextualizing explainable machine learning for clinical end use. Proceedings of Machine Learning Research, 106, 359-380.
+
+U.S. Food and Drug Administration. (2024). Approved drug products with therapeutic equivalence evaluations (Orange Book) (45th ed.). U.S. Department of Health and Human Services.
+
+World Health Organization. (2017). Medication without harm: WHO global patient safety challenge. World Health Organization.
+
+Zhang, T., Kishore, V., Wu, F., Weinberger, K. Q., & Artzi, Y. (2020). BERTScore: Evaluating text generation with BERT. In Proceedings of the 8th International Conference on Learning Representations (ICLR 2020).

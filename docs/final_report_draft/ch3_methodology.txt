@@ -1,0 +1,141 @@
+CHAPTER 3: METHODOLOGY AND STUDY DESIGN
+
+3.1 Introduction
+
+This chapter sets out how the project was carried out. It states the research paradigm and justifies it, defines the study aim and the research questions, describes the system that was built and the data it draws on, specifies the study design covering the planned evaluation instrument and target participants, and specifies the evaluation plan through which the artefact's performance and usefulness were to be assessed. It closes with the ethical considerations that govern any part of the work involving pharmacist participants.
+
+3.1.1 Research Paradigm: Design Science Research
+
+The project follows Design Science Research (DSR). DSR suits work whose contribution is a constructed artefact, whether that is a method, a model, or, as here, a working software system, and where knowledge comes from building that artefact and evaluating it against defined objectives rather than from observing a phenomenon that already exists independently of the research.
+
+At its simplest, the paradigm proceeds through an iterative build-and-evaluate loop: a design is proposed, instantiated as working software, and assessed, with the results feeding the next iteration (Hevner et al., 2004). Peffers et al. (2007) elaborate this into a six-activity methodology, problem identification, definition of objectives, design and development, demonstration, evaluation, and communication, and it is this more granular build, demonstrate, evaluate framing that this project follows in practice: a design is proposed, instantiated as working software, exercised against realistic scenarios, and assessed, with the results of each pass feeding the next iteration. The paradigm differs from a hypothesis-testing one in an important way. In hypothesis testing, an existing phenomenon is measured. Here, the phenomenon, a working decision-support tool that did not exist before this project, is brought into existence by the research itself and then examined.
+
+[FIGURE 3.1: Design Science Research cycle applied to this project]
+
+3.1.2 Justification of Approach
+
+DSR fits this project for three reasons. First, the research question concerns whether a particular combination of techniques, OCR, regulatory equivalence, retrieval-grounded evidence, and explainability, can support a professional decision, a question that cannot be answered without actually constructing that combination and observing how it behaves. Second, the evaluation criteria are mixed in kind. Extraction accuracy and ranking quality are the sort of thing that can be measured numerically, whereas a pharmacist's trust and perceived usefulness cannot be measured the same way and instead require professional judgement, gathered through structured feedback. DSR accommodates both kinds of evidence within one coherent framework rather than forcing a choice between them. Third, DSR's emphasis on documenting the artefact and its limitations, rather than presenting only a polished final result, aligns with the integrity commitment stated in Chapter 1: this project set out to report honestly on what worked and what did not, and DSR is a paradigm built around exactly that expectation.
+
+An alternative would have been a purely experimental design comparing MediScan against existing commercial tools. This was rejected because no existing tool performs the integrated workflow under study, reading a handwritten prescription and reasoning about regulated therapeutic substitution within one system, so there was nothing directly comparable to measure MediScan against without first building it.
+
+3.2 Study Aim and Research Questions
+
+Aim. To design, build, and evaluate a human-in-the-loop, explainable decision-support prototype that assists pharmacists in reading prescriptions and identifying therapeutically relevant alternatives, and to assess whether transparent, evidence-grounded recommendations support professional decision-making.
+
+Four research questions operationalise this aim:
+
+RQ1, Extraction accuracy. How accurately does the OCR pipeline extract medicine names and dosages from prescription images, compared with pharmacist-confirmed ground truth?
+
+RQ2, Recommendation quality. How effectively does the recommendation engine identify alternatives that pharmacists judge to be relevant, and what does chemical structural similarity contribute as a supporting signal?
+
+RQ3, Evidence grounding. How does retrieval strategy affect the quality of evidence presented with each recommendation, and to what extent are generated explanations supported by the retrieved source text?
+
+RQ4, Explainability and trust. What is the effect of explanation and source attribution on pharmacists' perceived transparency, trust, and confidence in the recommendations?
+
+Table 3.2 later in this chapter sets out, for each question, the metric used to answer it and the threshold against which a pass or fail verdict is reported.
+
+3.3 System Design and Development
+
+The system was developed as a modular web application. Each capability was built as an independently replaceable module behind a feature flag, so that the system degrades gracefully when an optional capability or dataset is unavailable rather than failing outright. This modularity served the research design directly: it allowed a capability to be switched off and the system re-evaluated, which is how comparative conditions for several of the research questions above were intended to be constructed.
+
+3.3.1 Architecture
+
+[FIGURE 3.2: System architecture, layered view]
+
+The application is built as a FastAPI backend serving a React single-page frontend, with the two bundled together into a single Docker container that runs as one process on Hugging Face Spaces. A single Postgres database, hosted externally rather than inside the container, holds every piece of application state: user accounts, consent records, prescription sessions, OCR runs, clinical evaluations, the human-in-the-loop audit trail, and the research-evaluation evidence store. This application database is organised into separate named schemas by domain, auth, admin, consent, prescription, clinical, audit, and research, rather than a single undifferentiated set of tables, which keeps each domain's data independently addressable and makes the schema itself a readable map of the system's responsibilities. Figure 3.4 shows these domains and their separation.
+
+[FIGURE 3.4: Application database domains]
+
+Two data stores are deliberately kept apart. The application database above is written to constantly during normal operation. A second store, a read-only SQLite file holding the drug-knowledge catalogue (marketed medicines, chemical structure mappings, and regulatory equivalence data assembled offline from public sources), is opened in a mode that the database driver itself enforces as read-only, so that the clinical reference data genuinely cannot be altered by anything the running application does. This separation is a safety property as much as an architectural one: the catalogue a pharmacist's recommendation is drawn from cannot drift away from its known, offline-validated state because of a bug, a race condition, or a misbehaving request somewhere else in the application.
+
+Access is authenticated and role-gated across three roles. A pharmacist runs the analyzer workflow described in Section 3.3.2. A reviewer has access to the research-evaluation layer described in Section 3.3.4 and to aggregate operational statistics, but not to the pharmacist's day-to-day workflow. An administrator approves new pharmacist registrations, can re-designate an approved account as a reviewer, and has access to operational dashboards covering registrations, the drug catalogue, prescription session volume, and production analytics. New pharmacists self-register but cannot activate their own account; a request sits pending until an administrator explicitly approves it, which is the only route by which an account becomes active.
+
+3.3.2 The Human-in-the-Loop Gate
+
+[FIGURE 3.3: Four-step pharmacist workflow with the verification gate]
+
+Step three of the pharmacist workflow is the architectural centre of the system's safety model. A pharmacist uploads a prescription image; the OCR stack described in Section 3.3.3 extracts candidate text and structured fields; the pharmacist then steps through a fixed field order, drug name first, then route, strength, dose, and frequency, confirming or correcting each one against a catalogue-constrained set of options rather than free text. No recommendation is generated until every field required for a given medicine line has been explicitly confirmed, and this is enforced on the server, not only as a frontend convenience: the recommendation endpoint itself filters to medicine rows whose status is confirmed before any candidate is scored, so a request that somehow bypassed the frontend's own disabled-button state would still find nothing to recommend against for an unconfirmed field.
+
+The ordering here matters, and it reflects the human-in-the-loop literature discussed in Section 2.7 directly, in particular the automation-bias risk Parasuraman and Manzey (2010) describe. If recommendations were generated first and shown alongside a confirmation prompt, the pharmacist would be reviewing a system that had already committed to an interpretation of the prescription, an arrangement that invites the rubber-stamping effect that literature warns against. By requiring confirmation first, the system ensures that everything downstream, the candidate search, the scoring, the evidence retrieval, is conditioned on a field value a human has actually looked at and approved, not on whatever the OCR engine happened to produce.
+
+Every correction the pharmacist makes, and every confirmation itself, is written to an append-only audit table. These records serve two purposes: an operational record of what was verified and by whom, and a source of ground truth for extraction-accuracy evaluation, since a field a pharmacist has confirmed is, by construction, that pharmacist's own judgement of what the prescription actually said. This audit trail is append-only in the sense that no code path in the application ever issues an update or delete against it; it is a convention enforced by how the application is written rather than a constraint enforced by the database itself, and Chapter 4 records this as a limitation rather than describing it as a stronger guarantee than it is.
+
+3.3.3 OCR Pipeline
+
+Prescription images are processed through a sequential, multi-engine OCR stack. Google Vision's document-text-detection API is the primary engine in production use. TrOCR, a locally run transformer handwriting model, and Tesseract, an open-source OCR engine, are available as configurable fallback and comparison engines. A separate line-detection pass can optionally assist by locating text regions before recognition runs, though it contributes detection only and does not itself recognise characters. Ahead of recognition, each image passes through a preprocessing stage, correcting orientation, isolating ink from background, applying an adaptive contrast adjustment, sharpening, and deskewing the image where it is rotated, all intended to give each recognition engine as clean an input as the image allows. Any text the pipeline extracts is passed through a redaction step that strips patterns resembling clinic names, patient demographics, addresses, and prescriber registration numbers before the transcript is stored or displayed, since the system's own design assumes every prescription that reaches it could in principle carry identifying information even though the evaluation dataset used in this project is synthetic throughout.
+
+3.3.4 Recommendation Engine and Evidence Layers
+
+Once a medicine line is confirmed, the recommendation engine searches the drug-knowledge catalogue for candidates and applies a set of mandatory eligibility filters before any candidate is scored at all: the same active ingredient or an accepted salt form of it, a compatible route of administration, a compatible dosage form, comparable strength, and the presence of trusted provenance for the candidate record. A candidate failing any one of these filters is excluded outright and never reaches the scoring stage. Surviving candidates are scored against nine independently weighted components covering indication relationship, therapeutic classification, mechanism of action, molecular target or pathway, route compatibility, dosage-form compatibility, patient-population compatibility, contraindication and warning assessment, and interaction-assessment coverage, summing to a total score out of one hundred. Where a reasonable number of candidates share the prescribed medicine's own active moiety, an additional, separately computed structural-similarity bonus, based on a chemical maximum-common-substructure comparison, can adjust the ranking among those same-moiety candidates; this bonus is deliberately withheld on the alternative path, where a candidate has a different active ingredient from the one prescribed, since applying it there risked implying a degree of clinical interchangeability between different active ingredients that no regulator has actually determined.
+
+Attached to each candidate, where the data is available, is a regulatory therapeutic-equivalence rating drawn from the FDA Orange Book, described in Section 2.4, which annotates the candidate with the regulator's own equivalence code rather than feeding into the ranking score itself; this evidence is deliberately kept passive, informing the pharmacist's own judgement rather than silently reordering what the pharmacist sees first.
+
+Supporting evidence for each candidate is retrieved from a corpus of Structured Product Labeling excerpts, the approved label text the regulator has reviewed for each marketed product. In the system as deployed, this retrieval works by scoring label passages against the query on shared vocabulary rather than through a learned semantic embedding; a separate, embedding-based retriever using sentence embeddings and a nearest-neighbour index exists in the codebase and was evaluated in the research-evaluation layer described below, but is not the mechanism the live pharmacist-facing recommendation path uses by default. Where no supporting passage can be found for a candidate, the system withholds any generated narrative summary rather than producing one anyway, substituting an explicit message that evidence was insufficient; this is a deliberate design choice intended to avoid exactly the unsupported-claim failure mode discussed in Section 2.6, at the cost of sometimes offering the pharmacist less explanatory text than they might want.
+
+3.3.5 Explainability Layer
+
+Because the recommendation score described above is additive, the exact contribution of each of the nine scoring components to a candidate's total is already known with certainty; no approximation is required to state it. The system's primary explanation mechanism presents exactly this analytical breakdown, ranked by the magnitude of each component's contribution, as the account of why a given candidate scored the way it did. A real implementation of SHAP is additionally available as an optional, disabled-by-default capability, and where it is enabled its purpose is to reconcile the library's output against the already-known analytical attribution as a correctness check, rather than to serve as the only available explanation of an otherwise unexplained score.
+
+3.4 Data Sources and Collection
+
+3.4.1 Drug Knowledge Sources
+
+The knowledge catalogue draws on several publicly available reference datasets, each serving a distinct role, as summarised in Table 3.1. These sources were combined offline into a single read-only catalogue, with derived tables built from them to support specific functions: a name-to-structure mapping for chemical similarity comparisons, an equivalence table, and a salt-form normalisation map allowing different salt forms of the same active moiety to be recognised as related to one another.
+
+[TABLE 3.1: Drug knowledge sources and their role in the system]
+
+Using publicly available regulatory data carries a methodological consequence worth stating plainly. The equivalence determinations are jurisdiction-specific: they reflect one regulator's decisions about products marketed in one country. The system's equivalence evidence is therefore correct for that jurisdiction and should not be assumed to transfer unmodified elsewhere, a limitation recorded again in Chapter 4.
+
+3.4.2 Synthetic Prescription Dataset
+
+Evaluation of the extraction pipeline requires prescription images with known correct content. The project uses synthetic prescriptions only, images constructed for the study, containing no real patient information and representing no real clinical encounter. Privacy considerations drove this choice directly: a real prescription carries patient identifiers, prescriber identifiers, and clinical information, and using real material would have required a data-protection and governance apparatus disproportionate to a prototype evaluation at this scale. Synthetic data avoids the risk entirely while still exercising the same OCR and verification pipeline a real prescription would.
+
+A target of 25 to 30 evaluation cases was planned, varied across handwriting legibility, medicine classes, dosage forms, and the presence of look-alike or sound-alike name pairs. Ground truth for each case comes from the verification workflow itself: whatever fields a pharmacist confirms become the reference against which OCR output is scored, consistent with the design described in Section 3.3.2. Chapter 4 reports on how far this target dataset had been reached at the time of writing this report.
+
+3.5 Study Design
+
+3.5.1 Research Design
+
+The quantitative strand of this study is a within-system comparative evaluation: the same prescription cases are run through the deployed system, and the system's own output on each case is compared against pharmacist-confirmed ground truth for that case. There is no separate control group or comparator system, for the reason given in Section 3.1.2; the research question is about this system's own measured performance against pre-registered thresholds, not a head-to-head comparison against an alternative tool.
+
+3.5.2 Data Collection Instrument
+
+Alongside the quantitative strand, a structured feedback instrument, administered externally as a questionnaire rather than inside the application itself, was designed to collect pharmacist responses on five-point Likert scales covering usability, clinical relevance, transparency, trust, and the perceived value of the explanations provided, together with free-text comments. To support RQ4 specifically, the instrument is built around three explanation conditions presented to participants in a counterbalanced order: a minimal condition showing only the relevance score, a condition additionally showing the feature-attribution breakdown, and a condition additionally showing the retrieved evidence passages and their source. Comparing responses across these three conditions is intended to isolate whether explanation and source provenance, specifically, affect a pharmacist's stated trust and perceived transparency, rather than simply asking whether the system in general is trusted.
+
+3.5.3 Data Sources and Participant Population
+
+Three distinct kinds of data feed the evaluation. The published, publicly available regulatory and reference datasets described in Section 3.4.1 supply the drug knowledge the recommendation engine draws on. The synthetic prescription cases described in Section 3.4.2, together with pharmacist verification performed through the live application, supply ground truth for the extraction-accuracy and recommendation-quality questions. The planned pharmacist panel, five licensed pharmacists working through the application in a simulated environment, supplies the qualitative trust and usability data for RQ4; this panel is the survey's target audience, and its intended size of five was set deliberately small given that the resulting evidence is treated as indicative, structured professional feedback rather than as a basis for any inferential statistical claim.
+
+3.5.4 Findings from the Study Design Phase
+
+Designing the evaluation around four pre-registered research questions, each with its own metric and acceptance threshold set in advance rather than chosen after seeing results, surfaced two design problems before any data collection began, both discussed in Chapter 4: a metric that can only be computed from genuinely independent OCR runs across multiple engines, which the evaluation harness as currently implemented does not yet perform, and a recommendation-quality comparison between two scoring conditions that, by the mathematics of how the comparison is constructed, cannot actually differ from one another. Surfacing these problems at the design stage, rather than only discovering them once results were in hand, is itself a finding this report treats as a legitimate part of the study design chapter rather than hiding it inside a results section where it might look like an afterthought.
+
+3.6 Evaluation Plan
+
+3.6.1 Quantitative Strand
+
+Each research question maps to a defined metric and a pre-specified acceptance threshold, so that results can be reported as pass or fail rather than interpreted after the fact.
+
+[TABLE 3.2: Research questions, metrics, and acceptance thresholds]
+
+RQ1, extraction accuracy, is measured by word error rate, character error rate, and field-level exact match, against thresholds of word error rate below 0.15 and character error rate below 0.10. RQ2, recommendation quality, is measured by precision at three and recall at three against a pharmacist-judged relevant set, with thresholds of precision at three at or above 0.70 and recall at three at or above 0.60, alongside a separately reported structural-similarity coverage figure. RQ3, evidence grounding, is measured by citation coverage, an unsupported-claim rate, and a semantic-similarity score between generated explanation and retrieved source text, against a threshold of semantic similarity F1 at or above 0.80. RQ4, explainability and trust, is measured descriptively through Likert ratings by explanation condition, with no numeric threshold, since the evidence here is intended to describe a pattern of professional response rather than to pass or fail against a predetermined number.
+
+Two rules govern this strand, both following directly from the integrity objective stated in Chapter 1. First, a metric is reported only when it is computed from real data; where the backing data is incomplete, the metric is marked unavailable and no threshold verdict is issued for it, rather than an estimate or placeholder figure being reported in its place. Second, where a measurement carries a known methodological weakness, that weakness is stated alongside the number rather than left for a reader to discover independently. The semantic-similarity measure for RQ3 is a specific case of this: if a generated explanation is built from the same passages used as the reference text it is compared against, the comparison is circular, and the resulting similarity score is inflated relative to what an independently generated explanation would score. Chapter 4 states this constraint explicitly alongside the relevant figure wherever it applies, rather than presenting the number as if it were a clean, independent measurement.
+
+3.6.2 Qualitative Strand
+
+The qualitative strand gathers structured feedback, through the instrument described in Section 3.5.2, from a small panel of licensed pharmacists using the synthetic cases in a simulated environment. A panel of this size supports descriptive reporting of professional judgement; it does not support inferential statistical claims, and none are made from it in this report. Results, where collected, are reported as means and standard deviations by construct and by explanation condition, accompanied by representative free-text comments, and presented throughout as indicative professional feedback rather than as generalisable evidence.
+
+3.6.3 Research Process Timeline
+
+The sequence in which the phases above were carried out, from the initial literature collection through system build to the evaluation activity that remained outstanding at the time of writing, is summarised in Figure 3.5. The timeline is shown in relative project weeks rather than calendar dates, consistent with how the programme's own milestone schedule is expressed.
+
+[FIGURE 3.5: Research process timeline]
+
+3.7 Ethical Considerations
+
+The quantitative strand raises no human-participant issues on its own: every prescription used is synthetic, no patient data is processed anywhere in the system, and the drug reference data drawn on is publicly available regulatory and bibliographic material.
+
+The qualitative strand does involve human participants, the pharmacist panel, and is accordingly subject to institutional research ethics approval before any participant-facing data collection begins. The following safeguards apply to that panel: a written participant information sheet, describing the study's purpose, what participation involves, its expected duration, and how data will be used, is provided before any participant is asked to consent; written informed consent is obtained before participation; participants may withdraw at any time before submitting their questionnaire response, without giving a reason and without any consequence; responses are recorded against pseudonymous codes, so no participant is identifiable in this report or in any stored dataset; only data necessary to answer RQ4 is collected, and no clinical or patient data is gathered from participants at any point; and responses are stored securely, accessible only to the researcher and supervisor, retained only for the period the institution's own policy permits.
+
+Two further ethical dimensions follow from the nature of the artefact itself rather than from the study design narrowly construed. The first concerns safe framing. A system that proposes medicine alternatives could, if misrepresented to a user, be mistaken for a source of clinical authority rather than a decision-support aid. This is addressed both in the system's design, through the mandatory verification gate and the explicit refusal to perform automatic substitution of any kind, and in how it is presented, by stating the decision-support boundary consistently throughout the interface and in this report. The second concerns honest reporting. Presenting simulated or estimated figures as though they were measured results would misrepresent the artefact's actual capability, and an overstated accuracy claim could encourage a pharmacist to rely on the system in a way they should not. That makes honest reporting an ethics question in this context as much as a methods question, and the integrity rules stated in Section 3.6.1 exist for that reason.
