@@ -7,6 +7,7 @@ from __future__ import annotations
 import io
 import logging
 from dataclasses import dataclass, field
+from functools import lru_cache
 
 from app.core.config import settings
 
@@ -78,30 +79,54 @@ def _mock_document(reason: str) -> OcrDocumentResult:
     )
 
 
+@lru_cache(maxsize=1)
+def _paddle_ocr_singleton():
+    """Lazily construct and cache the PaddleOCR 3.x pipeline (PP-OCRv5 API).
+
+    Loading model weights is slow; caching avoids re-downloading/re-initializing
+    on every request. lru_cache does not memoize exceptions, so a construction
+    failure (e.g. paddleocr/paddlepaddle not installed) simply retries next call.
+    """
+    from paddleocr import PaddleOCR  # type: ignore
+
+    return PaddleOCR(
+        lang="en",
+        device="cpu",
+        use_doc_orientation_classify=False,
+        use_doc_unwarping=False,
+        use_textline_orientation=True,
+    )
+
+
 def paddle_detect_lines(image_bytes: bytes) -> list[dict]:
-    """Use PaddleOCR for line detection / preprocessing. Returns crop metadata."""
+    """Use PaddleOCR (3.x API) for line detection. Returns crop metadata.
+
+    Only the per-line bounding boxes are used downstream (TrOCR re-reads each
+    crop) — PaddleOCR's own recognized text/confidence ride along as a weak
+    provisional fallback if TrOCR fails on that crop.
+    """
     if not settings.ENABLE_PADDLE_DETECT:
         return []
     try:
-        from paddleocr import PaddleOCR  # type: ignore
         from PIL import Image
         import numpy as np
 
+        ocr = _paddle_ocr_singleton()
         img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         arr = np.array(img)
-        ocr = PaddleOCR(use_angle_cls=True, lang="en", show_log=False)
-        result = ocr.ocr(arr, cls=True) or []
+        results = ocr.predict(arr) or []
         lines: list[dict] = []
-        for block in result:
-            for item in block or []:
-                box, (txt, conf) = item[0], item[1]
-                xs = [p[0] for p in box]
-                ys = [p[1] for p in box]
+        for res in results:
+            data = res.json.get("res", res.json) if hasattr(res, "json") else res
+            texts = data.get("rec_texts") or []
+            scores = data.get("rec_scores") or []
+            boxes = data.get("rec_boxes") or []
+            for txt, score, box in zip(texts, scores, boxes):
                 lines.append(
                     {
                         "text": txt,
-                        "confidence": float(conf),
-                        "bbox": [min(xs), min(ys), max(xs), max(ys)],
+                        "confidence": float(score),
+                        "bbox": [float(v) for v in box],
                         "engine": "paddleocr",
                     }
                 )

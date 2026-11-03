@@ -41,6 +41,11 @@ RUN pip install --upgrade pip \
     && pip install -r requirements.txt \
     && pip install -r requirements-bertscore.txt
 
+# PaddleOCR line detector for TrOCR (ENABLE_PADDLE_DETECT=true). Best-effort: if this
+# install fails (e.g. upstream wheel index issue), the build still succeeds and
+# paddle_detect_lines() falls back to full-page TrOCR at runtime (see engines.py).
+RUN pip install paddlepaddle==3.2.0 paddleocr==3.7.0 || echo "WARNING: PaddleOCR install failed; ENABLE_PADDLE_DETECT will no-op at runtime."
+
 # App code + migrations + the built SPA.
 COPY backend/app ./app
 COPY backend/alembic ./alembic
