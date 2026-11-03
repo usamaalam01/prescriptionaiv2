@@ -132,8 +132,15 @@ def paddle_detect_lines(image_bytes: bytes) -> list[dict]:
                 )
         return lines
     except Exception as exc:  # noqa: BLE001
+        import traceback
+
         logger.warning("PaddleOCR detect unavailable: %s", exc)
+        global _LAST_PADDLE_ERROR
+        _LAST_PADDLE_ERROR = f"{type(exc).__name__}: {exc}\n{traceback.format_exc(limit=3)}"
         return []
+
+
+_LAST_PADDLE_ERROR: str | None = None
 
 
 def _vision_lines_from_full_text_annotation(annotation: dict) -> list[OcrLine]:
