@@ -57,10 +57,17 @@ _VOLUME_DOSE_RE = re.compile(
 # wording is required nearby.
 _FORM_STRENGTH_RE = re.compile(
     r"(?i)\b(?P<form>tablets?|capsules?|caplets?)\b"
-    r"[\s,:-]{0,3}\(?"
+    r"[\s,:-]{0,3}(?:usp\s*,?\s*)?\(?"
     r"(?P<mg1>\d+(?:\.\d+)?)\s*-?\s*mg"
     r"(?:\s*/\s*(?P<mg2>\d+(?:\.\d+)?)\s*mg)?"
     r"\)?"
+)
+
+# Reverse order: "324 mg capsules" — the number precedes the form word. No
+# combo group: in practice this phrasing is used for single-ingredient
+# products (a combo would be written as "<form>, Nmg/Mmg" instead).
+_STRENGTH_FORM_RE = re.compile(
+    r"(?i)\b(?P<mg1>\d+(?:\.\d+)?)\s*mg\s+(?P<form>tablets?|capsules?|caplets?)\b"
 )
 
 # Mass dose near recommended wording (scoped later against tablet strength)
@@ -248,6 +255,20 @@ def strengths_from_forms_and_strengths(section_text: str | None) -> list[Strengt
             if re.match(r"(?i)\s*\w+\s*/\s*\d", tail):
                 continue
         label = f"{float(mg1):g} mg/{float(mg2):g} mg" if mg2 else f"{float(mg1):g} mg"
+        key = _norm(label)
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(
+            StrengthCandidate(
+                strength_label=label,
+                evidence_excerpt=_clip_excerpt(section_text, m.start(), m.end()),
+                confidence=0.9,
+            )
+        )
+
+    for m in _STRENGTH_FORM_RE.finditer(section_text):
+        label = f"{float(m.group('mg1')):g} mg"
         key = _norm(label)
         if key in seen:
             continue
