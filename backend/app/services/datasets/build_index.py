@@ -654,24 +654,8 @@ def _ingest_spl_row(conn: sqlite3.Connection, row: dict) -> bool:
     if mid is None:
         return False
 
-    route_list = sorted(routes) or [None]
-    form_list = sorted(forms) or [None]
-    ndc_list = product_ndcs or [None]
-    for route in route_list:
-        for form in form_list:
-            for ndc in ndc_list[:3]:
-                _insert_product(
-                    conn,
-                    mid,
-                    strength=None,
-                    dosage_form=form,
-                    route=route,
-                    product_ndc=ndc,
-                    source="FDA_SPL",
-                    spl_set_id=spl_set_id,
-                )
-
     dosage_admin = None
+    forms_and_strengths = None
     for section_key in _SPL_SECTIONS:
         text = _first_list_text(row.get(section_key))
         if text:
@@ -684,6 +668,43 @@ def _ingest_spl_row(conn: sqlite3.Connection, row: dict) -> bool:
             )
             if section_key == "dosage_and_administration":
                 dosage_admin = text
+            elif section_key == "dosage_forms_and_strengths":
+                forms_and_strengths = text
+
+    from app.services.datasets.label_dose_extract import (
+        infer_dosage_form_from_text,
+        infer_route_from_text,
+        strengths_for_label_context,
+    )
+
+    strength_cands = strengths_for_label_context(
+        forms_and_strengths_text=forms_and_strengths,
+        dosage_admin_text=dosage_admin,
+    )
+    strength_list = [c.strength_label for c in strength_cands] or [None]
+
+    # openFDA's structured route/dosage_form are frequently empty for SPL-only
+    # (brand-label) drugs even when the free-text label clearly states them —
+    # infer a single, unambiguous value from text rather than leaving every
+    # downstream HITL route/strength/dose option permanently empty.
+    route_list = sorted(routes) or [infer_route_from_text(forms_and_strengths, dosage_admin, indication)]
+    form_list = sorted(forms) or [infer_dosage_form_from_text(forms_and_strengths, dosage_admin)]
+    ndc_list = product_ndcs or [None]
+    for route in route_list:
+        for form in form_list:
+            for strength in strength_list:
+                for ndc in ndc_list[:3]:
+                    _insert_product(
+                        conn,
+                        mid,
+                        strength=strength,
+                        dosage_form=form,
+                        route=route,
+                        product_ndc=ndc,
+                        source="FDA_SPL",
+                        spl_set_id=spl_set_id,
+                    )
+
     if dosage_admin:
         _insert_dose_options_from_section(
             conn,

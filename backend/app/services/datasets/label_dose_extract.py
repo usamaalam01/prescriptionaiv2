@@ -51,6 +51,18 @@ _VOLUME_DOSE_RE = re.compile(
     r"(?i)(?<!/)\b(?P<vol>\d+(?:\.\d+)?)\s*(?P<unit>mL|ml)\b"
 )
 
+# Per-unit strength declarations, e.g. "Tablets (300 mg)" / "Tablets: 300 mg" /
+# "20 mg/1100 mg" (fixed-dose combination). High precision — this is the dedicated
+# DOSAGE FORMS AND STRENGTHS section, not dosing instructions, so no dose/frequency
+# wording is required nearby.
+_FORM_STRENGTH_RE = re.compile(
+    r"(?i)\b(?P<form>tablets?|capsules?|caplets?)\b"
+    r"[\s,:-]{0,3}\(?"
+    r"(?P<mg1>\d+(?:\.\d+)?)\s*-?\s*mg"
+    r"(?:\s*/\s*(?P<mg2>\d+(?:\.\d+)?)\s*mg)?"
+    r"\)?"
+)
+
 # Mass dose near recommended wording (scoped later against tablet strength)
 _RECOMMENDED_MG_RE = re.compile(
     r"(?i)(?:recommended\s+(?:dosage|dose)|dose\s+of|administer(?:ed)?)\s*[:\-]?\s*"
@@ -205,6 +217,134 @@ def parse_strength_mg(strength: str | None) -> float | None:
     if m:
         return float(m.group(1)) / 1000.0
     return None
+
+
+@dataclass(frozen=True)
+class StrengthCandidate:
+    strength_label: str
+    evidence_excerpt: str
+    confidence: float
+
+
+def strengths_from_forms_and_strengths(section_text: str | None) -> list[StrengthCandidate]:
+    """High-confidence per-unit strengths from the DOSAGE FORMS AND STRENGTHS section.
+
+    e.g. "Tablets (300 mg)" -> "300 mg"; "20mg/1100 mg" (fixed-dose combo) -> "20 mg/1100 mg".
+    """
+    if not section_text or not section_text.strip():
+        return []
+    out: list[StrengthCandidate] = []
+    seen: set[str] = set()
+    for m in _FORM_STRENGTH_RE.finditer(section_text):
+        mg1 = m.group("mg1")
+        mg2 = m.group("mg2")
+        if mg2 is None:
+            # Combination product where an ingredient name sits between the two
+            # strengths (e.g. "200 mg lopinavir/50 mg ritonavir") — the adjacent
+            # "mg1/mg2" pattern can't match across the word, but a bare "200 mg"
+            # alone would misrepresent a fixed-dose combo as a single-ingredient
+            # strength. Skip rather than report half the real answer.
+            tail = section_text[m.end() : m.end() + 40]
+            if re.match(r"(?i)\s*\w+\s*/\s*\d", tail):
+                continue
+        label = f"{float(mg1):g} mg/{float(mg2):g} mg" if mg2 else f"{float(mg1):g} mg"
+        key = _norm(label)
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(
+            StrengthCandidate(
+                strength_label=label,
+                evidence_excerpt=_clip_excerpt(section_text, m.start(), m.end()),
+                confidence=0.9,
+            )
+        )
+    return out
+
+
+def strengths_for_label_context(
+    *,
+    forms_and_strengths_text: str | None,
+    dosage_admin_text: str | None = None,
+) -> list[StrengthCandidate]:
+    """Per-unit strength extraction from the dedicated DOSAGE FORMS AND STRENGTHS
+    section only.
+
+    ``dosage_admin_text`` (dosing instructions) is deliberately NOT scanned for
+    bare "<N> mg" mentions: that text mixes per-unit strength with per-dose,
+    per-m2, titration-step, and dose-equivalence numbers with no reliable way
+    to tell them apart (e.g. "Breast Cancer: 160 mg/day (40 mg qid)" yields
+    three numbers, none of which is a real product strength). A wrong
+    strength is worse than no strength — fail closed and return [] rather
+    than guess. Accepted as part of the ~1,350-drug source-data gap requiring
+    a different source (e.g. DailyMed) if coverage must go further.
+    """
+    del dosage_admin_text  # kept in the signature; deliberately unused (see docstring)
+    return strengths_from_forms_and_strengths(forms_and_strengths_text)
+
+
+# Catalog-style (NDC-convention) dosage form labels, matched by first hit — order
+# matters: more specific phrasings first (e.g. "tablet, extended release" before "tablet").
+_FORM_TEXT_CUES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("TABLET, EXTENDED RELEASE", ("extended release tablet", "extended-release tablet", "er tablet")),
+    ("TABLET, FILM COATED", ("film coated tablet", "film-coated tablet", "film coated")),
+    ("CAPSULE, DELAYED RELEASE", ("delayed release capsule", "delayed-release capsule")),
+    ("TABLET, CHEWABLE", ("chewable tablet",)),
+    ("TABLET", ("tablet", "tablets", "caplet", "caplets")),
+    ("CAPSULE", ("capsule", "capsules")),
+    ("POWDER, FOR SUSPENSION", ("powder for suspension", "powder for oral suspension")),
+    ("SUSPENSION", ("suspension",)),
+    ("SOLUTION", ("oral solution", "solution")),
+    ("SYRUP", ("syrup",)),
+    ("INJECTION", ("injection", "intravenous infusion", "for injection")),
+    ("CREAM", ("cream",)),
+    ("OINTMENT", ("ointment",)),
+    ("GEL", ("gel",)),
+    ("PATCH", ("patch", "transdermal system")),
+    ("INHALER", ("inhaler", "inhalation aerosol", "metered dose inhaler")),
+    ("SUPPOSITORY", ("suppository", "suppositories")),
+)
+
+
+def infer_dosage_form_from_text(*texts: str | None) -> str | None:
+    """Best-effort single dosage form inferred from label text, when openFDA's
+    structured ``dosage_form`` field is empty. Returns None (never guesses) when
+    no cue is found or genuinely different form families are mentioned (ambiguous
+    label, e.g. a line extension listing both tablets and an oral solution).
+
+    Multiple _FORM_TEXT_CUES entries commonly match the same product at different
+    specificity (e.g. both "TABLET, FILM COATED" and "TABLET" for one film-coated
+    tablet) — that is not ambiguity, so the most specific (first-listed) entry
+    within the matched family wins rather than bailing out.
+    """
+    combined = _norm(" ".join(t for t in texts if t))
+    if not combined:
+        return None
+    hits: list[str] = []
+    for canon, cues in _FORM_TEXT_CUES:
+        if any(cue in combined for cue in cues):
+            hits.append(canon)
+    if not hits:
+        return None
+    families = {classify_form_family(h) for h in hits}
+    if len(families) != 1:
+        return None
+    return hits[0]
+
+
+def infer_route_from_text(*texts: str | None) -> str | None:
+    """Best-effort single route inferred from label text, when openFDA's
+    structured ``route`` field is empty. Returns None when ambiguous."""
+    combined = _norm(" ".join(t for t in texts if t))
+    if not combined:
+        return None
+    hits: list[str] = []
+    for label, cues in _ROUTE_CUES.items():
+        if any(re.search(rf"\b{re.escape(cue.strip())}\b", combined) for cue in cues):
+            hits.append(label)
+    if len(hits) != 1:
+        return None
+    return hits[0]
 
 
 def is_liquid_strength(strength: str | None) -> bool:
