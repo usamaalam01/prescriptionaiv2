@@ -1,6 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { Link as RouterLink } from 'react-router-dom'
 import { Avatar, Box, Stack, Typography } from '@mui/material'
 import nedLogo from '../assets/ned-logo.jpg'
+
+const NED_UNIVERSITY_URL = 'https://www.neduet.edu.pk/'
 
 function useAppVersion() {
   const [version, setVersion] = useState<string | null>(null)
@@ -63,7 +66,14 @@ export function AppShell({ children }: { children: ReactNode }) {
           spacing={{ xs: 1.5, md: 3 }}
           sx={{ maxWidth: 1400, mx: 'auto' }}
         >
-          <Stack direction="row" alignItems="center" spacing={1.75}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1.75}
+            component={RouterLink}
+            to="/"
+            sx={{ textDecoration: 'none', color: 'inherit' }}
+          >
             <AppIcon />
             <Box>
               <Typography variant="h5" component="div" sx={{ fontWeight: 700, lineHeight: 1.15 }}>
@@ -76,7 +86,16 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Box>
           </Stack>
 
-          <Stack direction="row" alignItems="center" spacing={1.25} sx={{ flexShrink: 0 }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1.25}
+            component="a"
+            href={NED_UNIVERSITY_URL}
+            target="_blank"
+            rel="noreferrer"
+            sx={{ flexShrink: 0, textDecoration: 'none', color: 'inherit' }}
+          >
             <Box sx={{ textAlign: 'right', display: { xs: 'none', md: 'block' } }}>
               <Typography variant="caption" sx={{ opacity: 0.85, display: 'block', lineHeight: 1.3 }}>
                 NED University of

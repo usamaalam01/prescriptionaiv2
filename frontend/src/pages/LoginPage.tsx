@@ -11,7 +11,6 @@ import {
   CardContent,
   Checkbox,
   FormControlLabel,
-  Link,
   Stack,
   TextField,
   Typography,
@@ -114,9 +113,6 @@ export function LoginPage({ onLogin }: { onLogin: (user: User) => void }) {
             <Typography variant="body2" color="text.secondary">
               Administrator and Reviewer accounts are created by an Administrator.
             </Typography>
-            <Link href="http://127.0.0.1:8000/docs" target="_blank" rel="noreferrer">
-              API docs
-            </Link>
           </Stack>
         </Box>
       </CardContent>
