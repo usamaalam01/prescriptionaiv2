@@ -51,7 +51,7 @@ def build_health_payload(*, deep: bool = True) -> dict[str, Any]:
         "service": settings.APP_NAME,
         "env": settings.APP_ENV,
         "phase": "award-path",
-        "version": "0.2.0-award-path",
+        "version": settings.APP_VERSION,
         "database": database,
         "catalog": catalog,
         "components": components,

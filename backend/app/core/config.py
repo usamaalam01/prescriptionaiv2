@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     )
 
     APP_NAME: str = "PharmaAssist"
+    APP_VERSION: str = "1.0.0"
     APP_ENV: str = "development"
     APP_DEBUG: bool = True
     DATABASE_URL: str = (

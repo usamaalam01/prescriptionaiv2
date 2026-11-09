@@ -107,7 +107,7 @@ app = FastAPI(
         "Pharmacist decision-support with FDA NDC / DrugBank / FDA SPL catalog HITL. "
         "Not for clinical care; pharmacist confirmation is mandatory."
     ),
-    version="0.2.0-award-path",
+    version=settings.APP_VERSION,
     lifespan=lifespan,
 )
 
