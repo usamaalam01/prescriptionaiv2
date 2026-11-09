@@ -31,42 +31,15 @@ import {
   pisText,
 } from '../content/researchDocuments'
 
-const WEAK_SUBSTRINGS = ['password', '123456', 'pharmaassist', 'neduet']
-
-function passwordPolicyMessage(password: string, username: string): string | null {
-  if (password.length < 12) return 'Password must be at least 12 characters'
-  if (username && password.toLowerCase() === username.toLowerCase()) {
-    return 'Password must not match the username'
-  }
-  const lowered = password.toLowerCase()
-  if (WEAK_SUBSTRINGS.some((s) => lowered.includes(s))) {
-    return 'Password is too weak — avoid common words like password / 123456'
-  }
-  const classes = [
-    /[a-z]/.test(password),
-    /[A-Z]/.test(password),
-    /\d/.test(password),
-    /[^A-Za-z0-9]/.test(password),
-  ].filter(Boolean).length
-  if (classes < 3) {
-    return 'Password needs at least 3 of: lower, upper, digit, symbol'
-  }
-  return null
-}
-
 const accountSchema = z
   .object({
     pharmacist_registration_id: z.string().min(3),
     username: z.string().min(3),
-    password: z.string().min(12),
+    password: z.string().min(1, 'Password is required'),
     confirm: z.string(),
     adult: z.literal(true),
   })
   .superRefine((v, ctx) => {
-    const msg = passwordPolicyMessage(v.password, v.username)
-    if (msg) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: msg, path: ['password'] })
-    }
     if (v.password !== v.confirm) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Passwords do not match', path: ['confirm'] })
     }
@@ -188,10 +161,7 @@ export function RegisterPage({ onLogin }: { onLogin?: (user: User) => void }) {
               label="Password"
               type="password"
               error={!!errors.password}
-              helperText={
-                errors.password?.message ||
-                '12+ characters; at least 3 of: lower, upper, digit, symbol'
-              }
+              helperText={errors.password?.message}
               {...register('password')}
             />
             <TextField

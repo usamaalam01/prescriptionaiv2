@@ -11,12 +11,7 @@ import { homePathForUser } from '../utils/homePath'
 const schema = z
   .object({
     current_password: z.string().min(1, 'Current password is required'),
-    new_password: z
-      .string()
-      .min(12, 'At least 12 characters')
-      .refine((v) => /[a-z]/.test(v) && /[A-Z]/.test(v) && /\d/.test(v), {
-        message: 'Include upper, lower, and a digit',
-      }),
+    new_password: z.string().min(1, 'New password is required'),
     confirm_password: z.string().min(1, 'Confirm the new password'),
   })
   .refine((v) => v.new_password === v.confirm_password, {
@@ -154,7 +149,7 @@ export function ChangePasswordPage({
               type="password"
               autoComplete="new-password"
               error={!!errors.new_password}
-              helperText={errors.new_password?.message || 'Min 12 chars · upper + lower + digit'}
+              helperText={errors.new_password?.message}
               {...register('new_password')}
             />
             <TextField
