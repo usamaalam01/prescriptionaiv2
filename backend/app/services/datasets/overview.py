@@ -27,6 +27,7 @@ def catalog_overview() -> dict[str, Any]:
         "available": ready,
         "catalog_db": str(catalog_db_path()) if ready else None,
         "built_at": meta.get("built_at"),
+        "catalog_version": meta.get("catalog_version"),
         "disclaimer": DISCLAIMER,
         "intended_use": (
             "Pharmacist decision-support only. Dataset matches are evidence for HITL confirmation, "

@@ -1075,6 +1075,28 @@ def populate_label_dose_options(conn: sqlite3.Connection) -> int:
 ingest_spl_light = ingest_spl_full
 
 
+def _next_catalog_version(final_db: Path) -> int:
+    """Read the previous build's catalog_version (if any) and return the next one.
+
+    Every build increments this, independent of ``built_at``, so a deployed
+    catalog can be identified by a short human-readable counter rather than
+    requiring a timestamp diff.
+    """
+    if not final_db.exists():
+        return 1
+    try:
+        conn = sqlite3.connect(str(final_db))
+        try:
+            row = conn.execute(
+                "SELECT value FROM meta WHERE key = 'catalog_version'"
+            ).fetchone()
+        finally:
+            conn.close()
+        return int(row[0]) + 1 if row and row[0] else 1
+    except sqlite3.Error:
+        return 1
+
+
 def build_catalog(
     *,
     include_spl: bool = True,
@@ -1087,6 +1109,7 @@ def build_catalog(
     db = final_db.with_name(final_db.stem + ".build.sqlite3")
     if db.exists():
         db.unlink()
+    next_version = _next_catalog_version(final_db)
     started = time.time()
     spl_paths = spl_label_paths() if include_spl else []
     print(f"Building FULL diligence catalog -> {db}", flush=True)
@@ -1151,6 +1174,10 @@ def build_catalog(
     conn.execute(
         "INSERT OR REPLACE INTO meta(key, value) VALUES (?, ?)",
         ("built_at", time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())),
+    )
+    conn.execute(
+        "INSERT OR REPLACE INTO meta(key, value) VALUES (?, ?)",
+        ("catalog_version", str(next_version)),
     )
     conn.execute(
         "INSERT OR REPLACE INTO meta(key, value) VALUES (?, ?)",

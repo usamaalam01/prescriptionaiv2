@@ -1,6 +1,39 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Avatar, Box, Stack, Typography } from '@mui/material'
 import nedLogo from '../assets/ned-logo.jpg'
+
+interface HealthVersion {
+  version?: string
+  catalog?: { built_at?: string | null; version?: string | number | null }
+}
+
+function useVersionInfo() {
+  const [info, setInfo] = useState<HealthVersion | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/health')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: HealthVersion | null) => {
+        if (!cancelled && data) setInfo(data)
+      })
+      .catch(() => {
+        /* footer version is informational only */
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  return info
+}
+
+function formatCatalogDate(builtAt: string | null | undefined): string | null {
+  if (!builtAt) return null
+  const date = new Date(builtAt)
+  if (Number.isNaN(date.getTime())) return null
+  return date.toISOString().slice(0, 10)
+}
 
 function AppIcon() {
   return (
@@ -22,6 +55,9 @@ function AppIcon() {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const versionInfo = useVersionInfo()
+  const catalogDate = formatCatalogDate(versionInfo?.catalog?.built_at)
+
   return (
     <Box minHeight="100vh" display="flex" flexDirection="column" sx={{ overflowX: 'hidden' }}>
       <Box
@@ -108,6 +144,14 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Typography variant="caption" display="block">
           Student: Muhammad Usama Alam · Supervisor: Sajid Majeed
         </Typography>
+        {versionInfo && (
+          <Typography variant="caption" display="block" sx={{ opacity: 0.7, mt: 0.5 }}>
+            {versionInfo.version ? `v${versionInfo.version.replace(/^v/i, '')}` : null}
+            {versionInfo.version && (catalogDate || versionInfo.catalog?.version) ? ' · ' : null}
+            {versionInfo.catalog?.version ? `Catalog v${versionInfo.catalog.version}` : null}
+            {versionInfo.catalog?.version && catalogDate ? ` (${catalogDate})` : null}
+          </Typography>
+        )}
       </Box>
     </Box>
   )

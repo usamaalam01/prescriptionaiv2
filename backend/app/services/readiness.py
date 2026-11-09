@@ -22,6 +22,7 @@ def build_health_payload(*, deep: bool = True) -> dict[str, Any]:
                 "medicines": (overview.get("unified") or {}).get("medicines"),
                 "aliases": (overview.get("unified") or {}).get("aliases"),
                 "built_at": overview.get("built_at"),
+                "version": overview.get("catalog_version"),
                 "sources": [s.get("id") for s in (overview.get("sources") or [])],
             }
             try:
