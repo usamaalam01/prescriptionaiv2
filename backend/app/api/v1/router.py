@@ -11,6 +11,7 @@ from app.api.v1 import (
     rbac_check,
     registration,
     research_eval,
+    reviewer,
     therapeutic_alternatives,
 )
 
@@ -21,6 +22,7 @@ api_router.include_router(consent_docs.router)
 api_router.include_router(admin.router)
 api_router.include_router(rbac_check.router)
 api_router.include_router(prescriptions.router)
+api_router.include_router(reviewer.router)
 api_router.include_router(clinical.router)
 api_router.include_router(therapeutic_alternatives.router)
 api_router.include_router(analytics.router)

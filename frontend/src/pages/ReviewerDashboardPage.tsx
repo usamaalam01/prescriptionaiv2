@@ -59,6 +59,9 @@ export function ReviewerDashboardPage({ onLogout }: { onLogout?: () => void }) {
       <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={1}>
         <Typography variant="h4">Research evaluation snapshot</Typography>
         <Stack direction="row" spacing={1}>
+          <Button component={RouterLink} to="/research/sessions" variant="contained" size="small">
+            Review prescription sessions
+          </Button>
           <Button component={RouterLink} to="/change-password" variant="outlined" size="small">
             Change password
           </Button>

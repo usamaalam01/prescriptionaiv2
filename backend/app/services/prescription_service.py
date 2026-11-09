@@ -61,6 +61,25 @@ def get_owned_session(db: Session, pharmacist: User, session_id: str) -> ReviewS
     return session
 
 
+def get_session_for_review(db: Session, session_id: str) -> ReviewSession:
+    """Read-only lookup for reviewer/administrator roles — no ownership restriction."""
+    session = db.get(ReviewSession, session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return session
+
+
+def list_medicines_for_review(db: Session, session_id: str) -> list[PrescriptionMedicine]:
+    get_session_for_review(db, session_id)
+    return list(
+        db.scalars(
+            select(PrescriptionMedicine)
+            .where(PrescriptionMedicine.session_id == session_id)
+            .order_by(PrescriptionMedicine.item_number)
+        )
+    )
+
+
 def run_session_pipeline(db: Session, pharmacist: User, session_id: str) -> OcrJob:
     """Full academic pipeline: OCR → merge → parser → formulary (synchronous)."""
     session = get_owned_session(db, pharmacist, session_id)

@@ -10,6 +10,7 @@ import { AdminPortalPage } from './pages/AdminPortalPage'
 import { AnalyzerPage } from './pages/AnalyzerPage'
 import { CatalogExplorerPage } from './pages/CatalogExplorerPage'
 import { ReviewerDashboardPage } from './pages/ReviewerDashboardPage'
+import { ReviewerSessionDetailPage, ReviewerSessionsPage } from './pages/ReviewerSessionsPage'
 import { ChangePasswordPage } from './pages/ChangePasswordPage'
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
 import type { User } from './types'
@@ -166,6 +167,26 @@ export default function App() {
           element={gateActive(
             user?.role === 'reviewer' ? (
               <ReviewerDashboardPage onLogout={logout} />
+            ) : (
+              <Navigate to={authedHome} replace />
+            ),
+          )}
+        />
+        <Route
+          path="/research/sessions"
+          element={gateActive(
+            user?.role === 'reviewer' ? (
+              <ReviewerSessionsPage />
+            ) : (
+              <Navigate to={authedHome} replace />
+            ),
+          )}
+        />
+        <Route
+          path="/research/sessions/:sessionId"
+          element={gateActive(
+            user?.role === 'reviewer' ? (
+              <ReviewerSessionDetailPage />
             ) : (
               <Navigate to={authedHome} replace />
             ),
