@@ -43,7 +43,7 @@ _REQUIRED_ARTEFACTS = (
     "rag_index.faiss",
     "rag_chunks.pkl",
 )
-_DEFAULT_DATA_REPO = "pharma-project-2026/pharmaassist-data"  # private HF dataset repo
+_DEFAULT_DATA_REPO = "usamaalam/pharmaassist-data"  # private HF dataset repo
 
 
 def _redirect_hf_caches() -> None:
