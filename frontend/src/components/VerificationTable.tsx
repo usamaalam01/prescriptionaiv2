@@ -1114,16 +1114,19 @@ function DrugDropdown({
     return () => window.clearTimeout(timer)
   }, [inputValue, seedOptions, field.value])
 
-  const selected =
-    options.find((o) => o.canonical_name === field.value) ||
-    seedOptions.find((o) => o.canonical_name === field.value) ||
-    (field.value
-      ? {
-          canonical_name: field.value,
-          suggested: field.status === 'green',
-          match_score: field.status === 'green' ? 1 : 0,
-        }
-      : null)
+  const selected = useMemo(
+    () =>
+      options.find((o) => o.canonical_name === field.value) ||
+      seedOptions.find((o) => o.canonical_name === field.value) ||
+      (field.value
+        ? {
+            canonical_name: field.value,
+            suggested: field.status === 'green',
+            match_score: field.status === 'green' ? 1 : 0,
+          }
+        : null),
+    [options, seedOptions, field.value, field.status],
+  )
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const open = Boolean(anchorEl) && Boolean(evidence)
@@ -1149,10 +1152,17 @@ function DrugDropdown({
             filterOptions={(opts) => opts}
             inputValue={inputValue}
             onInputChange={(_e, value, reason) => {
-              if (reason === 'reset' && field.value) {
-                setInputValue(field.value)
-                return
-              }
+              // MUI emits reason="reset" to re-sync the displayed text with the
+              // controlled `value` prop — including while this field is still open
+              // and mid-keystroke, whenever autoHighlight re-evaluates against a
+              // options list that just changed (e.g. the debounced catalog search
+              // resolving). Since `value` (== `selected`) hasn't changed yet at that
+              // point, MUI's "reset" text is just the stale confirmed/OCR value, and
+              // applying it here would overwrite what the user is actively typing.
+              // The one legitimate "snap back" case — after a real selection/blur,
+              // where field.value genuinely changes — is already handled by the
+              // field.value-sync effect above, so "reset" is a no-op here.
+              if (reason === 'reset') return
               setInputValue(value)
             }}
             groupBy={() => 'Similar FDA / DrugBank matches'}
