@@ -366,7 +366,14 @@ export function VerificationTable({
     // Allow clearing optional indication (empty string)
     if (!value && field !== 'indication') return
     const row = rows.find((r) => r.medicine_id === medicineId)
-    if (!row || isRowResolved(row)) {
+    if (!row) {
+      setError('This medicine row is already resolved.')
+      return
+    }
+    // A confirmed row may still have its indication set/changed for therapeutic
+    // alternatives (backend allows this — see apply_field_correction); every
+    // other field is locked once the row is resolved.
+    if (isRowResolved(row) && field !== 'indication') {
       setError('This medicine row is already resolved.')
       return
     }
