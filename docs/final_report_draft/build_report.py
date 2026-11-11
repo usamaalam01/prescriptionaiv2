@@ -17,7 +17,10 @@ HERE = Path(__file__).parent
 OUT = HERE / "MediScan_Final_Project_Report.docx"
 
 STUDENT = "Muhammad Usama Alam"
+ENROLLMENT = "PGD/GAI/JUN-25/212418"
 SUPERVISOR = "Sajid Majeed"
+SUPERVISOR_DESIGNATION = "Project Supervisor, NED University of Engineering and Technology, Karachi"
+SUBMISSION_DATE = "15 November 2026"
 BATCH = "Batch 5, FALL I 2025"
 PROGRAMME = "Postgraduate Diploma in Generative AI"
 TITLE = ("MediScan: A Human-in-the-Loop, Explainable AI Decision-Support System for "
@@ -99,15 +102,39 @@ def body_paragraph(text):
     return p
 
 
+FIGURE_IMAGES = {
+    "FIGURE 1.1": ("figures/fig_1_1_data_flow.png", Inches(6.3)),
+    "FIGURE 3.1": ("figures/fig_3_1_dsr_cycle.png", Inches(4.8)),
+    "FIGURE 3.2": ("figures/fig_3_2_architecture.png", Inches(6.3)),
+    "FIGURE 3.3": ("figures/fig_3_3_workflow_gate.png", Inches(6.3)),
+    "FIGURE 3.4": ("figures/fig_3_4_db_domains.png", Inches(5.5)),
+    "FIGURE 3.5": ("figures/fig_3_5_timeline.png", Inches(6.3)),
+    "FIGURE 4.1": ("figures/fig_4_1_scoring_breakdown.png", Inches(6.3)),
+    "FIGURE 4.2": ("figures/fig_4_2_verification_gate.png", Inches(4.9)),
+    "FIGURE 4.3": ("figures/fig_4_3_recommendation_panel.png", Inches(4.2)),
+}
+
+
 def figure_placeholder(caption):
-    p = doc.add_paragraph()
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p.paragraph_format.space_before = Pt(12)
-    p.paragraph_format.space_after = Pt(4)
-    r = p.add_run(f"[ {caption} — insert as a native Word diagram/chart/screenshot ]")
-    r.italic = True
-    r.font.size = Pt(11)
-    r.font.name = "Times New Roman"
+    key = caption.split(":")[0].strip().upper()
+    image = FIGURE_IMAGES.get(key)
+    if image:
+        path, width = image
+        img_p = doc.add_paragraph()
+        img_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        img_p.paragraph_format.space_before = Pt(12)
+        img_p.paragraph_format.space_after = Pt(4)
+        run = img_p.add_run()
+        run.add_picture(str(HERE / path), width=width)
+    else:
+        p = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.space_before = Pt(12)
+        p.paragraph_format.space_after = Pt(4)
+        r = p.add_run(f"[ {caption} — insert as a native Word diagram/chart/screenshot ]")
+        r.italic = True
+        r.font.size = Pt(11)
+        r.font.name = "Times New Roman"
     cap = doc.add_paragraph()
     cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
     cap.paragraph_format.space_after = Pt(12)
@@ -285,6 +312,7 @@ para(f"the Postgraduate Diploma in {PROGRAMME.replace('Postgraduate Diploma in '
 for _ in range(2):
     doc.add_paragraph()
 para(f"Name of Student: {STUDENT}", align=WD_ALIGN_PARAGRAPH.CENTER)
+para(f"Enrolment No.: {ENROLLMENT}", align=WD_ALIGN_PARAGRAPH.CENTER)
 para(f"Batch: {BATCH}", align=WD_ALIGN_PARAGRAPH.CENTER)
 para(f"Project Title: {TITLE}", align=WD_ALIGN_PARAGRAPH.CENTER)
 para(f"Name of Supervisor: {SUPERVISOR}", align=WD_ALIGN_PARAGRAPH.CENTER)
@@ -292,7 +320,7 @@ for _ in range(4):
     doc.add_paragraph()
 para("_______________________________", align=WD_ALIGN_PARAGRAPH.CENTER)
 para("Signature of Supervisor", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True)
-para("Date: [DATE TO CONFIRM]", align=WD_ALIGN_PARAGRAPH.CENTER)
+para(f"Date: {SUBMISSION_DATE}", align=WD_ALIGN_PARAGRAPH.CENTER)
 
 page_break()
 
@@ -308,7 +336,7 @@ for _ in range(3):
 para("Project Supervisor", bold=False)
 para("_______________________________")
 para(f"{SUPERVISOR}")
-para("Designation, Organization: [TO CONFIRM]")
+para(f"Designation, Organization: {SUPERVISOR_DESIGNATION}")
 
 page_break()
 
@@ -326,7 +354,7 @@ for _ in range(3):
     doc.add_paragraph()
 para("Signature: _______________________________")
 para(f"Student Name: {STUDENT}")
-para("Date: [DATE TO CONFIRM]")
+para(f"Date: {SUBMISSION_DATE}")
 
 page_break()
 
@@ -340,7 +368,7 @@ for _ in range(3):
     doc.add_paragraph()
 para("Signature: _______________________________")
 para(f"Student Name: {STUDENT}")
-para("Date: [DATE TO CONFIRM]")
+para(f"Date: {SUBMISSION_DATE}")
 
 page_break()
 
