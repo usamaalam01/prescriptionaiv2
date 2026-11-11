@@ -15,6 +15,40 @@ from docx.oxml import OxmlElement
 
 HERE = Path(__file__).parent
 OUT = HERE / "MediScan_Final_Project_Report.docx"
+RESEARCH_DOCS_TS = HERE.parent.parent / "frontend" / "src" / "content" / "researchDocuments.ts"
+
+
+def load_research_documents():
+    """Pull the real Participant Information Sheet and consent statements
+    straight from the shipped frontend source (frontend/src/content/
+    researchDocuments.ts), so Appendix A/B quote the actual text the live
+    application shows, not a paraphrase of it."""
+    src = RESEARCH_DOCS_TS.read_text(encoding="utf-8")
+
+    version_match = re.search(r"export const DOCUMENT_VERSION = '([^']*)'", src)
+    date_match = re.search(r"export const DOCUMENT_DATE = '([^']*)'", src)
+    document_version = version_match.group(1) if version_match else ""
+    document_date = date_match.group(1) if date_match else ""
+
+    pis_match = re.search(r"export const pisText = `(.*?)`\n", src, re.DOTALL)
+    pis_text = pis_match.group(1).strip("\n") if pis_match else None
+    if pis_text:
+        pis_text = pis_text.replace("${DOCUMENT_VERSION}", document_version)
+        pis_text = pis_text.replace("${DOCUMENT_DATE}", document_date)
+
+    consent_match = re.search(r"export const consentStatements = \[(.*?)\]\n", src, re.DOTALL)
+    consent_statements = []
+    if consent_match:
+        for line in consent_match.group(1).splitlines():
+            line = line.strip()
+            if not line or not (line.startswith("'") or line.startswith('"')):
+                continue
+            quote = line[0]
+            end = line.rfind(quote)
+            if end > 0:
+                consent_statements.append(line[1:end])
+
+    return pis_text, consent_statements
 
 STUDENT = "Muhammad Usama Alam"
 ENROLLMENT = "PGD/GAI/JUN-25/212418"
@@ -654,13 +688,35 @@ page_break()
 # =========================================================================
 heading("Appendices", level=1)
 
+PIS_TEXT, CONSENT_STATEMENTS = load_research_documents()
+
 heading("Appendix A: Participant Information Sheet", level=2, size=13, upper=False)
-body_paragraph("[Insert the re-authored Participant Information Sheet from frontend/src/content/researchDocuments.ts, "
-                "updated to this project's attribution, once the RQ4 panel is planned.]")
+if PIS_TEXT:
+    for block in PIS_TEXT.split("\n\n"):
+        block = block.strip("\n")
+        if block.strip():
+            body_paragraph(block.replace("\n", " "))
+else:
+    body_paragraph("[Insert the re-authored Participant Information Sheet from frontend/src/content/researchDocuments.ts, "
+                    "updated to this project's attribution, once the RQ4 panel is planned.]")
 page_break()
 
 heading("Appendix B: Consent Form", level=2, size=13, upper=False)
-body_paragraph("[Insert the re-authored consent statements from frontend/src/content/researchDocuments.ts.]")
+if CONSENT_STATEMENTS:
+    body_paragraph(
+        "Each participant confirms the following statements individually before taking part "
+        "(electronic affirmation, consistent with Section 3.7):"
+    )
+    for i, statement in enumerate(CONSENT_STATEMENTS, start=1):
+        p = doc.add_paragraph()
+        p.paragraph_format.line_spacing_rule = WD_LINE_SPACING.DOUBLE
+        p.paragraph_format.left_indent = Inches(0.4)
+        p.paragraph_format.space_after = Pt(4)
+        r = p.add_run(f"{i}. {statement}")
+        r.font.size = Pt(12)
+        r.font.name = "Times New Roman"
+else:
+    body_paragraph("[Insert the re-authored consent statements from frontend/src/content/researchDocuments.ts.]")
 page_break()
 
 heading("Appendix C: RQ4 Survey Instrument", level=2, size=13, upper=False)
