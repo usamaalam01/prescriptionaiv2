@@ -1,56 +1,155 @@
 <!--
-MediScan — Final Project Presentation
-PGD in Generative AI, Batch 5 FALL I 2025
-NED University of Engineering & Technology (CMPP)
-Student: Muhammad Usama Alam | Roll No./Enrolment No.: [TO CONFIRM] | Supervisor: Sajid Majeed
+MediScan — Final Project Presentation (PMP-style visual design, condensed)
+PGD in Generative AI, Batch 5 FALL I 2025 | NED University of Engineering & Technology (CMPP)
+Student: Muhammad Usama Alam | Roll No./Enrolment No.: PGD/GAI/JUN-25/212418 | Supervisor: Sajid Majeed
 
-Format notes for later PPT/HTML conversion:
-- Each "## Slide N: Title" is one slide. Content below it is that slide's body.
-- Mermaid code blocks render as diagrams natively in many markdown viewers
-  (GitHub, VS Code, Claude artifacts) and can be exported as images for PPT.
-- [SCREENSHOT: ...] markers show where to insert an actual app screenshot
-  (captured separately from the live demo — not part of this markdown).
-- Target: ~22 slides, ~20-minute presentation (Annexure F: 20 min talk + 20 min viva).
-- Slide order follows Annexure F's required template exactly: Title -> Name/Batch/Roll No. ->
-  Introduction -> Objectives -> Scope of work -> Literature Review -> Methodology -> Findings ->
-  Conclusions -> Recommendations -> Thank you. (Name/Batch/Roll No. is folded into the Title slide
-  here rather than a separate slide; Findings is distributed across several slides since it covers
-  several distinct results.)
-- On converting to PPT: add the two official NED University crest/seal images to the title slide,
-  alongside "NED ACADEMY" and "Karachi, Pakistan" text, per the Annexure F title-slide template.
--->
+STATUS: markdown build spec — not yet converted to .pptx. Convert next with a python-pptx
+generator following the same data-driven approach as the reference deck at
+D:\Certifications\OnlineCourses\PMP\generate_pptx.py (parse this file's [Layout:]/[Visual]/
+[DIAGRAM] blocks, same way that script parses slides.md).
 
-## Slide 1: Title
+STRUCTURE: 12 slides. The first 11 are one per topic in the official university template
+(PGD-Project-Presentation Template-Finalized.pptx, Annexure F), in the template's own order:
+Title -> Name/Batch/Roll No. -> Introduction -> Objectives -> Scope of work -> Literature Review
+-> Methodology -> Findings -> Conclusions -> Recommendations -> Thank you. A 12th slide, System
+Architecture (the report's Figure 3.2 layered-view diagram), was added after Methodology with the
+university's agreement that the template may be tailored slightly; its topic pill still reads
+"Methodology" since it elaborates that same required topic rather than introducing a new one.
+This supersedes the earlier 22-slide MediScan_Presentation.md draft (same 22-slide content is
+still available at docs/final_report_draft/ as background reference) — the university's own
+pptx template arrived after that draft and takes precedence; this version condenses that
+richer content down to exactly one slide per required topic, as instructed.
 
-**MediScan**
-A Human-in-the-Loop, Explainable AI Decision-Support System for
-Prescription Reading and Therapeutically-Equivalent Medicine Substitution
+====================================================================================
+VISUAL DESIGN SYSTEM — reused from D:\Certifications\OnlineCourses\PMP\generate_pptx.py
+====================================================================================
+Canvas: 16:9 widescreen, 13.333 x 7.5 in.
+Font: Calibri throughout.
 
-NED Academy — Centre of Multidisciplinary Postgraduate Programmes
-NED University of Engineering & Technology, Karachi, Pakistan
+Palette (same hex values as the PMP reference deck):
+  SKY          #008BD4   primary header bar / accent
+  SKY_DARK     #005F99   footer bar / dark accent / topic pill
+  SKY_LIGHT    #D6EEF8   light tint (card headers, footer secondary text)
+  TEAL         #00AD9F   left accent strip on body cards, bullet markers
+  TEAL_LIGHT   #CCF0EC   light tint
+  ORANGE       #FF6B00   "KEY POINT" callout label + accent border
+  ORANGE_LIGHT #FFEBDB   light tint
+  TIP_BG       #FFF4CC   "KEY POINT" callout fill
+  TIP_BORDER   #FFB400   "KEY POINT" callout border
+  WHITE        #FFFFFF
+  OFF_WHITE    #F5F9FF   slide background
+  DARK         #0D1C2E   body text
+  MID_GREY     #556B82   secondary text
+  LIGHT_GREY   #B0C4D8   card border
+  ROW_ALT      #EAF4FB   table zebra-striping
 
-Postgraduate Diploma in Generative AI — Batch 5, FALL I 2025
+Chrome (every content slide, built the same way as the PMP reference's chrome() function):
+  - Header bar: full-width rectangle, height 0.95in, fill SKY. A 0.14in TEAL strip down the
+    far left edge. Slide title in WHITE bold Calibri (32pt, drop to 28/24pt if the title text
+    is long), vertically centered.
+  - Topic pill (top-right of header): rounded pill, fill SKY_DARK, white bold 14pt text —
+    holds the EXACT Annexure F topic name this slide satisfies (e.g. "Methodology",
+    "Findings"). This doubles as a visible conformance marker for anyone checking the deck
+    against the university template.
+  - Footer bar: full-width rectangle, height 0.32in, fill SKY_DARK. Left: "MediScan — PGD in
+    Generative AI, Batch 5" in WHITE 11pt. Right: "<slide n> / 11" in WHITE 11pt.
+  - Body card: white rounded rectangle filling the space between header and footer, 1pt
+    LIGHT_GREY border, with a 0.09in TEAL accent strip down its own left edge (inset).
+  - "KEY POINT" callout (used sparingly, at most one per slide, same visual role as the PMP
+    deck's "EXAM TIP" box): rounded rectangle, fill TIP_BG, 1.5pt TIP_BORDER border, 0.1in
+    ORANGE/TIP_BORDER strip down its left edge. Label "KEY POINT" in ORANGE bold 14pt, body
+    text in DARK 15-17pt.
 
-Student: Muhammad Usama Alam · Roll No./Enrolment No.: *[TO CONFIRM]*
-Supervisor: Sajid Majeed
+Diagrams are NATIVE POWERPOINT SHAPES (boxes, arrows, pills), not images — built directly
+with python-pptx shape primitives, matching the PMP reference's approach of drawing chevron
+flows, layered stacks, etc. as real shapes rather than importing pictures. Each diagram below
+is specified as a build spec (steps, shape, fill, which step if any is highlighted) rather
+than Mermaid, since Mermaid cannot be converted into native PowerPoint shapes directly.
 
-<!-- [LOGO PLACEHOLDER: both official NED University crest/seal images, per Annexure F title-slide template] -->
+====================================================================================
+SLIDE 1: TITLE
+====================================================================================
+**[Layout: title]**
+
+Full-bleed title treatment (no header/footer chrome on this slide — matches the official
+template's own title-slide treatment, which has no page-chrome either):
+- Background: OFF_WHITE, with a SKY band across the top ~2.2in (full width) and a thin TEAL
+  rule beneath it, echoing the header-bar accent used on every other slide.
+- Institutional block, centered in the SKY band: "NED ACADEMY" / "Centre of Multidisciplinary
+  Postgraduate Programmes" / "NED UNIVERSITY OF ENGINEERING & TECHNOLOGY, KARACHI, PAKISTAN" —
+  white Calibri, bold for the first line, regular for the rest, sized to fit three stacked
+  lines within the band.
+- Logo pair, centered beneath the institutional text block, before the main title: reuse the
+  two actual logo images embedded in the official template's own title slide — both are NED
+  University crest variants, not a crest-plus-separate-"Academy badge" pair: `image5.jpg` is
+  the 100th-anniversary/centenary crest ("100 Years of Excellence", banner "1921-2021") and
+  `image4.jpg` is the standard NED crest (gear/sun-over-sea design). On the official template
+  the centenary crest sits on the LEFT (~x=2.29in) and the standard crest on the RIGHT
+  (~x=6.21in), each roughly square, ~2x2in on the 4:3 canvas; re-import both at build time in
+  that same left/right order and scale/center proportionally for 16:9. The "NED ACADEMY /
+  Centre for Multidisciplinary Postgraduate Programmes" line is a plain text box on the
+  official slide, not a logo image — render it as text here too, not as a third graphic.
+- Below the logos, on OFF_WHITE background:
+  - **MediScan** — large (40-44pt) DARK bold Calibri
+  - "A Human-in-the-Loop, Explainable AI Decision-Support System for Prescription Reading and
+    Therapeutically-Equivalent Medicine Substitution" — 18pt MID_GREY, wrapped to 2 lines
+  - "Postgraduate Diploma in Generative AI — Batch 5, FALL I 2025" — 16pt SKY_DARK, bold
+- Footer-area text block (bottom of slide, OFF_WHITE, no bar — kept visually light since the
+  full name/batch/roll-no detail has its own dedicated Slide 2):
+  "Muhammad Usama Alam · Supervisor: Sajid Majeed" — 14pt MID_GREY, centered
 
 ---
 
-## Slide 2: Introduction — The Problem
+====================================================================================
+SLIDE 2: NAME / BATCH / ROLL NO.
+====================================================================================
+**[Layout: title]**
+*(Topic pill: "Student Details" — the template's own 2nd slide has no named topic beyond the
+three bare fields, so the pill names what the slide actually shows.)*
 
-Two connected problems pharmacists face every day, with no formal tool support:
+Centered content on OFF_WHITE. The official template's slide 2 literally shows only three bare
+fields — NAME, Roll No., and BATCH: (confirmed by reading the actual embedded text/title image
+on this exact slide) — the first three bullets below reproduce those three directly; the
+fourth (Supervisor) is a deliberate addition beyond the literal template, not something drawn
+from it, included because it's directly relevant context for the audience:
+- "NAME" (SKY_DARK label, 16pt, letter-spaced) → "Muhammad Usama Alam" (DARK, 28pt bold)
+- "ROLL NO. / ENROLMENT NO." (SKY_DARK label) → "PGD/GAI/JUN-25/212418" (DARK, 28pt bold)
+- "BATCH" (SKY_DARK label) → "5, FALL I 2025" (DARK, 28pt bold)
+- "SUPERVISOR" (SKY_DARK label, added beyond the template) → "Sajid Majeed" (DARK, 28pt bold)
 
-1. **Reading the prescription correctly.** Handwritten prescriptions are common; look-alike/sound-alike drug names turn a single misread character into a different medicine entirely.
-2. **Finding a substitute when the prescribed medicine isn't available.** Out of stock, discontinued, or unaffordable — the pharmacist must judge a therapeutically appropriate alternative on the spot.
-
-A third, cross-cutting problem: any automated tool here must **earn trust**. An answer without a reason is not safe to act on in a clinical setting.
+Four fields laid out as a vertical stack or a simple 2x2 grid, generously spaced — this slide
+is intentionally the lightest-density slide in the deck.
 
 ---
 
-## Slide 3: Project Objectives
+====================================================================================
+SLIDE 3: INTRODUCTION
+====================================================================================
+**[Layout: bullets]**
+*(Topic pill: "Introduction")*
 
+**[Visual]**
+- Two connected problems pharmacists face every day, with no formal tool support:
+  - **Reading the prescription correctly** — handwritten prescriptions are common; a single
+    misread character in a look-alike/sound-alike drug name selects a different medicine
+  - **Finding a substitute when the prescribed medicine isn't available** — out of stock,
+    discontinued, or unaffordable; the pharmacist must judge an appropriate alternative on
+    the spot, with no formal decision-support tool today
+- A third, cross-cutting problem: any automated tool here must **earn trust** — an answer
+  without a reason is not safe to act on in a clinical setting
+
+**[KEY POINT]** No existing tool joins prescription reading with regulated therapeutic-
+equivalence reasoning in one system — this is the gap MediScan addresses.
+
+---
+
+====================================================================================
+SLIDE 4: OBJECTIVES
+====================================================================================
+**[Layout: bullets]**
+*(Topic pill: "Objectives")*
+
+**[Visual]**
 1. Multi-engine OCR pipeline — extract medicine name, strength, form, route
 2. **Mandatory** pharmacist verification before anything downstream runs
 3. Recommendation engine — trusted catalogue + eligibility filters + transparent score
@@ -58,289 +157,195 @@ A third, cross-cutting problem: any automated tool here must **earn trust**. An 
 5. Evidence-grounded explanations (FDA label text)
 6. Explainable-AI attribution — show *why* a score was given
 
-<!-- Speaker note: close with the cross-cutting commitment — no metric or claim is reported unless real data backs it. Kept off-slide to hold the line count. -->
+**[KEY POINT]** Cross-cutting commitment: no metric or claim is reported unless real data
+backs it.
 
 ---
 
-## Slide 4: Scope of Work
+====================================================================================
+SLIDE 5: SCOPE OF WORK
+====================================================================================
+**[Layout: cards]**
+*(Topic pill: "Scope of work")*
 
-**In scope:**
+Two cards, side by side:
+
+**Card 1 — In Scope**
 - OCR extraction + mandatory pharmacist verification gate
 - 9-component recommendation scoring + FDA Orange Book evidence
 - Evidence-grounded explanation + explainable-AI (XAI) attribution
-- Role-based access: pharmacist / reviewer / administrator — self-registration with mandatory administrator approval before activation, full audit trail
+- Role-based access: pharmacist / reviewer / administrator, self-registration with mandatory
+  admin approval, full audit trail
 
-**Out of scope:**
+**Card 2 — Out of Scope**
 - No autonomous prescribing, dispensing, or automatic substitution
 - No real patient data or PII — synthetic prescriptions only
-- Not a clinical source of truth; drug–drug interaction checking is future work
+- Not a clinical source of truth; drug-drug interaction checking is future work
 - Research-grade prototype, not a production clinical system
 
 ---
 
-## Slide 5: Literature Review
+====================================================================================
+SLIDE 6: LITERATURE REVIEW
+====================================================================================
+**[Layout: table]**
+*(Topic pill: "Literature Review")*
 
 | Research strand | What the literature establishes | Where MediScan sits |
 |---|---|---|
-| Prescription OCR | Mature for print; handwriting is harder, and look-alike/sound-alike drug names are a documented, separate error class | Joins OCR to a *substitution decision*, not just transcription |
-| Therapeutic equivalence | Equivalence is a regulatory determination (FDA Orange Book), not something inferred from chemical similarity alone | Equivalence is the *primary* ranking signal — not a heuristic afterthought |
-| Explainable AI | Interpretable-by-design is preferable to post-hoc explanation of a black box for high-stakes decisions (Rudin, 2019) | Score is additive — exact attribution, not an approximation |
-| Evidence grounding (RAG) | Retrieval-augmented generation reduces unsupported claims versus an unconstrained LLM (Lewis et al., 2020) | Withholds the narrative entirely when no evidence is found |
-| Human-in-the-loop | Confirmation placed *after* a system already acts invites automation bias / rubber-stamping (Parasuraman & Manzey, 2010) | Verification gate enforced *before* any recommendation is generated |
+| Prescription OCR | Handwriting harder than print; look-alike/sound-alike names are a documented error class | Joins OCR to a *substitution decision*, not just transcription |
+| Therapeutic equivalence | A regulatory determination (FDA Orange Book), not inferred from chemical similarity alone | Equivalence is the *primary* ranking signal |
+| Explainable AI | Interpretable-by-design preferred over post-hoc black-box explanation for high-stakes use (Rudin, 2019) | Score is additive — exact attribution, not an approximation |
+| Evidence grounding (RAG) | Retrieval reduces unsupported claims vs. an unconstrained LLM (Lewis et al., 2020) | Withholds narrative entirely when no evidence is found |
+| Human-in-the-loop | Confirmation *after* a system acts invites automation bias (Parasuraman & Manzey, 2010) | Gate enforced *before* any recommendation is generated |
 
-**Research gap:** each of these five properties is addressed separately in prior work — no existing system integrates all five together. (Full review: report Chapter 2.)
-
----
-
-## Slide 6: Methodology — Design Science Research
-
-```mermaid
-flowchart LR
-    A[Awareness of<br/>Problem] --> B[Suggestion /<br/>Design]
-    B --> C[Development<br/>Build]
-    C --> D[Demonstration]
-    D --> E[Evaluation]
-    E -->|iterate| B
-    E --> F[Communication]
-```
-
-- Build → Demonstrate → Evaluate, iterated (Hevner et al., 2004; Peffers et al., 2007)
-- Fits this project because the research question **requires** a constructed artefact to answer
-- Mixed evaluation: quantitative (OCR accuracy, ranking quality) + qualitative (pharmacist trust)
+**[KEY POINT]** Each of these five properties is addressed separately in prior work — no
+existing system integrates all five together. *(Full review: report Chapter 2.)*
 
 ---
 
-## Slide 7: End-to-End System Flow
+====================================================================================
+SLIDE 7: METHODOLOGY
+====================================================================================
+**[Layout: diagram]**
+*(Topic pill: "Methodology")*
 
-```mermaid
-flowchart TD
-    A[Pharmacist uploads<br/>prescription image] --> B[Multi-engine OCR<br/>Google Vision / TrOCR / Tesseract]
-    B --> C{Pharmacist<br/>Verification Gate}
-    C -->|corrects / confirms<br/>every field| D[Confirmed medicine<br/>record]
-    C -.->|cannot proceed<br/>until confirmed| C
-    D --> E[Eligibility Filters<br/>ingredient · route · form · strength]
-    E --> F[9-Component<br/>Weighted Score]
-    F --> L[Regulatory Equivalence +<br/>Evidence Retrieval + XAI]
-    L --> J[Ranked Alternatives<br/>+ Evidence + Explanation]
-    J --> K[Pharmacist Decision]
+**[DIAGRAM: End-to-end pipeline]**
+`type: chevron-flow · shape: native · fill: SKY, step 3 highlighted ORANGE`
 
-    style C fill:#ffe0b2,stroke:#e65100,stroke-width:2px
-```
+Seven horizontal chevron steps, left to right, equal width, SKY fill / WHITE bold Calibri
+text, connecting arrowheads between each:
+1. Upload prescription image
+2. Multi-engine OCR (Google Vision / TrOCR / Tesseract)
+3. **Verification Gate** *(fill ORANGE instead of SKY — the one safety-critical step, visually
+   distinct from the rest of the chevron chain)*
+4. Eligibility filters (5 hard gates)
+5. 9-component weighted score
+6. Equivalence + evidence + XAI
+7. Pharmacist decision
 
-**The verification gate is the safety center of the system** — enforced on the server, not just the UI. *(Regulatory equivalence, evidence retrieval and XAI each get their own slide shortly.)*
-
----
-
-## Slide 8: Why the Gate Comes *Before* Recommendations
-
-- If recommendations appeared first, the pharmacist would be reviewing a system that already committed to an interpretation → invites **rubber-stamping** (automation bias)
-- By gating *first*, every downstream step is conditioned on a human-verified field
-- Enforced twice: disabled button in the UI, **and** the recommendation API itself filters to only `status = confirmed` medicine rows
-
-[SCREENSHOT: Verification table — field-by-field confirm/correct interface]
+**[Visual]** *(compact caption strip beneath the diagram, 3 lines)*
+- Design Science Research: build → demonstrate → evaluate, iterated (Hevner et al., 2004;
+  Peffers et al., 2007)
+- Verification gate enforced **server-side** — nothing proceeds without pharmacist confirmation
+- Score is additive (sum = 100); FDA Orange Book equivalence is evidence only, never re-ranks
 
 ---
 
-## Slide 9: System Architecture
+====================================================================================
+SLIDE 8: SYSTEM ARCHITECTURE
+====================================================================================
+**[Layout: diagram]**
+*(Topic pill: "Methodology" — this slide elaborates the Methodology topic required by the
+template rather than introducing a new one; added with the university's agreement that the
+template may be tailored slightly)*
 
-```mermaid
-flowchart TB
-    subgraph Client["Browser"]
-        SPA[React SPA]
-    end
-    subgraph Server["Single Docker container — Hugging Face Spaces"]
-        API[FastAPI Backend]
-        SPA -->|HTTPS| API
-    end
-    subgraph AppDB["Postgres — operational data (named schemas)"]
-        S1[(auth)]
-        S2[(admin)]
-        S3[(consent)]
-        S4[(prescription)]
-        S5[(clinical)]
-        S6[(audit)]
-        S7[(research)]
-    end
-    subgraph Catalog["Read-only SQLite — drug knowledge"]
-        C1[(medicines:<br/>41,020)]
-        C2[(products:<br/>929,832)]
-        C3[(label sections:<br/>136,167)]
-    end
-    API --> AppDB
-    API -->|mode=ro| Catalog
-```
+**[DIAGRAM: System architecture, layered view]**
+`type: image · source: docs/final_report_draft/figures/fig_3_2_architecture.png`
+`(same image as report Figure 3.2, generated by scratchpad/figures/make_figures.py::fig_3_2)`
 
-Two data stores, deliberately separated: operational state (writable, 7 named schemas incl. `admin` for the registration/approval workflow) vs. drug knowledge (read-only — cannot drift or be corrupted by application bugs).
+Full-width embedded PNG, five horizontal layers top to bottom: Client (React SPA) ->
+Presentation/API (FastAPI backend) -> Application services (OCR stack / recommendation engine /
+evidence layers) -> Data (Postgres application DB + read-only SQLite drug catalogue) ->
+Deployment (single Docker container + externally hosted Postgres).
+
+**[Visual]** *(compact caption strip beneath the diagram, 1-2 lines)*
+- FastAPI backend + React SPA, single Docker container; a read-only SQLite drug catalogue is
+  kept structurally separate from the Postgres application database.
 
 ---
 
-## Slide 10: The Drug Knowledge Catalogue (Real Scale)
+====================================================================================
+SLIDE 9: FINDINGS
+====================================================================================
+**[Layout: cards]**
+*(Topic pill: "Findings")*
 
-| Source | Role | Rows Ingested |
-|---|---|---|
-| FDA National Drug Code (NDC) | Product listings: name, strength, form, route | 132,824 |
-| DrugBank | Active ingredients, salt forms, chemical IDs | 4,953 |
-| FDA Structured Product Labeling | Evidence-retrieval corpus (label text) | 255,904 |
-| FDA Orange Book | Therapeutic equivalence codes | — |
+Four compact cards in a 2x2 grid:
 
-**Result:** 41,020 medicines · 929,832 product records · 373,959 name aliases · 136,167 label sections — a real, substantial catalogue, not a demo stub.
+**Card 1 — Worked Example**
+Ibuprofen 200mg → Naproxen scores 100/100 (9/9 components); real DrugBank evidence + real FDA
+Orange Book AB-rating (167 products) attached. The same run also surfaced a real gap: 2 of the
+5 returned candidates (an injectable antiviral, a benzodiazepine) are clinically implausible —
+the route/dosage-form eligibility filters did not gate as strictly as designed in this case
+(see Card 4). Found by running a real query, not just by reading the code.
 
----
+**Card 2 — Verified Working**
+Human verification gate (Sec. 3.3.2) is server-enforced, not UI-only · score sums to exactly
+100 · equivalence layer confirmed passive · evidence-withholding confirmed (no evidence -> no
+fabricated narrative) · catalogue at production scale (900K+ product records) *(the separate
+mandatory eligibility filters are not included in this "verified working" list — see Card 1)*
 
-## Slide 11: The Recommendation Engine — Mandatory Filters First
+**Card 3 — Evaluation Status**
+4 pre-registered RQs, thresholds fixed in advance. RQ1/RQ2 harnesses need redirecting (real
+single-engine signal; structural-similarity coverage) — not just more data. RQ3/RQ4: dataset +
+ethics approval/panel are the immediate next step.
 
-```mermaid
-flowchart LR
-    X[Candidate medicine] --> F1{Same ingredient<br/>or salt form?}
-    F1 -->|No| R[Rejected]
-    F1 -->|Yes| F2{Compatible<br/>route?}
-    F2 -->|No| R
-    F2 -->|Yes| F3{Compatible<br/>dosage form?}
-    F3 -->|No| R
-    F3 -->|Yes| F4{Strength within<br/>~5% / exact?}
-    F4 -->|No| R
-    F4 -->|Yes| F5{Trusted<br/>provenance?}
-    F5 -->|No| R
-    F5 -->|Yes| S[Proceed to scoring]
-```
+**Card 4 — Known Limitations** *(6 of the report's 9 shown; full list in Ch.4 Sec. 4.9)*
+Chemical-similarity bonus on one candidate path · evidence layer not fully passive · scoring
+model diverges from an earlier internal spec · audit trail append-only by convention, not
+DB-enforced · eligibility filters under-enforced in the worked example (route/dosage-form) ·
+equivalence data is jurisdiction-specific. *(Not shown here, still in the report: RQ3's
+semantic-similarity metric has a circularity risk; one OCR engine is platform-sensitive.)* The
+first three are the ones the report itself flags as needing the supervisor's input.
 
-Hard gates, not scores — a candidate failing **any one** filter never reaches the scoring stage *(design intent; see Limitations for where current enforcement needs tightening)*.
-
----
-
-## Slide 12: The Nine-Component Transparent Score
-
-```mermaid
-pie showData
-    title Scoring weights (sum = 100)
-    "Indication relationship (35)" : 35
-    "ATC / therapeutic class (15)" : 15
-    "Mechanism relationship (10)" : 10
-    "Route compatibility (10)" : 10
-    "Patient population (10)" : 10
-    "Target / pathway (5)" : 5
-    "Dosage form (5)" : 5
-    "Contraindication/warning (5)" : 5
-    "Interaction coverage (5)" : 5
-```
-
-Additive by design: each component awards full weight or none. The total is an **exact arithmetic fact**, not an approximation — this is what makes the explanation layer genuinely exact rather than a guess about a black box.
-
-*(Narrate in tiers: one dominant component at 35 → one at 15 → three at 10 → four rounding out the total at 5 each.)*
+**[KEY POINT]** A system examined this closely, and reported on this honestly, is the point of
+Design Science Research — not a weakness to hide.
 
 ---
 
-## Slide 13: Regulatory Equivalence — FDA Orange Book (Passive Evidence)
+====================================================================================
+SLIDE 10: CONCLUSIONS
+====================================================================================
+**[Layout: bullets]**
+*(Topic pill: "Conclusions")*
 
-```mermaid
-flowchart LR
-    A[Candidate medicine] --> B[Score & Rank<br/>— independent of equivalence]
-    A --> C[FDA Orange Book<br/>lookup]
-    C --> D["TE Code: AB<br/>(substitutable within group)"]
-    D -.->|annotation only —<br/>never re-ranks| B
-    B --> E[Pharmacist sees:<br/>score + TE evidence]
-```
-
-**Design principle:** regulatory determination is evidence the pharmacist reads — not an instruction that silently changes the ranking. Structural/chemical similarity is a subordinate signal, never the primary one.
-
----
-
-## Slide 14: Evidence Grounding & Explainability
-
-- Evidence retrieved from FDA label text (Structured Product Labeling) — production path uses **keyword/token-overlap** matching (fast, deterministic, auditable); a semantic/embedding retriever exists and is evaluated separately
-- **No evidence found → no narrative generated.** The system shows "insufficient evidence" rather than letting an LLM fabricate a summary
-- An optional LLM narrative layer (Groq) exists but is **off by default** — with it off, the pharmacist sees the retrieved excerpts plus the 9-component breakdown, with no LLM involved at all
-- Explanation = the exact 9-component breakdown behind the score (not a post-hoc approximation of an opaque model)
-
-[SCREENSHOT: Recommendation card — score breakdown + evidence excerpt + equivalence badge]
+**[Visual]**
+- The design is buildable, internally coherent, and deployed
+- Every layer was exercised end-to-end on a real query against the real catalogue
+- This is a **disciplined demonstration** of integration — not yet a fully validated
+  performance claim at scale
+- What remains is evaluating the system at scale, which the infrastructure built for this
+  project is already designed to support
 
 ---
 
-## Slide 15: Worked Example — A Real Query Against the Real Catalogue
+====================================================================================
+SLIDE 11: RECOMMENDATIONS
+====================================================================================
+**[Layout: bullets]**
+*(Topic pill: "Recommendations")*
 
-**Input:** Ibuprofen 200 mg, oral tablet, for pain and inflammation
-
-| Rank | Candidate | Score | Type |
-|---|---|---|---|
-| 1 | Naproxen | 100/100 | Different active ingredient |
-| 2–5 | Celecoxib, Prednisone, others | 70/100 | Different active ingredient |
-
-- Naproxen: full marks across all 9 components; real DrugBank mechanism-of-action evidence retrieved; real FDA Orange Book AB-rating (167 products) attached as evidence
-- Every layer — filters, scoring, equivalence, evidence, explanation — executed end-to-end and produced a traceable result against the real catalogue, not a mocked stand-in
-
-*(The filter stage's route/dosage-form gating is itself one of the refinements this exact example surfaced — see Limitations. Finding this by running a real query, not just by reading the code, is itself a point in favor of an interpretable, inspectable design.)*
-
----
-
-## Slide 16: What Has Been Built and Verified Working
-
-- ✅ Full pharmacist workflow, live and publicly deployed
-- ✅ Verification gate — confirmed as a genuine **server-side** constraint, not just a UI affordance
-- ✅ 9-component scoring model — confirmed to sum to exactly 100
-- ✅ Regulatory equivalence layer — confirmed passive (annotation only)
-- ✅ Evidence-withholding behavior — confirmed (no evidence → no fabricated narrative)
-- ✅ Real drug-knowledge catalogue at production scale (900K+ product records)
-
----
-
-## Slide 17: Evaluation Status
-
-- 4 pre-registered research questions — OCR accuracy (RQ1), recommendation quality (RQ2), evidence grounding (RQ3), pharmacist trust (RQ4) — each with a metric + threshold fixed **before** running any evaluation
-- RQ1 & RQ2: current evaluation harnesses need redirecting — RQ1 to the real single-engine production accuracy signal, RQ2 to the structural-similarity coverage metric — not simply more data at larger scale
-- RQ3 & RQ4: evaluation infrastructure (harnesses, honest "unavailable vs. zero" status model, ground-truth audit trail) is built and operational; completing the dataset (RQ3) and obtaining ethics approval plus a pharmacist panel (RQ4) is the immediate next step
-
-*(Consistent with the project's integrity rule: a metric is reported only when real data backs it.)*
-
----
-
-## Slide 18: Known Limitations — Reported Honestly
-
-- Chemical-similarity bonus still influences ranking on one candidate path — needs reconciling with the "regulatory-first" principle
-- Evidence/explanation layer isn't purely passive — withholding a narrative when evidence is insufficient already shapes what the pharmacist sees
-- Nine-component scoring model structurally diverges from an earlier internal 3-component specification — needs supervisor sign-off as an approved amendment
-- Audit trail is append-only **by convention**, not yet enforced at the database level
-- Two concrete filter/scoring refinements surfaced by the worked example (route/dosage-form gating; graded vs. binary component credit)
-- Equivalence data is jurisdiction-specific (not directly portable across regulators)
-
-*A system examined this closely, and reported on this honestly, is the point of Design Science Research — not a weakness to hide.*
-
----
-
-## Slide 19: Contribution
-
-```mermaid
-flowchart TD
-    A[OCR-to-Substitution<br/>as ONE Pipeline] --> F((Integrated<br/>in ONE system))
-    B[Regulatory Equivalence<br/>as Primary Signal] --> F
-    C[Evidence-Grounded<br/>Explanation] --> F
-    D[Verification as a Hard,<br/>Structural Gate] --> F
-    E[Integrity in<br/>Reporting Results] --> F
-```
-
-The research gap (Slide 5): these five properties exist separately in the literature. This project demonstrates they can be **built together, in one working system** — and documents where the integration still needs work.
-
----
-
-## Slide 20: Conclusions
-
-The design is buildable, internally coherent, and deployed — a **disciplined demonstration** of integration rather than yet a fully validated performance claim. Every layer was exercised end-to-end on a real query against the real catalogue; what remains is evaluating it at scale.
-
----
-
-## Slide 21: Recommendations
-
-1. Complete the 25–30 case synthetic evaluation dataset (RQ3)
-2. Redirect RQ1 to the real single-engine accuracy signal and RQ2 to structural-similarity coverage, then re-run both
+**[Visual]**
+1. Complete the 25-30 case synthetic evaluation dataset (RQ3)
+2. Redirect RQ1 to the real single-engine accuracy signal and RQ2 to structural-similarity
+   coverage, then re-run both
 3. Obtain ethics approval → recruit pharmacist panel → RQ4
-4. Resolve the two supervisor-facing design questions (evidence-layer passivity; scoring-model specification divergence) and the filter/scoring refinements from the worked example
+4. Resolve the three supervisor-facing design questions the report itself flags (chemical-
+   similarity bonus; evidence-layer passivity; scoring-model specification divergence), and fix
+   the route/dosage-form filter gaps the worked example surfaced
 
 ---
 
-## Slide 22: Thank You
+====================================================================================
+SLIDE 12: THANK YOU
+====================================================================================
+**[Layout: title]**
+*(Topic pill: "Thank you!" — the official template's own title includes the exclamation mark;
+reproduced exactly since this pill is meant as a literal conformance marker.)*
 
-**Questions & Discussion**
+Centered, full-bleed closing treatment (SKY band top, as on the title slide, for visual
+bookending):
+- **Thank You**
+- "Questions & Discussion" — 20pt MID_GREY
+- "MediScan — live at: usamaalam-prescription-assistant.hf.space" — 14pt
+- "Muhammad Usama Alam · Supervisor: Sajid Majeed" — 14pt MID_GREY
 
-MediScan — live at: *[deployment URL — confirm before sharing with faculty]*
-
-Muhammad Usama Alam
-Supervisor: Sajid Majeed
+====================================================================================
+NEXT STEP
+====================================================================================
+Convert this spec into an actual .pptx with python-pptx, following the same pattern as
+D:\Certifications\OnlineCourses\PMP\generate_pptx.py: one function per [Layout: x] type
+(title, bullets, cards, table, diagram), a shared chrome() for the header/footer/topic-pill,
+and the chevron-flow diagram on Slide 7 built as native shapes (rounded rectangles connected by
+arrow connectors, not an image).
