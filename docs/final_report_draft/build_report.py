@@ -101,6 +101,24 @@ def para(text="", bold=False, italic=False, size=12, align=None, space_after=0,
     return p
 
 
+def label_field(label, value, align=None, size=12, space_after=0):
+    """Template convention: 'Label: ' followed by the filled-in value,
+    underlined, on the same line (matches Annexure E's label + underlined
+    tab blank)."""
+    p = doc.add_paragraph()
+    if align is not None:
+        p.alignment = align
+    r1 = p.add_run(label)
+    r1.font.size = Pt(size)
+    r1.font.name = "Times New Roman"
+    r2 = p.add_run(f" {value}")
+    r2.underline = True
+    r2.font.size = Pt(size)
+    r2.font.name = "Times New Roman"
+    p.paragraph_format.space_after = Pt(space_after)
+    return p
+
+
 def heading(text, level=1, upper=True, space_before=18, space_after=12, size=14):
     p = doc.add_paragraph()
     p.paragraph_format.space_before = Pt(space_before)
@@ -330,31 +348,28 @@ def render_chapter_body(text, skip_first_heading_lines=1):
 # FRONT MATTER
 # =========================================================================
 
-# ---- Title page ----
-for _ in range(2):
-    doc.add_paragraph()
+# ---- Title page (Annexure E) ----
+para("Annexure E", bold=True, align=WD_ALIGN_PARAGRAPH.RIGHT, size=12)
 para("NED UNIVERSITY OF ENGINEERING AND TECHNOLOGY", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, size=14)
-para("Centre of Multidisciplinary Postgraduate Programmes (CMPP)", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, size=12)
-para("Postgraduate Diploma (PGD) Programmes", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, size=12)
-for _ in range(3):
+para("Centre of Multidisciplinary Postgraduate Programmes (CMPP) Postgraduate Diploma (PGD) Programmes",
+     bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, size=14)
+para("FINAL PROJECT REPORT", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, size=14)
+for _ in range(9):
     doc.add_paragraph()
-para("FINAL PROJECT REPORT", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, size=18)
-for _ in range(3):
-    doc.add_paragraph()
-para(f"A Project Report submitted in partial fulfilment of the requirements for", align=WD_ALIGN_PARAGRAPH.CENTER)
-para(f"the Postgraduate Diploma in {PROGRAMME.replace('Postgraduate Diploma in ', '')}", align=WD_ALIGN_PARAGRAPH.CENTER)
+para("A Project Report submitted in Partial fulfillment of the requirements for Postgraduate Diploma in",
+     align=WD_ALIGN_PARAGRAPH.CENTER)
 for _ in range(2):
     doc.add_paragraph()
-para(f"Name of Student: {STUDENT}", align=WD_ALIGN_PARAGRAPH.CENTER)
-para(f"Enrolment No.: {ENROLLMENT}", align=WD_ALIGN_PARAGRAPH.CENTER)
-para(f"Batch: {BATCH}", align=WD_ALIGN_PARAGRAPH.CENTER)
-para(f"Project Title: {TITLE}", align=WD_ALIGN_PARAGRAPH.CENTER)
-para(f"Name of Supervisor: {SUPERVISOR}", align=WD_ALIGN_PARAGRAPH.CENTER)
-for _ in range(4):
+label_field("Name of Student:", STUDENT)
+doc.add_paragraph()
+label_field("Batch:", BATCH)
+label_field("Project Title:", TITLE)
+doc.add_paragraph()
+label_field("Name of Supervisor:", SUPERVISOR)
+for _ in range(14):
     doc.add_paragraph()
-para("_______________________________", align=WD_ALIGN_PARAGRAPH.CENTER)
-para("Signature of Supervisor", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True)
-para(f"Date: {SUBMISSION_DATE}", align=WD_ALIGN_PARAGRAPH.CENTER)
+para("_______________________________")
+para("Signature of Supervisor")
 
 page_break()
 
@@ -365,48 +380,54 @@ body_paragraph(
     f"in partial fulfilment of requirements for a PGD in {PROGRAMME.replace('Postgraduate Diploma in ', '')} "
     f"from NED Academy, NED University of Engineering and Technology, Karachi, Pakistan."
 )
-for _ in range(3):
+for _ in range(5):
     doc.add_paragraph()
-para("Project Supervisor", bold=False)
-para("_______________________________")
-para(f"{SUPERVISOR}")
-para(f"Designation, Organization: {SUPERVISOR_DESIGNATION}")
+para("Project Supervisor")
+for _ in range(2):
+    doc.add_paragraph()
+para(f"{SUPERVISOR}, {SUPERVISOR_DESIGNATION}")
+para("Name, Designation, Organization")
 
 page_break()
 
 # ---- Declarations ----
 heading("Declarations", level=1)
 body_paragraph(
-    f'I hereby state that this Project titled, "{TITLE}", is my own work and has not been submitted '
-    f"previously by me for taking any degree or diploma from anywhere else in the world."
+    f'I hereby state that this Project titled, "{TITLE}", is my own '
+    f"work and has not been submitted previously by me for taking any degree/ diploma from anywhere else in the world."
 )
 body_paragraph(
     "At any time if my statement is found incorrect, NED University of Engineering and Technology has "
     "the right to withdraw this PGD."
 )
-for _ in range(3):
+for _ in range(4):
     doc.add_paragraph()
-para("Signature: _______________________________")
-para(f"Student Name: {STUDENT}")
-para(f"Date: {SUBMISSION_DATE}")
+para("Signature")
+doc.add_paragraph()
+label_field("Student Name:", STUDENT)
+label_field("Date:", SUBMISSION_DATE)
 
 page_break()
 
 # ---- Plagiarism Undertaking ----
 heading("Plagiarism Undertaking", level=1)
 body_paragraph(
-    f'I solemnly declare that the research work presented in this PGD Project titled "{TITLE}" is '
-    f"solely my own research work except where the acknowledgement of the sources is made."
+    f'I solemnly declare that the research work presented in this PGD Project titled: "{TITLE}", '
+    f"is solely my research work except where the acknowledgement of the sources is made."
 )
-for _ in range(3):
+for _ in range(4):
     doc.add_paragraph()
-para("Signature: _______________________________")
-para(f"Student Name: {STUDENT}")
-para(f"Date: {SUBMISSION_DATE}")
+para("Signature")
+doc.add_paragraph()
+label_field("Student Name:", STUDENT)
+label_field("Date:", SUBMISSION_DATE)
 
 page_break()
 
 # ---- Final Project Report Submission Sheet ----
+para("NED UNIVERSITY OF ENGINEERING AND TECHNOLOGY", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, size=14)
+para("Centre of Multidisciplinary Postgraduate Program (CMPP) Postgraduate Diploma (PGD) Program",
+     bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, size=14)
 heading("Final Project Report Submission Sheet", level=1)
 submission_rows = [
     ["S. No.", "Final Report Component", "Included (Yes)"],
@@ -423,10 +444,10 @@ submission_rows = [
     ["11.", "Turnitin Report (similarity < 19%; < 5% from any single source)", "[TO ATTACH]"],
 ]
 add_real_table(submission_rows)
-for _ in range(2):
+for _ in range(4):
     doc.add_paragraph()
 para("_______________________________")
-para("Name & Signature, Supervisor", italic=True)
+para("Name & Signature Supervisor")
 
 page_break()
 
