@@ -247,12 +247,19 @@ def google_vision_document_text(image_bytes: bytes) -> OcrDocumentResult | None:
     """Primary OCR via Google Cloud Vision DOCUMENT_TEXT_DETECTION.
 
     Uses REST by default (gRPC client is often blocked by Windows Application Control).
+    On failure, the reason is stashed on this function (last_error) so the caller can
+    surface it to the pharmacist instead of a generic "unavailable" status.
     """
+    google_vision_document_text.last_error = None
     try:
         return _google_vision_via_rest(image_bytes)
     except Exception as exc:  # noqa: BLE001
         logger.warning("Google Vision OCR failed: %s", exc)
+        google_vision_document_text.last_error = f"{type(exc).__name__}: {exc}"
         return None
+
+
+google_vision_document_text.last_error = None
 
 
 def trocr_recognize_crop(image_bytes: bytes, bbox: list[float] | None) -> OcrLine | None:
@@ -533,6 +540,9 @@ def run_ocr_stack(image_bytes: bytes) -> OcrDocumentResult:
         elif engine_id in {"google_vision"}:
             doc = google_vision_document_text(prepared)
             attempt = _attempt_from_document("google_vision", doc, ms=(time.perf_counter() - t0) * 1000.0)
+            if doc is None and google_vision_document_text.last_error:
+                attempt.warning = google_vision_document_text.last_error
+                warnings.append(f"Google Vision unavailable: {google_vision_document_text.last_error}")
             if attempt.status == "success" and attempt.confidence is not None and attempt.confidence < min_conf:
                 attempt.status = "low_confidence"
                 attempt.warning = "Google Vision below OCR_MIN_CONFIDENCE"
