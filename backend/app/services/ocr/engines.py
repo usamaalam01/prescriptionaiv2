@@ -243,19 +243,30 @@ def _google_vision_via_rest(image_bytes: bytes) -> OcrDocumentResult | None:
     )
 
 
+_API_KEY_QUERY_RE = __import__("re").compile(r"([?&]key=)[^&\s'\"]+")
+
+
+def _redact_api_key(text: str) -> str:
+    """Strip any '?key=...'/'&key=...' API key value out of an error/URL string
+    before it can reach logs or API responses."""
+    return _API_KEY_QUERY_RE.sub(r"\1[REDACTED]", text)
+
+
 def google_vision_document_text(image_bytes: bytes) -> OcrDocumentResult | None:
     """Primary OCR via Google Cloud Vision DOCUMENT_TEXT_DETECTION.
 
     Uses REST by default (gRPC client is often blocked by Windows Application Control).
     On failure, the reason is stashed on this function (last_error) so the caller can
-    surface it to the pharmacist instead of a generic "unavailable" status.
+    surface it to the pharmacist instead of a generic "unavailable" status. The API key
+    is always redacted before the reason is stored or logged.
     """
     google_vision_document_text.last_error = None
     try:
         return _google_vision_via_rest(image_bytes)
     except Exception as exc:  # noqa: BLE001
-        logger.warning("Google Vision OCR failed: %s", exc)
-        google_vision_document_text.last_error = f"{type(exc).__name__}: {exc}"
+        safe_reason = _redact_api_key(f"{type(exc).__name__}: {exc}")
+        logger.warning("Google Vision OCR failed: %s", safe_reason)
+        google_vision_document_text.last_error = safe_reason
         return None
 
 
