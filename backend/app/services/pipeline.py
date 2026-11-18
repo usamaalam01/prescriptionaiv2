@@ -279,7 +279,9 @@ _FORM_ONLY_RE = re.compile(
 )
 _ITEM_RE = re.compile(
     # "1. Amoxicillin" / "1) Drug" / Vision often drops the dot: "1 Amoxicillin"
-    r"^\s*(?P<item>\d{1,2})\s*(?:[.)]\s*|\s+)(?P<body>[A-Z][A-Za-z].*)$"
+    # Body is optional: some engines (e.g. Azure) emit a bare "1)" on its own line,
+    # with the drug name on the next line — callers look ahead when body is empty.
+    r"^\s*(?P<item>\d{1,2})\s*(?:[.)]\s*|\s+)?(?P<body>[A-Z][A-Za-z].*)?$"
 )
 # Vision sometimes glues two Rx items onto one line:
 # "... for 7 days 2. Ibuprofen 400mg ..."

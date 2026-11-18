@@ -145,7 +145,9 @@ _CLINICAL_CUE_RE = re.compile(
 
 _ITEM_START_RE = re.compile(
     # "1. Drug" / "1) Drug" / Vision often drops punctuation: "1 Amoxicillin …"
-    r"^\s*(?P<item>\d{1,2})\s*(?:[.)\-–—:]\s*|\s+)(?P<body>[A-Za-z].*)$"
+    # Body is optional: some engines (e.g. Azure) emit a bare "1)" on its own line,
+    # with the drug name on the next line — callers look ahead when body is empty.
+    r"^\s*(?P<item>\d{1,2})\s*(?:[.)\-–—:]\s*|\s+)?(?P<body>[A-Za-z].*)?$"
 )
 
 
@@ -163,7 +165,17 @@ def is_pii_or_admin_line(text: str) -> bool:
     if not t:
         return True
     low = t.lower()
-    if low in {"r", "rx", "•", "·", "▪", "-", "–", "—", ":", "no repeats", "no repeat"}:
+    if low in {"r", "rx", "•", "·", "▪", "-", "–", "—", "--", "––", ":", "no repeats", "no repeat"}:
+        return True
+    # Bare placeholder values ("--", "N/A", "nil") with no other content — these are
+    # the value half of a label/value pair some OCR engines (e.g. Azure's reading
+    # order) split onto its own line, separate from the "Address:"/"Phone:" label.
+    if re.fullmatch(r"(?:-{1,3}|n\s*/\s*a|nil|none|nan)", low):
+        return True
+    # A value line that starts with a bare colon ("": 58 Kg"") — the label landed on
+    # the previous line, same split-line cause as above. No real drug/SIG line starts
+    # with a colon.
+    if t.startswith(":"):
         return True
     # Advice / clinical notes / diagnosis — even when OCR appends stray strength tokens
     if re.match(
@@ -174,6 +186,13 @@ def is_pii_or_admin_line(text: str) -> bool:
     if _PII_LINE_RE.match(low):
         return True
     if _PII_VALUE_RE.match(t):
+        return True
+    # A bare known admin-field label with no colon at all ("Weight", "Address") — the
+    # colon + value landed on the next line under the same split-line OCR behavior.
+    if low in {
+        "name", "age", "gender", "sex", "wt", "weight", "address", "phone", "mobile",
+        "email", "tel", "fax", "opd", "opd no", "date", "doctor", "patient", "patient name",
+    }:
         return True
     # Diagnosis / counseling alone (no medicine SIG) — never promote to drug rows
     if re.fullmatch(
