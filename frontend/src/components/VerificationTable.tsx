@@ -218,7 +218,7 @@ function cellSx(field: FieldState | undefined, rowResolved: boolean) {
   }
 }
 
-function isRowResolved(row: VerificationRow): boolean {
+export function isRowResolved(row: VerificationRow): boolean {
   return (
     row.pharmacist_status === 'confirmed' ||
     row.pharmacist_status === 'unidentified' ||

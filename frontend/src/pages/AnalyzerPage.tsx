@@ -12,7 +12,7 @@ import {
 } from '@mui/material'
 import { Link as RouterLink, useSearchParams } from 'react-router-dom'
 import { api } from '../api'
-import { VerificationTable, type VerificationRow } from '../components/VerificationTable'
+import { VerificationTable, isRowResolved, type VerificationRow } from '../components/VerificationTable'
 import { TherapeuticAlternativesPanel } from '../components/TherapeuticAlternativesPanel'
 import { SummaryAnalyticsPanel } from '../components/SummaryAnalyticsPanel'
 import { OcrConflictPanel } from '../components/OcrConflictPanel'
@@ -123,16 +123,20 @@ export function AnalyzerPage({ onLogout }: { onLogout?: () => void }) {
   }, [])
 
   const confirmedCount = verificationRows.filter((r) => r.pharmacist_status === 'confirmed').length
+  const resolvedCount = verificationRows.filter((r) => isRowResolved(r)).length
   const totalRows = verificationRows.length
   const hasHitl = totalRows > 0
 
   const activeStep = useMemo(() => {
-    if (hasHitl && confirmedCount === totalRows && totalRows > 0) return 3
+    // A row resolved as "unable to verify" is as terminal as a confirmed one — the
+    // Submit gate below already treats them the same way, so the step indicator
+    // must too, or step 4 never lights up when any row can't be catalog-confirmed.
+    if (hasHitl && resolvedCount === totalRows && totalRows > 0) return 3
     if (hasHitl) return 2
     if (ocr && (ocr.status === 'completed' || ocr.raw_text)) return 2
     if (session || busy) return 1
     return 0
-  }, [hasHitl, confirmedCount, totalRows, ocr, session, busy])
+  }, [hasHitl, resolvedCount, totalRows, ocr, session, busy])
 
   const loadVerification = async (sessionId: string) => {
     const { data } = await api.get<{ rows: VerificationRow[] }>(
