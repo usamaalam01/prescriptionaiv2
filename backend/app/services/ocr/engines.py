@@ -1,4 +1,4 @@
-"""OCR adapters: Spec O1/B1 sequential TrOCR → Google Vision → Tesseract.
+"""OCR adapters: Spec O1/B1 sequential Azure Document Intelligence → Google Vision → Tesseract.
 
 PaddleOCR may assist detection for TrOCR crops. Decision-support only — not clinical care.
 """
@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import io
 import logging
+import re
 from dataclasses import dataclass, field
 from functools import lru_cache
 
@@ -143,6 +144,89 @@ def paddle_detect_lines(image_bytes: bytes) -> list[dict]:
 _LAST_PADDLE_ERROR: str | None = None
 
 
+def _azure_line_confidence(line: object, words: list) -> float:
+    """Document Intelligence's prebuilt-read model reports confidence per word, not
+    per line — average the confidences of the words whose span falls inside the
+    line's span range. Falls back to 0.9 only if no word span matches at all."""
+    line_spans = getattr(line, "spans", None) or []
+    if not line_spans:
+        return 0.9
+    confs: list[float] = []
+    for span in line_spans:
+        start = span["offset"] if isinstance(span, dict) else span.offset
+        end = start + (span["length"] if isinstance(span, dict) else span.length)
+        for word in words:
+            w_span = getattr(word, "span", None)
+            if w_span is None:
+                continue
+            w_start = w_span["offset"] if isinstance(w_span, dict) else w_span.offset
+            if start <= w_start < end:
+                conf = getattr(word, "confidence", None)
+                if conf is not None:
+                    confs.append(float(conf))
+    return sum(confs) / len(confs) if confs else 0.9
+
+
+def azure_document_intelligence_text(image_bytes: bytes) -> OcrDocumentResult | None:
+    """Primary OCR via Azure AI Document Intelligence prebuilt-read model.
+
+    On failure, the reason is stashed on this function (last_error) so the caller can
+    surface it to the pharmacist instead of a generic "unavailable" status. The
+    subscription key is always redacted before the reason is stored or logged.
+    """
+    azure_document_intelligence_text.last_error = None
+    endpoint = (settings.AZURE_DOCINTEL_ENDPOINT or "").strip()
+    key = (settings.AZURE_DOCINTEL_KEY or "").strip()
+    if not endpoint or not key:
+        azure_document_intelligence_text.last_error = (
+            "Azure Document Intelligence skipped: set AZURE_DOCINTEL_ENDPOINT and AZURE_DOCINTEL_KEY"
+        )
+        return None
+    try:
+        from azure.ai.documentintelligence import DocumentIntelligenceClient
+        from azure.core.credentials import AzureKeyCredential
+
+        client = DocumentIntelligenceClient(endpoint, AzureKeyCredential(key))
+        poller = client.begin_analyze_document("prebuilt-read", body=image_bytes)
+        result = poller.result()
+
+        lines: list[OcrLine] = []
+        for page in result.pages or []:
+            words = page.words or []
+            for line in page.lines or []:
+                conf = _azure_line_confidence(line, words)
+                bbox = None
+                if getattr(line, "polygon", None):
+                    bbox = [float(v) for v in line.polygon]
+                lines.append(
+                    OcrLine(
+                        text=line.content,
+                        confidence=conf,
+                        bbox=bbox,
+                        engine="azure_docintel",
+                        is_mock=False,
+                    )
+                )
+        full_text = (result.content or "").strip()
+        if not full_text:
+            return None
+        return OcrDocumentResult(
+            full_text=full_text,
+            lines=lines,
+            engine_primary="azure_docintel",
+            is_mock=False,
+            warnings=["Azure AI Document Intelligence (prebuilt-read)"],
+        )
+    except Exception as exc:  # noqa: BLE001
+        safe_reason = _redact_api_key(f"{type(exc).__name__}: {exc}")
+        logger.warning("Azure Document Intelligence OCR failed: %s", safe_reason)
+        azure_document_intelligence_text.last_error = safe_reason
+        return None
+
+
+azure_document_intelligence_text.last_error = None
+
+
 def _vision_lines_from_full_text_annotation(annotation: dict) -> list[OcrLine]:
     lines: list[OcrLine] = []
     for page in annotation.get("pages") or []:
@@ -243,13 +327,18 @@ def _google_vision_via_rest(image_bytes: bytes) -> OcrDocumentResult | None:
     )
 
 
-_API_KEY_QUERY_RE = __import__("re").compile(r"([?&]key=)[^&\s'\"]+")
+_API_KEY_QUERY_RE = re.compile(r"([?&]key=)[^&\s'\"]+")
+_SUBSCRIPTION_KEY_HEADER_RE = re.compile(
+    r"(Ocp-Apim-Subscription-Key['\"]?\s*[:=]\s*['\"]?)[^&\s'\",}]+", re.I
+)
 
 
 def _redact_api_key(text: str) -> str:
-    """Strip any '?key=...'/'&key=...' API key value out of an error/URL string
-    before it can reach logs or API responses."""
-    return _API_KEY_QUERY_RE.sub(r"\1[REDACTED]", text)
+    """Strip any '?key=...'/'&key=...' query value and any Azure subscription-key
+    header value out of an error/URL string before it can reach logs or API responses."""
+    text = _API_KEY_QUERY_RE.sub(r"\1[REDACTED]", text)
+    text = _SUBSCRIPTION_KEY_HEADER_RE.sub(r"\1[REDACTED]", text)
+    return text
 
 
 def google_vision_document_text(image_bytes: bytes) -> OcrDocumentResult | None:
@@ -548,12 +637,23 @@ def run_ocr_stack(image_bytes: bytes) -> OcrDocumentResult:
             if attempt.status == "success" and attempt.confidence is not None and attempt.confidence < min_conf:
                 attempt.status = "low_confidence"
                 attempt.warning = "TrOCR below OCR_MIN_CONFIDENCE"
+        elif engine_id == "azure_docintel":
+            doc = azure_document_intelligence_text(prepared)
+            attempt = _attempt_from_document("azure_docintel", doc, ms=(time.perf_counter() - t0) * 1000.0)
+            azure_last_error = getattr(azure_document_intelligence_text, "last_error", None)
+            if doc is None and azure_last_error:
+                attempt.warning = azure_last_error
+                warnings.append(f"Azure Document Intelligence unavailable: {azure_last_error}")
+            if attempt.status == "success" and attempt.confidence is not None and attempt.confidence < min_conf:
+                attempt.status = "low_confidence"
+                attempt.warning = "Azure Document Intelligence below OCR_MIN_CONFIDENCE"
         elif engine_id in {"google_vision"}:
             doc = google_vision_document_text(prepared)
             attempt = _attempt_from_document("google_vision", doc, ms=(time.perf_counter() - t0) * 1000.0)
-            if doc is None and google_vision_document_text.last_error:
-                attempt.warning = google_vision_document_text.last_error
-                warnings.append(f"Google Vision unavailable: {google_vision_document_text.last_error}")
+            vision_last_error = getattr(google_vision_document_text, "last_error", None)
+            if doc is None and vision_last_error:
+                attempt.warning = vision_last_error
+                warnings.append(f"Google Vision unavailable: {vision_last_error}")
             if attempt.status == "success" and attempt.confidence is not None and attempt.confidence < min_conf:
                 attempt.status = "low_confidence"
                 attempt.warning = "Google Vision below OCR_MIN_CONFIDENCE"

@@ -75,6 +75,18 @@ function formatBytes(n: number) {
   return `${(n / (1024 * 1024)).toFixed(1)} MB`
 }
 
+const OCR_ENGINE_LABELS: Record<string, string> = {
+  azure_docintel: 'Azure',
+  google_vision: 'Vision',
+  tesseract: 'Tesseract',
+  trocr: 'TrOCR',
+  paddleocr: 'PaddleOCR',
+}
+
+function ocrEngineLabel(engine: string): string {
+  return OCR_ENGINE_LABELS[engine] || engine
+}
+
 export function AnalyzerPage({ onLogout }: { onLogout?: () => void }) {
   const [searchParams] = useSearchParams()
   const [file, setFile] = useState<File | null>(null)
@@ -568,7 +580,7 @@ export function AnalyzerPage({ onLogout }: { onLogout?: () => void }) {
                 label={
                   ocr.is_mock
                     ? `MOCK OCR · ${(ocr.confidence * 100).toFixed(0)}%`
-                    : `Vision · ${(ocr.confidence * 100).toFixed(0)}%`
+                    : `${ocrEngineLabel(ocr.pipeline?.merged_lines?.[0]?.selected_engine || ocr.engine)} · ${(ocr.confidence * 100).toFixed(0)}%`
                 }
               />
             )}

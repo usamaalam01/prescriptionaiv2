@@ -40,7 +40,7 @@ def is_acceptable(
 
 def parse_engine_order(primary: str, fallback_csv: str) -> list[str]:
     """Deduplicate while preserving Spec order: primary then fallbacks."""
-    allowed = {"trocr", "google_vision", "tesseract", "paddle", "paddleocr"}
+    allowed = {"trocr", "google_vision", "tesseract", "paddle", "paddleocr", "azure_docintel"}
     ordered: list[str] = []
     for raw in [primary, *[p.strip() for p in (fallback_csv or "").split(",")]]:
         name = (raw or "").strip().lower()
@@ -50,4 +50,4 @@ def parse_engine_order(primary: str, fallback_csv: str) -> list[str]:
             continue
         if name not in ordered:
             ordered.append(name)
-    return ordered or ["trocr", "google_vision", "tesseract"]
+    return ordered or ["azure_docintel", "google_vision", "tesseract"]

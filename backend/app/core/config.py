@@ -68,12 +68,13 @@ class Settings(BaseSettings):
     DRUGBANK_XML_PATH: str = ""
     MEDICINE_CATALOG_DB: str = ""
 
-    # Production OCR: Google Vision primary (best operational accuracy for HITL).
+    # Production OCR: Azure Document Intelligence primary (Google Vision was returning
+    # persistent 403s on the live deployment; kept as a fallback rather than removed).
     # Spec O1 research order (TrOCR → Vision → Tesseract) is used by Research Evaluation / OCR_PROFILE=spec.
     OCR_STRATEGY: str = "sequential"  # sequential | hybrid | legacy
     OCR_PROFILE: str = "production"  # production | spec
-    OCR_PRIMARY: str = "google_vision"
-    OCR_FALLBACK_ORDER: str = "tesseract"
+    OCR_PRIMARY: str = "azure_docintel"
+    OCR_FALLBACK_ORDER: str = "google_vision,tesseract"
     OCR_MIN_CONFIDENCE: float = 0.60
     OCR_HYBRID_CONSENSUS_ENABLED: bool = False
     # False in production for latency; Research Evaluation retains per-engine outputs separately.
@@ -91,6 +92,8 @@ class Settings(BaseSettings):
     HITL_ALLOW_FREQ_TEMPLATES: bool = False
     GOOGLE_APPLICATION_CREDENTIALS: str = ""
     GOOGLE_VISION_API_KEY: str = ""
+    AZURE_DOCINTEL_ENDPOINT: str = ""
+    AZURE_DOCINTEL_KEY: str = ""
     ENABLE_PADDLE_DETECT: bool = True
     ENABLE_TROCR_RETRY: bool = True
     TROCR_CONFIDENCE_THRESHOLD: float = 0.75
