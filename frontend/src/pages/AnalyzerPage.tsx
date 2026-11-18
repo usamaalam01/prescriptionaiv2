@@ -257,6 +257,19 @@ export function AnalyzerPage({ onLogout }: { onLogout?: () => void }) {
         return
       }
 
+      if (job.is_mock) {
+        // No real OCR engine could read this image — never show fabricated
+        // drug names to the pharmacist as if they came from the prescription.
+        setOcr(null)
+        setPipelinePhase('failed')
+        setError(
+          'Unable to read this prescription image. This can happen with blurry, low-contrast, ' +
+            'or heavily skewed photos, or if no OCR engine is currently available. Please retake ' +
+            'the photo (good lighting, flat angle, in focus) and try again.',
+        )
+        return
+      }
+
       setPipelinePhase('completed')
       await loadVerification(active.id)
       window.setTimeout(() => {
