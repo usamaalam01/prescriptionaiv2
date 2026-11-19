@@ -67,6 +67,34 @@ def get_image(
     return Response(content=data, media_type=session.content_type)
 
 
+@router.get("/prescriptions/{session_id}/download-pdf")
+def download_prescription_pdf(
+    session_id: str,
+    pharmacist: User = Depends(require_pharmacist),
+    db: Session = Depends(get_db),
+):
+    """Pharmacist-confirmed prescription record as a PDF — only once the session
+    has been submitted, so this always reflects the final, verified fields."""
+    from app.services.prescription_pdf import build_prescription_pdf
+
+    session = prescription_service.get_owned_session(db, pharmacist, session_id)
+    if session.status != "submitted":
+        return Response(
+            status_code=409,
+            content='{"detail":"Submit the prescription verification before downloading."}',
+            media_type="application/json",
+        )
+    medicines = prescription_service.list_medicines(db, pharmacist, session_id)
+    pdf_bytes = build_prescription_pdf(session, pharmacist, medicines)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="prescription-{session_id[:8]}.pdf"'
+        },
+    )
+
+
 @router.delete("/prescriptions/{session_id}/temporary-file")
 def delete_temp(
     session_id: str,

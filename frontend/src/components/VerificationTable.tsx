@@ -325,10 +325,12 @@ function asIndicationOptions(options: FieldState['options']): IndicationOption[]
 
 export function VerificationTable({
   sessionId,
+  sessionStatus,
   rows,
   onUpdated,
 }: {
   sessionId: string
+  sessionStatus?: string
   rows: VerificationRow[]
   onUpdated: (rows: VerificationRow[]) => void
 }) {
@@ -339,6 +341,7 @@ export function VerificationTable({
   const [busyId, setBusyId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [downloadingPdf, setDownloadingPdf] = useState(false)
   const [resolveReason, setResolveReason] = useState<Record<string, string>>({})
   const [unablePreset, setUnablePreset] = useState<Record<string, string>>({})
 
@@ -490,6 +493,28 @@ export function VerificationTable({
       setError(typeof detail === 'string' ? detail : 'Could not submit verification.')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const downloadPdf = async () => {
+    setDownloadingPdf(true)
+    setError('')
+    try {
+      const { data } = await api.get(`/api/v1/prescriptions/${sessionId}/download-pdf`, {
+        responseType: 'blob',
+      })
+      const url = URL.createObjectURL(data as Blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `prescription-${sessionId.slice(0, 8)}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+    } catch {
+      setError('Could not download the prescription PDF.')
+    } finally {
+      setDownloadingPdf(false)
     }
   }
 
@@ -723,22 +748,36 @@ export function VerificationTable({
                 {rows.filter((r) => isRowResolved(r)).length}/{rows.length} resolved).
               </Typography>
             )}
-            {submitted && (
+            {(submitted || sessionStatus === 'submitted') && (
               <Alert severity="success">
                 Verification submitted for this prescription session.
               </Alert>
             )}
-            <Box>
+            <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
               <Button
                 variant="contained"
                 color="primary"
                 size="large"
-                disabled={!allResolved || submitting || submitted}
+                disabled={!allResolved || submitting || submitted || sessionStatus === 'submitted'}
                 onClick={() => void submitSession()}
               >
-                {submitted ? 'Submitted' : submitting ? 'Submitting…' : 'Submit'}
+                {submitted || sessionStatus === 'submitted'
+                  ? 'Submitted'
+                  : submitting
+                    ? 'Submitting…'
+                    : 'Submit'}
               </Button>
-            </Box>
+              {(submitted || sessionStatus === 'submitted') && (
+                <Button
+                  variant="outlined"
+                  size="large"
+                  disabled={downloadingPdf}
+                  onClick={() => void downloadPdf()}
+                >
+                  {downloadingPdf ? 'Preparing…' : 'Download prescription (PDF)'}
+                </Button>
+              )}
+            </Stack>
           </Stack>
         </Paper>
       )}

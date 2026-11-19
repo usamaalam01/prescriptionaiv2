@@ -856,6 +856,7 @@ export function AnalyzerPage({ onLogout }: { onLogout?: () => void }) {
                 {hasHitl && (
                   <VerificationTable
                     sessionId={session.id}
+                    sessionStatus={session.status}
                     rows={verificationRows}
                     onUpdated={(rows) => {
                       setVerificationRows(rows)
