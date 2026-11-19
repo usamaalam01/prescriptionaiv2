@@ -17,6 +17,14 @@ import {
 } from '@mui/material'
 import { api } from '../api'
 
+function ExpandMoreIcon() {
+  return (
+    <svg width={20} height={20} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 function formatApiDetail(detail: unknown): string {
   if (typeof detail === 'string') return detail
   if (Array.isArray(detail)) {
@@ -374,8 +382,8 @@ function CandidateCard({
       </Stack>
 
       <Accordion disableGutters sx={{ bgcolor: 'transparent', boxShadow: 'none', '&:before': { display: 'none' } }}>
-        <AccordionSummary>
-          <Typography variant="body2">Evidence provenance</Typography>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="body2" fontWeight={700}>Evidence provenance</Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Stack spacing={1}>
@@ -399,8 +407,8 @@ function CandidateCard({
       </Accordion>
 
       <Accordion disableGutters sx={{ bgcolor: 'transparent', boxShadow: 'none', '&:before': { display: 'none' } }}>
-        <AccordionSummary>
-          <Typography variant="body2">Rule-based score explanation</Typography>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="body2" fontWeight={700}>Rule-based score explanation</Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Stack spacing={1}>
@@ -440,8 +448,8 @@ function CandidateCard({
 
       {cand.real_xai && (
         <Accordion disableGutters sx={{ bgcolor: 'transparent', boxShadow: 'none', '&:before': { display: 'none' } }}>
-          <AccordionSummary>
-            <Typography variant="body2">Explainability (SHAP / LIME)</Typography>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="body2" fontWeight={700}>Explainability (SHAP / LIME)</Typography>
           </AccordionSummary>
           <AccordionDetails>
             <XaiDashboard xai={cand.real_xai} />
