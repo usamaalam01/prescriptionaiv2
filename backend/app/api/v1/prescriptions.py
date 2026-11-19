@@ -33,6 +33,17 @@ def upload_prescription(
     return ReviewSessionOut.model_validate(session)
 
 
+@router.get("/prescriptions/mine/incomplete", response_model=list[ReviewSessionOut])
+def list_my_incomplete_sessions(
+    pharmacist: User = Depends(require_pharmacist),
+    db: Session = Depends(get_db),
+):
+    """This pharmacist's own not-yet-submitted sessions, so an abandoned upload
+    (e.g. OCR ran but nothing was confirmed) can be found and resumed."""
+    sessions = prescription_service.list_incomplete_sessions(db, pharmacist)
+    return [ReviewSessionOut.model_validate(s) for s in sessions]
+
+
 @router.get("/prescriptions/{session_id}", response_model=ReviewSessionOut)
 def get_session(
     session_id: str,

@@ -13,6 +13,7 @@ import {
 import { Link as RouterLink, useSearchParams } from 'react-router-dom'
 import { api } from '../api'
 import { VerificationTable, isRowResolved, type VerificationRow } from '../components/VerificationTable'
+import { MySessionsPanel } from '../components/MySessionsPanel'
 import { TherapeuticAlternativesPanel } from '../components/TherapeuticAlternativesPanel'
 import { SummaryAnalyticsPanel } from '../components/SummaryAnalyticsPanel'
 import { OcrConflictPanel } from '../components/OcrConflictPanel'
@@ -98,6 +99,7 @@ export function AnalyzerPage({ onLogout }: { onLogout?: () => void }) {
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [uploadOk, setUploadOk] = useState('')
   const [analyticsTick, setAnalyticsTick] = useState(0)
+  const [mySessionsTick, setMySessionsTick] = useState(0)
   const [catalog, setCatalog] = useState<CatalogOverview | null>(null)
   const [pipelinePhase, setPipelinePhase] = useState<string>('')
   const [dragOver, setDragOver] = useState(false)
@@ -146,10 +148,17 @@ export function AnalyzerPage({ onLogout }: { onLogout?: () => void }) {
   }
 
   // Resume an existing session (e.g. /analyzer?session=<id>) after showcase/script create.
+  //
+  // React StrictMode mounts, cleans up, and remounts every effect once on purpose.
+  // resumedSessionRef used to be set synchronously at the top of the effect body, so
+  // it was already "claimed" by the first (discarded) mount before the real second
+  // mount ever ran — the guard then skipped the effect entirely and the fetch never
+  // happened. The ref must only be claimed once a mount's own fetch actually commits
+  // (inside the async body, after confirming this mount wasn't cancelled), so the
+  // discarded first mount never blocks the real second one.
   useEffect(() => {
     const sid = searchParams.get('session')?.trim()
     if (!sid || resumedSessionRef.current === sid) return
-    resumedSessionRef.current = sid
     let cancelled = false
     ;(async () => {
       setBusy(true)
@@ -157,6 +166,7 @@ export function AnalyzerPage({ onLogout }: { onLogout?: () => void }) {
       try {
         const { data: sess } = await api.get<SessionInfo>(`/api/v1/prescriptions/${sid}`)
         if (cancelled) return
+        resumedSessionRef.current = sid
         setSession(sess)
         setUploadOk('Resumed existing prescription session.')
         setPipelinePhase('completed')
@@ -322,6 +332,7 @@ export function AnalyzerPage({ onLogout }: { onLogout?: () => void }) {
       setPipelinePhase('')
       setWorkspaceTab('hitl')
       setBusy(false)
+      setMySessionsTick((t) => t + 1)
     }
   }
 
@@ -485,6 +496,9 @@ export function AnalyzerPage({ onLogout }: { onLogout?: () => void }) {
           )}
         </Stack>
       )}
+
+      {/* Unfinished sessions — only worth surfacing before a new upload is in flight */}
+      {!session && <MySessionsPanel refreshToken={mySessionsTick} />}
 
       {/* Upload + run */}
       <Box

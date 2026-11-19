@@ -61,6 +61,23 @@ def get_owned_session(db: Session, pharmacist: User, session_id: str) -> ReviewS
     return session
 
 
+def list_incomplete_sessions(db: Session, pharmacist: User, *, limit: int = 20) -> list[ReviewSession]:
+    """This pharmacist's own sessions not yet submitted or cancelled — lets them
+    resume a prescription they uploaded/OCR'd but never finished confirming,
+    instead of it sitting unreachable at awaiting_pharmacist_verification forever."""
+    return list(
+        db.scalars(
+            select(ReviewSession)
+            .where(
+                ReviewSession.pharmacist_user_id == pharmacist.id,
+                ReviewSession.status.notin_(["submitted", "cancelled", "temporary_deleted"]),
+            )
+            .order_by(ReviewSession.created_at.desc())
+            .limit(limit)
+        )
+    )
+
+
 def get_session_for_review(db: Session, session_id: str) -> ReviewSession:
     """Read-only lookup for reviewer/administrator roles — no ownership restriction."""
     session = db.get(ReviewSession, session_id)

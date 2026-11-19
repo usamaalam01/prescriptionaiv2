@@ -11,6 +11,7 @@ class ReviewSessionOut(BaseModel):
     file_size_bytes: int
     selected_ocr_engine: str | None = None
     temporary_deleted_at: datetime | None = None
+    created_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 
