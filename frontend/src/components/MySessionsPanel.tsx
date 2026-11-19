@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Alert, Box, Button, Chip, Stack, Typography } from '@mui/material'
+import { Alert, Box, Button, Chip, CircularProgress, Stack, Typography } from '@mui/material'
 import { Link as RouterLink } from 'react-router-dom'
 import { api } from '../api'
 
@@ -19,6 +19,7 @@ const STATUS_LABELS: Record<string, string> = {
 export function MySessionsPanel({ refreshToken }: { refreshToken: number }) {
   const [sessions, setSessions] = useState<IncompleteSession[]>([])
   const [error, setError] = useState('')
+  const [cancellingId, setCancellingId] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -37,6 +38,21 @@ export function MySessionsPanel({ refreshToken }: { refreshToken: number }) {
       cancelled = true
     }
   }, [refreshToken])
+
+  const cancelSession = async (id: string) => {
+    if (!window.confirm('Cancel and delete this unfinished prescription session? This cannot be undone.')) {
+      return
+    }
+    setCancellingId(id)
+    try {
+      await api.post(`/api/v1/prescriptions/${id}/cancel`)
+      setSessions((prev) => prev.filter((s) => s.id !== id))
+    } catch {
+      setError('Could not cancel that session. Please try again.')
+    } finally {
+      setCancellingId(null)
+    }
+  }
 
   if (error) return <Alert severity="error">{error}</Alert>
   if (sessions.length === 0) return null
@@ -80,14 +96,26 @@ export function MySessionsPanel({ refreshToken }: { refreshToken: number }) {
                   </Typography>
                 )}
               </Stack>
-              <Button
-                component={RouterLink}
-                to={`/analyzer?session=${s.id}`}
-                variant="outlined"
-                size="small"
-              >
-                Resume
-              </Button>
+              <Stack direction="row" spacing={1}>
+                <Button
+                  component={RouterLink}
+                  to={`/analyzer?session=${s.id}`}
+                  variant="outlined"
+                  size="small"
+                >
+                  Resume
+                </Button>
+                <Button
+                  color="warning"
+                  variant="outlined"
+                  size="small"
+                  disabled={cancellingId === s.id}
+                  onClick={() => void cancelSession(s.id)}
+                  startIcon={cancellingId === s.id ? <CircularProgress size={14} /> : undefined}
+                >
+                  Cancel
+                </Button>
+              </Stack>
             </Stack>
           ))}
         </Stack>
